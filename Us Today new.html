@@ -798,7 +798,7 @@ details.pl summary{cursor:pointer;font-weight:600}
       <h3>Help us improve</h3>
       <p class="small muted">Found a bug or have an idea? Tell us. It goes straight to the person who built this app.</p>
       <div class="row"><button class="primary" id="fbOpen">Send feedback</button><button class="secondary" id="wnOpen">What's new</button></div>
-      <div class="row"><button class="secondary" id="inboxOpen" hidden>📥 Feedback inbox<span class="badge" id="inboxBadge" hidden></span></button><button class="secondary" id="statsOpen" hidden>📊 Usage</button></div>
+      <div class="row"><button class="secondary" id="inboxOpen" hidden>📥 Feedback inbox<span class="badge" id="inboxBadge" hidden></span></button><button class="secondary" id="statsOpen" hidden>📊 Usage</button><button class="secondary" id="codesOpen" hidden>🎟️ Beta invites</button></div>
       <span class="small muted" id="verTap" style="user-select:none;-webkit-user-select:none"></span>
     </div>
         </div>
@@ -825,10 +825,16 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="inner" style="justify-content:center">
     <div class="stack" style="gap:10px"><span class="eyebrow">Welcome</span><h1>Us, Today</h1>
     <p class="muted">A daily check-in for the two of you: how you're feeling, what you need, and little ways to show up for each other.</p></div>
-    <button class="primary" id="startSpace">Start our space</button>
+    <div class="card stack">
+      <h3>Start your space</h3>
+      <p class="small muted">Us, Today is in private beta. Enter the invite code you were given.</p>
+      <label for="betaCode" class="small" style="font-weight:600">Beta invite code</label>
+      <input type="text" id="betaCode" placeholder="US-XXXXXX" autocapitalize="characters" autocomplete="off" spellcheck="false" maxlength="12">
+      <button class="primary" id="startSpace">Start our space</button>
+    </div>
     <div class="card stack">
       <h3>Already have a space?</h3>
-      <p class="small muted">Paste the invite link your partner sent you, or your own link from About me.</p>
+      <p class="small muted">Paste the invite link your partner sent you, or your own link from About me. No code needed.</p>
       <input type="text" id="joinInput" placeholder="Paste link here" aria-label="Invite link">
       <button class="secondary" id="joinBtn">Join</button>
     </div>
@@ -877,6 +883,12 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="sfoot" id="stFoot"></div>
 </div>
 <input type="file" id="storyFile" accept="image/*,video/*" hidden>
+<div class="ov" id="codesSheet" hidden role="dialog" aria-modal="true" aria-labelledby="codesTitle">
+  <div class="panel">
+    <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="codesTitle">Beta invites</h2></div><button class="x" id="codesX" aria-label="Close">×</button></div>
+    <div id="codesBody" class="stack" style="gap:12px"></div>
+  </div>
+</div>
 <div class="ov" id="fbSheet" hidden role="dialog" aria-modal="true" aria-labelledby="fbTitle">
   <div class="panel">
     <div class="phead"><div class="stack" style="gap:2px"><h2 id="fbTitle">Send feedback</h2><p class="small muted" style="margin:0">What happened, or what would make the app better?</p></div><button class="x" id="fbX" aria-label="Close">×</button></div>
@@ -2230,7 +2242,7 @@ function renderProfile(){
   $("verTap").textContent="Version "+APP_VERSION;
   renderAutoDel();renderAiCard();
   renderNotifCard();
-  $("invLink").textContent=spaceKey?inviteLink():"";$("myLink").textContent=spaceKey?linkFor(me):"";
+  {const joined=!!(other(me)&&members[other(me)]?.onboarded);$("invLink").textContent=spaceKey&&!joined?inviteLink():"";$("inviteCard").querySelector("p").textContent=joined?`${nm(other(me))} has joined, so there's nothing to share. Keep your personal link private: anyone who has it can open your space as you.`:"Send this link to your partner and have them open it on their phone. Anyone with the link can open your space, so only share it with each other.";$("copyInv").hidden=joined;$("invLink").hidden=joined}$("myLink").textContent=spaceKey?linkFor(me):"";
   renderPhotoBox();
   renderProfileView();
 }
@@ -2724,8 +2736,26 @@ function deviceName(ua){ua=String(ua||"");let m=ua.match(/iPhone OS (\d+)_(\d+)/
 function ownerRules(uid){return`rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isOwner() { return request.auth != null && request.auth.uid in ['${uid}']; }
+    function hasAccess(key) { return exists(/databases/$(database)/documents/betaAccess/$(key)); }
     match /couples/{key}/{document=**} {
-      allow read, write: if request.auth != null && key.size() >= 20;
+      allow read, write: if request.auth != null && key.size() >= 20 && hasAccess(key);
+    }
+    match /betaCodes/{code} {
+      allow get: if request.auth != null;
+      allow list, create, delete: if isOwner();
+      allow update: if isOwner() || (request.auth != null
+        && resource.data.used == false && request.resource.data.used == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'usedAt', 'usedBy']));
+    }
+    match /betaAccess/{key} {
+      allow get: if request.auth != null;
+      allow create: if request.auth != null && key.size() >= 20 && (
+        (request.resource.data.code is string && request.resource.data.code != 'legacy'
+          && get(/databases/$(database)/documents/betaCodes/$(request.resource.data.code)).data.usedBy == key)
+        || (request.resource.data.code == 'legacy' && request.time < timestamp.date(2026, 10, 25))
+        || isOwner());
+      allow update, delete: if isOwner();
     }
     match /feedback/{id} {
       allow create: if request.auth != null
@@ -2746,7 +2776,7 @@ function watchInbox(){
   try{fbUnsub=db.top.collection("feedback").orderBy("createdAt","desc").limit(200).onSnapshot(q=>{
     isOwner=true;try{localStorage.setItem("ut_owner","1")}catch(e){}
     fbItems=q.docs.map(d=>({id:d.id,...(d.data()||{})}));
-    $("inboxOpen").hidden=false;$("statsOpen").hidden=false;const n=fbItems.filter(x=>!x.done).length;$("inboxBadge").hidden=!n;$("inboxBadge").textContent=n;
+    $("inboxOpen").hidden=false;$("statsOpen").hidden=false;$("codesOpen").hidden=false;const n=fbItems.filter(x=>!x.done).length;$("inboxBadge").hidden=!n;$("inboxBadge").textContent=n;
     if(!$("inboxSheet").hidden)renderFbInbox();
   },()=>{isOwner=false;fbUnsub=null;$("inboxOpen").hidden=true;if(!$("inboxSheet").hidden)renderFbInbox()})}catch(e){fbUnsub=null}
 }
@@ -3289,6 +3319,69 @@ async function cleanStories(){
 $("stX").onclick=closeStory;
 document.addEventListener("keydown",e=>{if($("storyView").hidden)return;if(e.key==="Escape")closeStory();else if(e.key==="ArrowRight")nextStory();else if(e.key==="ArrowLeft")prevStory()});
 
+/* ================= Private beta: invite codes ================= */
+const PREV_SPACE=(()=>{try{return localStorage.getItem("ut_space")||""}catch(e){return""}})();
+let pendingCode="";
+const normCode=v=>{let c=String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(!c)return"";if(c.startsWith("US"))c=c.slice(2);return c?"US-"+c.slice(0,8):""};
+const isDenied=e=>/permission|insufficient/i.test(String(e&&(e.code||e.message)||""));
+function knownSpace(k){try{return localStorage.getItem("ut_known_"+k)==="1"||PREV_SPACE===k}catch(e){return PREV_SPACE===k}}
+/* "open" = the server isn't enforcing invites yet (old rules), so everything works as before. */
+async function ensureAccess(code,isNew){
+  const ref=db.top.doc("betaAccess/"+spaceKey);let s;
+  try{s=await ref.get()}catch(e){return isDenied(e)?"open":"error"}
+  if(s.exists)return"ok";
+  if(isNew){
+    if(!code)return"needcode";
+    let c;try{c=await db.top.doc("betaCodes/"+code).get()}catch(e){return isDenied(e)?"open":"error"}
+    if(!c.exists)return"badcode";if((c.data()||{}).used)return"usedcode";
+    try{await db.top.doc("betaCodes/"+code).update({used:true,usedAt:Date.now(),usedBy:spaceKey});await ref.set({code,at:Date.now()});return"ok"}
+    catch(e){console.error(e);return isDenied(e)?"usedcode":"error"}
+  }
+  if(knownSpace(spaceKey)){try{await ref.set({code:"legacy",at:Date.now()});return"ok"}catch(e){return isDenied(e)?"locked":"error"}}
+  return"locked";
+}
+function genCode(){const A2="ABCDEFGHJKMNPQRSTUVWXYZ23456789",b=new Uint8Array(6);crypto.getRandomValues(b);return"US-"+[...b].map(x=>A2[x%A2.length]).join("")}
+let codesUnsub=null,codesList=[],codesErr=false;
+const appLink=()=>location.origin+location.pathname;
+function codeMsg(c){return `Here's your private invite to the Us, Today beta 💞\nCode: ${c.id}\n\n1. Open ${appLink()} on your phone\n2. Enter the code and tap Start our space\n3. Send your partner the invite link from About me\n\nThe code works once, so please don't share it.`}
+function watchCodes(){
+  if(codesUnsub)return;
+  try{codesUnsub=db.top.collection("betaCodes").orderBy("createdAt","desc").limit(200).onSnapshot(q=>{codesErr=false;codesList=q.docs.map(d=>({id:d.id,...(d.data()||{})}));if(!$("codesSheet").hidden)renderCodes()},()=>{codesErr=true;codesUnsub=null;if(!$("codesSheet").hidden)renderCodes()})}catch(e){codesErr=true}
+}
+async function newCode(note){
+  const id=genCode();
+  try{await db.top.doc("betaCodes/"+id).set({used:false,createdAt:Date.now(),note:String(note||"").slice(0,60)});toast("Code created: "+id)}
+  catch(e){console.error(e);toast("Couldn't create a code. Your rules may need the update below.");codesErr=true;renderCodes()}
+}
+function renderCodes(){
+  const box=$("codesBody");box.textContent="";
+  if(codesErr){
+    box.append(el("p","small","Invite codes need one more rules update. Copy the rules below, paste them over your Firestore rules and tap Publish. Then reopen this panel."));
+    box.append(el("p","small muted","Existing couples (including you) are let in automatically the next time they open the app, through Oct 24. After that, only invite codes can start a new space."));
+    const pre=el("pre","code",ownerRules(db?.uid||""));box.append(pre);
+    const r=el("div","row");const c=el("button","primary","Copy rules");c.onclick=async()=>{try{await navigator.clipboard.writeText(ownerRules(db?.uid||""));toast("Rules copied")}catch(x){toast("Couldn't copy. Select the text instead.")}};
+    const l=el("a","secondary","Open Firebase rules");l.href="https://console.firebase.google.com/project/us-today-e354e/firestore/rules";l.target="_blank";l.rel="noopener";l.style.cssText="text-decoration:none;display:inline-flex;align-items:center;border-radius:12px;padding:12px 16px;font-weight:600";
+    const t=el("button","link small","I published it, check again");t.onclick=()=>{codesUnsub=null;codesErr=false;watchCodes();setTimeout(renderCodes,1500)};
+    r.append(c,l);box.append(r,t);return;
+  }
+  const form=el("div","card stack");form.append(el("b",null,"Create an invite code"),el("p","small muted","One code per couple. It works once."));
+  const lab=el("label","small",null);lab.textContent="Who it's for (only you see this)";lab.htmlFor="codeNote";lab.style.fontWeight="600";
+  const inp=el("input");inp.type="text";inp.id="codeNote";inp.maxLength=60;inp.placeholder="e.g. Jay & Kim";
+  const b=el("button","primary","Create code");b.onclick=async()=>{b.disabled=true;await newCode(inp.value);inp.value="";b.disabled=false};
+  form.append(lab,inp,b);box.append(form);
+  const unused=codesList.filter(c=>!c.used),used=codesList.filter(c=>c.used);
+  const sec=(title,list)=>{if(!list.length)return;box.append(el("h4",null,title));list.forEach(c=>{
+    const r=el("div","fbi"+(c.used?" fdone":" isnew")),top=el("div","top");top.append(el("span","kind "+(c.used?"love":"idea"),c.used?"Used":"Unused"),el("span","who",c.id),el("span","when",c.used&&c.usedAt?timeAgo(c.usedAt):timeAgo(c.createdAt||Date.now())));r.append(top);
+    if(c.note)r.append(el("p","msg",c.note));
+    if(!c.used){const a=el("div","acts");const cp=el("button","link small","Copy invite message");cp.onclick=async()=>{try{await navigator.clipboard.writeText(codeMsg(c));toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't copy")}};
+      const del=el("button","link small","Delete");del.style.color="var(--warn)";del.onclick=()=>{if(confirm("Delete this unused code?"))db.top.doc("betaCodes/"+c.id).delete().then(()=>toast("Deleted")).catch(()=>toast("Couldn't delete"))};a.append(cp,del);r.append(a)}
+    box.append(r)})};
+  sec(`Unused (${unused.length})`,unused);sec(`Used (${used.length})`,used);
+  if(!codesList.length)box.append(el("p","muted small","No codes yet. Create one for each couple you invite."));
+}
+$("codesOpen").onclick=()=>{watchCodes();renderCodes();$("codesSheet").hidden=false};
+$("codesX").onclick=()=>{$("codesSheet").hidden=true};$("codesSheet").addEventListener("click",e=>{if(e.target.id==="codesSheet")$("codesSheet").hidden=true});
+
 /* ================= Tabs ================= */
 function setTab(t){
   tab=t;
@@ -3391,6 +3484,13 @@ async function startSpace(firstTime){
   try{
     db=await connectDb("couples/"+spaceKey);
   }catch(e){console.error(e);done();showNotice("Couldn't connect. Check your internet connection and reopen the app.");return}
+  const acc=await ensureAccess(firstTime?pendingCode:"",!!firstTime);
+  if(acc!=="ok"&&acc!=="open"){
+    done();const msg={badcode:"That invite code isn't valid. Check it and try again.",usedcode:"That invite code has already been used. Ask for a new one.",needcode:"Enter your beta invite code to start.",locked:"This space isn't part of the beta. If you were invited, ask for your link again.",error:"Couldn't check your invite. Check your connection and try again."}[acc]||"Couldn't start.";
+    if(firstTime){spaceKey=null;$("welcome").hidden=false;$("welcomeErr").textContent=msg;return}
+    try{localStorage.removeItem("ut_space")}catch(e){}spaceKey=null;$("welcome").hidden=false;$("welcomeErr").textContent=msg;return;
+  }
+  try{localStorage.setItem("ut_space",spaceKey);localStorage.setItem("ut_known_"+spaceKey,"1");if(firstTime)localStorage.setItem("ut_who",A)}catch(e){}
   let w=null;try{w=localStorage.getItem("ut_who")}catch(e){}
   me=w===B?B:A;partnerId=me===A?B:A;entries={};loadSeen();
   try{
@@ -3416,9 +3516,10 @@ async function startSpace(firstTime){
   [A,B].forEach(p=>{watch(p);db.doc(base(p)).onSnapshot(s=>{members[p]=s.exists?(s.data()||{}):{};renderAll()},()=>{})});
 }
 $("startSpace").onclick=()=>{
-  spaceKey=newKey();
-  try{localStorage.setItem("ut_space",spaceKey);localStorage.setItem("ut_who",A)}catch(e){}
-  $("welcome").hidden=true;$("loading").hidden=false;startSpace(true);
+  const code=normCode($("betaCode").value);
+  if(!code){$("welcomeErr").textContent="Enter your beta invite code to start.";$("betaCode").focus();return}
+  spaceKey=newKey();pendingCode=code;
+  $("welcomeErr").textContent="";$("welcome").hidden=true;$("loading").hidden=false;startSpace(true);
 };
 function parseLink(t){
   t=(t||"").trim();let m=t.match(/[?&]space=([A-Za-z0-9_-]{20,})/);
@@ -3440,7 +3541,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.21";
+const APP_VERSION="2026-10-17.22";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
