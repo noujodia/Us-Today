@@ -49,7 +49,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .stack{display:flex;flex-direction:column;gap:12px}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .between{justify-content:space-between}
-input[type=text],input[type=datetime-local],textarea{width:100%;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;padding:10px 12px}
+input[type=text],input[type=search],input[type=datetime-local],textarea{width:100%;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;padding:10px 12px}
 textarea{min-height:64px;resize:vertical}
 [hidden]{display:none!important}
 .notice{background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:.9rem}
@@ -213,6 +213,25 @@ textarea{min-height:64px;resize:vertical}
 .readout .grp{display:flex;flex-direction:column;gap:2px}
 .readout .sub{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .readout .sum{font-size:.95rem}
+.sres:empty,#songSel:empty{display:none}
+input[type=search]{-webkit-appearance:none;appearance:none}
+.sres{display:flex;flex-direction:column;gap:6px}
+.sr{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:12px;padding:8px;min-width:0}
+.sr img,.song img{width:48px;height:48px;border-radius:8px;object-fit:cover;flex:none;background:var(--line)}
+.sr .tt,.song .tt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.sr .tt b,.song .tt b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr .tt span,.song .tt span{font-size:.8rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr .pick{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:7px 12px;font-weight:600;font-size:.85rem;flex:none}
+.pbtn{width:38px;height:38px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);flex:none;display:grid;place-items:center;font-size:.85rem;padding:0}
+.song{background:var(--soft);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.song .top{display:flex;align-items:center;gap:10px;min-width:0}
+.song img{width:56px;height:56px}
+.sprog{height:4px;border-radius:2px;background:var(--line);overflow:hidden}.sprog i{display:block;height:100%;width:0;background:var(--accent)}
+.full{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.78rem;color:var(--muted)}
+.full a{font-weight:600;color:var(--accent);text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.orline{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.8rem}.orline::before,.orline::after{content:"";flex:1;height:1px;background:var(--line)}
+.yt{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.gone{background:var(--soft);color:var(--muted);border-radius:12px;padding:14px;font-size:.85rem;text-align:center}
 .media{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);background:var(--soft);border-radius:12px;padding:10px 12px;min-width:0}
 .media .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:var(--ic-ink);flex:none;font-size:.78rem;background:var(--muted)}
 .media .mt{min-width:0;flex:1;display:flex;flex-direction:column}
@@ -401,11 +420,15 @@ details.pl summary{cursor:pointer;font-weight:600}
       <p class="small muted" id="picNote" hidden></p>
     </div>
     <div class="card stack" id="songCard">
-      <h2>Share a song or video</h2>
-      <p class="small muted" id="songHint">Paste a link from YouTube, Spotify, Apple Music or anywhere else.</p>
-      <input type="text" id="songUrl" inputmode="url" maxlength="400" placeholder="https://…" aria-label="Song or video link">
+      <h2>Send a song or video</h2>
+      <p class="small muted" id="songHint">Search for a song, or paste a link to a video or song.</p>
+      <input type="search" id="songQ" maxlength="80" placeholder="Search a song or artist" aria-label="Search songs" enterkeyhint="search">
+      <div class="sres" id="songRes" aria-live="polite"></div>
+      <div id="songSel"></div>
+      <div class="orline" id="songOr">or paste a link</div>
+      <input type="text" id="songUrl" inputmode="url" maxlength="400" placeholder="YouTube, TikTok, Spotify… https://" aria-label="Song or video link">
       <input type="text" id="songNote" maxlength="120" placeholder="Why this one? (optional)" aria-label="Note">
-      <div class="row"><button class="primary" id="sendSong">Share it</button></div>
+      <div class="row"><button class="primary" id="sendSong">Send it</button></div>
       <details class="pl" id="playlist"><summary id="plSum">Our playlist</summary><div class="stack" id="plList" style="gap:8px;margin-top:10px"></div></details>
     </div>
     <div class="stack">
@@ -467,6 +490,12 @@ details.pl summary{cursor:pointer;font-weight:600}
       <h3>Notifications</h3>
       <p class="small muted" id="notifMsg">Checking…</p>
       <div class="row"><button class="primary" id="notifOn" hidden>Turn on notifications</button><button class="secondary" id="notifTest" hidden>Send me a test</button></div>
+    </div>
+    <div class="card stack" id="adCard">
+      <h3>Auto-delete photos and videos</h3>
+      <p class="small muted">Photos and videos you both send, in Connect and Chat, are deleted after this long. Check-ins, messages, songs and profile pictures stay.</p>
+      <div class="opts" id="adOpts" role="group" aria-label="Auto-delete after"></div>
+      <p class="small muted" id="adMsg"></p>
     </div>
     <div class="card stack" id="inviteCard">
       <h3>Invite your partner</h3>
@@ -790,7 +819,8 @@ function clipEl(id,cap,dur){
   };
   return w;
 }
-const itemMedia=it=>it.kind==="clip"?clipEl(it.asset,it.caption,it.dur):picEl(it.asset,it.caption);
+const goneEl=k=>el("div","gone",k==="clip"?"🎬 This video was auto-deleted":"📷 This photo was auto-deleted");
+const itemMedia=it=>it.gone?goneEl(it.kind):it.kind==="clip"?clipEl(it.asset,it.caption,it.dur):picEl(it.asset,it.caption);
 const isPicLike=it=>(it.kind==="photo"||it.kind==="clip")&&it.asset;
 
 /* ================= Rings ================= */
@@ -1204,7 +1234,8 @@ function notifyForItem(d){
   const n=nm(me);let body="";
   if(d.kind==="touch"&&d.type==="emoji")body="Sent you "+[...String(d.em||"💌")].slice(0,12).join("");
   else if(d.kind==="touch")body=TOUCH_TEXT[d.type]||"Sent you something";
-  else if(d.kind==="media")body="Shared "+platformOf(d.url).noun+" 🎵"+(d.note?`: “${d.note}”`:"");
+  else if(d.kind==="media"&&d.track)body=`Sent you a song 🎵 ${d.track.name} by ${d.track.artist}`+(d.note?`: “${d.note}”`:"");
+  else if(d.kind==="media")body="Sent you "+platformOf(d.url).noun+" 🎵"+(d.note?`: “${d.note}”`:"");
   else if(d.kind==="photo")body="Sent you a photo 📷"+(d.caption?`: “${d.caption}”`:"");
   else if(d.kind==="clip")body="Sent you a video 🎬"+(d.caption?`: “${d.caption}”`:"");
   else if(d.kind==="invite")body=`Invited you: ${d.type==="date"&&d.dateKind?"Date night, "+label("datestyle",d.dateKind).toLowerCase():(pick(INV_TYPES,d.type)?.[1]||"A date")} · ${d.when} 💌`;
@@ -1217,7 +1248,7 @@ function notifyForReply(id,data){
   const what=it.kind==="clip"?"video":"photo";
   if(isPicLike(it)&&data.reaction&&data.reaction!==prev.reaction)body=`Reacted ${data.reaction} to your ${what}`;
   else if(isPicLike(it)&&data.comment)body=`Replied to your ${what}: “${data.comment}”`;
-  else if(it.kind==="media"&&data.status==="loved")body=`Loved the ${platformOf(it.url).noun.replace(/^an? /,"")} you shared ♥`;
+  else if(it.kind==="media"&&data.status==="loved")body=it.track?`Loved the song you sent ♥ ${it.track.name}`:`Loved the ${platformOf(it.url).noun.replace(/^an? /,"")} you sent ♥`;
   else if(it.kind==="invite"&&data.status==="yes")body=`Accepted your invite: ${pick(INV_TYPES,it.type)?.[1]||"Date"} 💌`;
   else if(it.kind==="invite"&&data.status==="later")body=`Can't make it this time: ${pick(INV_TYPES,it.type)?.[1]||"Date"}`;
   else if(it.kind==="challenge"&&(data.count||0)>=(it.target||1)&&(prev.count||0)<(it.target||1))body=`Completed your challenge: ${it.text} 🎉`;
@@ -1361,7 +1392,7 @@ function itemTitle(it,dir){
   if(it.kind==="photo")return{em:"📷",title:dir==="in"?`${pn} sent you a photo`:"You sent a photo"};
   if(it.kind==="clip")return{em:"🎬",title:dir==="in"?`${pn} sent you a video`:"You sent a video"};
   if(it.kind==="invite"){const what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(pick(INV_TYPES,it.type)?.[1]||"Date");return{em:"💌",title:`${dir==="in"?"Invite":"You invited"}: ${what} · ${it.when}`}}
-  if(it.kind==="media"){const m=platformOf(it.url);return{em:"🎵",title:dir==="in"?`${pn} shared ${m.noun}`:`You shared ${m.noun}`}}
+  if(it.kind==="media"){const m=it.track?{noun:"a song"}:platformOf(it.url);return{em:"🎵",title:dir==="in"?`${pn} sent you ${m.noun}`:`You sent ${m.noun}`}}
   return{em:"🏁",title:`${dir==="in"?"Challenge":"You challenged"}: ${it.text}`};
 }
 const incoming=()=>partnerId?(sent[partnerId]||[]).filter(x=>x.to===me):[];
@@ -1418,7 +1449,7 @@ function renderInbox(){
       inp.onkeydown=ev=>{if(ev.key==="Enter")post.click()};
       c.append(inp,post);row.append(c);
     }
-    if(it.kind==="media"){row.append(mediaEl(it.url));const a=el("div","row");if(rep?.status==="loved")a.append(el("span","pill ok","Loved it"));else{const b=el("button","secondary","♥ Loved it");b.onclick=()=>reply(it.id,{status:"loved"}).then(ok=>ok&&toast("They'll see you loved it"));a.append(b)}row.append(a)}
+    if(it.kind==="media"){row.append(mediaFor(it));const a=el("div","row");if(rep?.status==="loved")a.append(el("span","pill ok","Loved it"));else{const b=el("button","secondary","♥ Loved it");b.onclick=()=>reply(it.id,{status:"loved"}).then(ok=>ok&&toast("They'll see you loved it"));a.append(b)}row.append(a)}
     if(it.kind==="invite"&&it.place)row.append(placeEl(it));
     if(it.kind==="invite"){
       const a=el("div","row");
@@ -1445,7 +1476,7 @@ function renderSent(){
     const rep=partnerId?(replies[partnerId]||{})[it.id]:null,s=statusPill(it,rep),row=el("div","item");
     row.append(itemHead(it,"out",s?el("span","pill "+s[1],s[0]):null));
     if(isPicLike(it)){const im=itemMedia(it);if(it.kind==="photo")im.style.maxHeight="160px";row.append(im);if(it.caption)row.append(el("p","small muted",it.caption));if(rep?.reaction){const rr=el("div","reacted",`${nm(partnerId)} reacted`);rr.append(el("b",null,rep.reaction));row.append(rr)}if(rep?.comment)row.append(el("p","reply-cap",`${nm(partnerId)}: ${rep.comment}`))}
-    if(it.kind==="media"){if(it.note)row.append(el("p","need","“"+it.note+"”"));row.append(mediaEl(it.url))}
+    if(it.kind==="media"){if(it.note)row.append(el("p","need","“"+it.note+"”"));row.append(mediaFor(it))}
     if(it.kind==="invite"&&it.place)row.append(placeEl(it));
     box.append(row);
   });
@@ -1543,17 +1574,117 @@ function placeEl(it){
   w.append(el("p",null,"📍 "+it.place));
   w.append(linkRow([{t:"See it on the map",u:mapsQ(it.place+(it.area?" "+it.area:""))}]));return w;
 }
+/* ---- Song search (Apple's free catalog search) and 30-second previews ---- */
+let songPick=null,songSeq=0,songTimer=0;
+const okHttps=(u,host)=>{try{const x=new URL(u);return x.protocol==="https:"&&host.test(x.hostname)?x.href:""}catch(e){return""}};
+function cleanTrack(r){
+  if(!r||!r.trackName)return null;
+  return{id:String(r.trackId||""),name:String(r.trackName).slice(0,120),artist:String(r.artistName||"").slice(0,120),album:String(r.collectionName||"").slice(0,120),
+    art:okHttps(String(r.artworkUrl100||"").replace(/100x100bb/,"300x300bb"),/(^|\.)mzstatic\.com$/),
+    preview:okHttps(r.previewUrl||"",/(^|\.)(apple\.com|mzstatic\.com|itunes\.apple\.com)$/),
+    apple:okHttps(r.trackViewUrl||"",/(^|\.)apple\.com$/)};
+}
+function itunesSearch(term){
+  return new Promise((res,rej)=>{
+    const cb="__it"+Date.now()+Math.floor(Math.random()*1e4),sc=document.createElement("script");
+    const done=x=>{clearTimeout(t);try{delete window[cb]}catch(e){window[cb]=undefined}sc.remove();x instanceof Error?rej(x):res(x)};
+    const t=setTimeout(()=>done(new Error("timeout")),9000);
+    window[cb]=d=>done((d&&d.results||[]).map(cleanTrack).filter(Boolean));
+    sc.onerror=()=>done(new Error("network"));
+    sc.src="https://itunes.apple.com/search?media=music&entity=song&limit=8&country=US&term="+encodeURIComponent(term)+"&callback="+cb;
+    document.head.append(sc);
+  });
+}
+const spotifyQ=t=>"https://open.spotify.com/search/"+encodeURIComponent(t.name+" "+t.artist);
+const ytQ=t=>"https://www.youtube.com/results?search_query="+encodeURIComponent(t.name+" "+t.artist);
+/* One shared player so only one preview plays at a time, and playback survives screen refreshes. */
+const player={a:null,id:null};
+function syncPlayers(){
+  document.querySelectorAll("[data-sid]").forEach(n=>{
+    const on=player.id===n.dataset.sid&&player.a&&!player.a.paused;
+    if(n.classList.contains("pbtn")){n.textContent=on?"❚❚":"▶";n.setAttribute("aria-label",(on?"Pause":"Play")+" 30-second preview")}
+    else if(n.classList.contains("sprog")){const i=n.firstElementChild;const d=player.id===n.dataset.sid&&player.a?(player.a.currentTime/(player.a.duration||30)):0;i.style.width=Math.min(100,d*100)+"%"}
+  });
+}
+function togglePreview(t){
+  if(!t.preview){toast("No preview for this song. Use the full-song buttons.");return}
+  if(!player.a){player.a=new Audio();player.a.preload="none";["play","pause","ended","timeupdate"].forEach(e=>player.a.addEventListener(e,syncPlayers));player.a.addEventListener("error",()=>{if(player.id)toast("Couldn't play the preview")})}
+  const a=player.a;
+  if(player.id===t.id&&!a.paused){a.pause();return}
+  if(player.id!==t.id){a.src=t.preview;player.id=t.id}
+  a.play().catch(()=>toast("Couldn't play the preview"));syncPlayers();
+}
+function playBtn(t){const b=el("button","pbtn","▶");b.type="button";b.dataset.sid=t.id;b.onclick=e=>{e.stopPropagation();togglePreview(t)};return b}
+function songEl(t){
+  const w=el("div","song"),top=el("div","top");
+  const im=el("img");im.alt="";if(t.art)im.src=t.art;
+  const tt=el("div","tt");tt.append(el("b",null,t.name),el("span",null,t.artist+(t.album?" · "+t.album:"")));
+  top.append(im,tt);if(t.preview)top.append(playBtn(t));w.append(top);
+  if(t.preview){const pr=el("div","sprog");pr.dataset.sid=t.id;pr.append(el("i"));w.append(pr)}
+  const f=el("div","full");f.append(el("span",null,t.preview?"30-sec preview · Full song:":"Full song:"));
+  [["Apple Music",t.apple],["Spotify",spotifyQ(t)],["YouTube",ytQ(t)]].forEach(([n,u])=>{if(!u)return;const a=el("a",null,n+" ↗");a.href=u;a.target="_blank";a.rel="noopener";f.append(a)});
+  w.append(f);setTimeout(syncPlayers,0);return w;
+}
+function ytId(u){try{const x=new URL(u),h=x.hostname.replace(/^www\.|^m\./,"");let id="";if(h==="youtu.be")id=x.pathname.slice(1);else if(/youtube\.com$/.test(h))id=x.searchParams.get("v")||(x.pathname.match(/^\/(shorts|embed|live)\/([^/?]+)/)||[])[2]||"";return/^[A-Za-z0-9_-]{6,20}$/.test(id)?id:""}catch(e){return""}}
+const liveYt={};
+function mediaFor(it){
+  if(it.track&&it.track.name)return songEl({...it.track,id:it.track.id||it.id});
+  const id=ytId(it.url);
+  if(id){
+    if(liveYt[it.id])return liveYt[it.id];
+    const w=el("div","stack");w.style.gap="6px";const link=mediaEl(it.url);
+    const b=el("button","secondary","▶ Play here");b.style.justifySelf="start";
+    b.onclick=()=>{const box=el("div","yt"),f=el("iframe");f.src="https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1&playsinline=1&rel=0";f.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";f.allowFullscreen=true;f.title="YouTube video";box.append(f);b.replaceWith(box);liveYt[it.id]=w};
+    w.append(b,link);return w;
+  }
+  return mediaEl(it.url);
+}
+function renderSongResults(list,msg){
+  const box=$("songRes");box.textContent="";
+  if(msg){box.append(el("p","small muted",msg));return}
+  list.forEach(t=>{
+    const r=el("div","sr"),im=el("img");im.alt="";if(t.art)im.src=t.art;
+    const tt=el("div","tt");tt.append(el("b",null,t.name),el("span",null,t.artist));
+    const pk=el("button","pick","Pick");pk.type="button";pk.setAttribute("aria-label","Pick "+t.name+" by "+t.artist);
+    pk.onclick=()=>{songPick=t;$("songQ").value="";box.textContent="";renderSongPick()};
+    r.append(im,tt);if(t.preview)r.append(playBtn(t));r.append(pk);box.append(r);
+  });
+  syncPlayers();
+}
+function renderSongPick(){
+  const box=$("songSel");box.textContent="";
+  $("songOr").hidden=!!songPick;$("songUrl").hidden=!!songPick;$("songQ").hidden=!!songPick;
+  if(!songPick)return;
+  box.append(songEl(songPick));
+  const x=el("button","link small","Choose a different song");x.type="button";x.style.marginTop="6px";x.onclick=()=>{songPick=null;renderSongPick();$("songQ").focus()};
+  box.append(x);
+}
+function doSongSearch(){
+  const q=$("songQ").value.trim(),seq=++songSeq;
+  if(q.length<2){renderSongResults([]);return}
+  renderSongResults([],"Searching…");
+  itunesSearch(q).then(list=>{if(seq!==songSeq)return;renderSongResults(list,list.length?"":"No songs found. Try different words.")})
+    .catch(()=>{if(seq===songSeq)renderSongResults([],"Couldn't search right now. You can still paste a link.")});
+}
+$("songQ").addEventListener("input",()=>{clearTimeout(songTimer);songTimer=setTimeout(doSongSearch,400)});
+$("songQ").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();clearTimeout(songTimer);doSongSearch()}});
 $("sendSong").onclick=async()=>{
+  const note=$("songNote").value.trim();
+  if(songPick){
+    const t=songPick,url=t.apple||spotifyQ(t);
+    if(await sendItem({kind:"media",url,track:t,note},"Song sent")){songPick=null;renderSongPick();$("songNote").value=""}
+    return;
+  }
   const url=safeUrl($("songUrl").value);
-  if(!url){toast("Paste a full link that starts with https://");return}
-  if(await sendItem({kind:"media",url,note:$("songNote").value.trim()},`${cap1(platformOf(url).noun.replace(/^an? /,""))} shared`)){$("songUrl").value="";$("songNote").value=""}
+  if(!url){toast($("songQ").value.trim()?"Pick a song from the results first":"Search for a song or paste a link");return}
+  if(await sendItem({kind:"media",url,note},`${cap1(platformOf(url).noun.replace(/^an? /,""))} sent`)){$("songUrl").value="";$("songNote").value=""}
 };
 function renderSongs(){
-  const all=[...incoming().map(x=>({...x,dir:"in"})),...outgoing().map(x=>({...x,dir:"out"}))].filter(x=>x.kind==="media"&&safeUrl(x.url)).sort((a,b)=>b.createdAt-a.createdAt);
+  const all=[...incoming().map(x=>({...x,dir:"in"})),...outgoing().map(x=>({...x,dir:"out"}))].filter(x=>x.kind==="media"&&(safeUrl(x.url)||x.track)).sort((a,b)=>b.createdAt-a.createdAt);
   $("plSum").textContent=`Our playlist (${all.length})`;$("playlist").hidden=!all.length;
   const box=$("plList");box.textContent="";
-  all.slice(0,40).forEach(it=>{const w=el("div","stack");w.style.gap="4px";w.append(el("span","small muted",`${it.dir==="in"?"From "+nm(partnerId):"From you"} · ${timeAgo(it.createdAt)}${it.note?" · “"+it.note+"”":""}`),mediaEl(it.url));box.append(w)});
-  $("songHint").textContent=partnerId?`Send ${nm(partnerId)} a song or video. Paste a link from YouTube, Spotify, Apple Music or anywhere else.`:"Paste a link from YouTube, Spotify, Apple Music or anywhere else.";
+  all.slice(0,40).forEach(it=>{const w=el("div","stack");w.style.gap="4px";w.append(el("span","small muted",`${it.dir==="in"?"From "+nm(partnerId):"From you"} · ${timeAgo(it.createdAt)}${it.note?" · “"+it.note+"”":""}`),mediaFor(it));box.append(w)});
+  $("songHint").textContent=partnerId?`Search for a song to send ${nm(partnerId)}, or paste a link to a video or song.`:"Search for a song, or paste a link to a video or song.";
 }
 const capOf=p=>{const c=members[p]?.profile?.caption;return typeof c==="string"?c.slice(0,80):""};
 const capAt=p=>+members[p]?.profile?.captionAt||0;
@@ -1675,6 +1806,7 @@ $("copyInv").onclick=async()=>{try{await navigator.clipboard.writeText(inviteLin
 async function copyText(t,msgEl,codeEl){try{await navigator.clipboard.writeText(t);$(msgEl).textContent="Copied"}catch(e){const rg=document.createRange();rg.selectNodeContents($(codeEl));const sl=getSelection();sl.removeAllRanges();sl.addRange(rg);$(msgEl).textContent="Selected. Copy it from here."}}
 $("copyMine").onclick=()=>copyText(linkFor(me),"copyMineMsg","myLink");
 function renderProfile(){
+  renderAutoDel();
   renderNotifCard();
   $("invLink").textContent=spaceKey?inviteLink():"";$("myLink").textContent=spaceKey?linkFor(me):"";
   renderPhotoBox();
@@ -1721,7 +1853,7 @@ function renderChat(toBottom){
     if(!mine)row.append(endGroup?avatar(m.from,"av-s"):el("span","avsp"));
     const toggle=()=>{chatSel=chatSel===m.id?null:m.id;renderChat()};
     if(m.kind&&m.asset){
-      const md=el("div","mmedia");md.append(m.kind==="clip"?clipEl(m.asset,m.text,m.dur):picEl(m.asset,m.text));
+      const md=el("div","mmedia");md.append(m.gone?goneEl(m.kind):m.kind==="clip"?clipEl(m.asset,m.text,m.dur):picEl(m.asset,m.text));
       if(mine){const o=el("button","mopt","⋯");o.type="button";o.setAttribute("aria-label","Options for this "+(m.kind==="clip"?"video":"photo"));o.onclick=toggle;row.append(o)}
       row.append(md);box.append(row);
       if(m.text){const r2=el("div","mrow "+(mine?"mine":"theirs"));if(!mine){const av=row.firstChild;row.replaceChild(el("span","avsp"),av);r2.append(av)}r2.append(el("div","bub",m.text));box.append(r2)}
@@ -1801,6 +1933,47 @@ $("msgIn").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.is
 $("composer").onsubmit=e=>{e.preventDefault();sendMsg()};
 $("msgIn").addEventListener("focus",()=>setTimeout(()=>{const b=$("msgs");b.scrollTop=b.scrollHeight},250));
 
+/* ================= Auto-delete ================= */
+let mediaSettings={autoDelete:0};
+const AD_OPTS=[[0,"Keep"],[30,"30 days"],[15,"15 days"]];
+function renderAutoDel(){
+  const box=$("adOpts");if(!box)return;box.textContent="";const cur=+mediaSettings.autoDelete||0;
+  AD_OPTS.forEach(([d,t])=>{const b=el("button","opt",t);b.id="ad-"+d;b.setAttribute("aria-pressed",String(d===cur));b.onclick=()=>setAutoDel(d);box.append(b)});
+  const by=mediaSettings.by?nm(mediaSettings.by):"";
+  $("adMsg").textContent=cur?`Deleting after ${cur} days${by?` (set by ${by})`:""}. Applies to both of you.`:`Keeping everything${by?` (set by ${by})`:""}. Applies to both of you.`;
+}
+async function setAutoDel(d){
+  if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
+  if(d&&d!==(+mediaSettings.autoDelete||0)&&!confirm(`Delete photos and videos older than ${d} days? This can't be undone.`))return;
+  try{await db.doc("settings/media").set({autoDelete:d,by:me,at:Date.now()});mediaSettings={autoDelete:d,by:me,at:Date.now()};renderAutoDel();toast(d?`Photos and videos will be deleted after ${d} days`:"Keeping all photos and videos");try{localStorage.removeItem("ut_clean_"+spaceKey)}catch(e){}if(d)runCleanup(d)}
+  catch(e){console.error(e);toast(saveErr(e))}
+}
+let cleaning=false;
+async function delAsset(kind,id){
+  if(!id)return;
+  if(kind==="photo"){await db.doc(`photos/${id}`).delete().catch(()=>{});return}
+  const m=await loadClipMeta(id).catch(()=>null);
+  for(let i=0;i<(m?.parts||0);i++)await db.doc(`videos/${id}/parts/${i}`).delete().catch(()=>{});
+  await db.doc(`videos/${id}`).delete().catch(()=>{});delete clipCache[id];
+}
+async function runCleanup(days){
+  if(cleaning||!signedIn()||!days)return;cleaning=true;
+  const cutoff=Date.now()-days*86400000;let n=0;
+  try{
+    for(const p of [A,B])for(const c of ["sent","messages"]){
+      const q=await db.collection(`${base(p)}/${c}`).where("createdAt","<",cutoff).get();
+      for(const d of q.docs){const v=d.data()||{};if((v.kind==="photo"||v.kind==="clip")&&v.asset&&!v.gone){await delAsset(v.kind,v.asset);await db.doc(`${base(p)}/${c}/${d.id}`).update({gone:true}).catch(()=>{});n++}}
+    }
+    try{localStorage.setItem("ut_clean_"+spaceKey,String(Date.now()))}catch(e){}
+  }catch(e){console.error(e)}finally{cleaning=false}
+  return n;
+}
+function maybeCleanup(){
+  const d=+mediaSettings.autoDelete||0;if(!d)return;
+  let last=0;try{last=+localStorage.getItem("ut_clean_"+spaceKey)||0}catch(e){}
+  if(Date.now()-last>6*3600000)runCleanup(d);
+}
+
 /* ================= Tabs ================= */
 function setTab(t){
   tab=t;
@@ -1835,7 +2008,7 @@ function watch(id){
   let msgFirst=true;
   db.collection(`${base(id)}/messages`).orderBy("createdAt","desc").limit(200).onSnapshot(snap=>{
     const prevMax=Math.max(0,...(msgs[id]||[]).map(x=>x.createdAt||0));
-    msgs[id]=snap.docs.map(d=>{const v=d.data()||{};const k=v.kind==="photo"||v.kind==="clip"?v.kind:null;return{id:d.id,from:id,text:String(v.text||""),createdAt:+v.createdAt||0,kind:k,asset:k?String(v.asset||""):"",dur:+v.dur||0}});
+    msgs[id]=snap.docs.map(d=>{const v=d.data()||{};const k=v.kind==="photo"||v.kind==="clip"?v.kind:null;return{id:d.id,from:id,text:String(v.text||""),createdAt:+v.createdAt||0,kind:k,asset:k?String(v.asset||""):"",dur:+v.dur||0,gone:!!v.gone}});
     if(!msgFirst&&id===partnerId&&tab!=="chat"){const n=msgs[id].find(x=>x.createdAt>prevMax);if(n)toast(`${nm(id)}: ${n.text?(n.text.length>60?n.text.slice(0,60)+"…":n.text):n.kind==="clip"?"sent a video 🎬":"sent a photo 📷"}`)}
     msgFirst=false;renderAll();
   },()=>{});
@@ -1905,6 +2078,7 @@ async function startSpace(firstTime){
   else if(START_CHAT)setTab("chat");
   done();
   refreshPushSub();
+  db.doc("settings/media").onSnapshot(s=>{mediaSettings=s.exists?(s.data()||{}):{autoDelete:0};if(tab==="me")renderAutoDel();maybeCleanup()},()=>{});
   [A,B].forEach(p=>{watch(p);db.doc(base(p)).onSnapshot(s=>{members[p]=s.exists?(s.data()||{}):{};renderAll()},()=>{})});
 }
 $("startSpace").onclick=()=>{
@@ -1932,7 +2106,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.4";
+const APP_VERSION="2026-10-17.5";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
