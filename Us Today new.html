@@ -161,6 +161,8 @@ textarea{min-height:64px;resize:vertical}
 .chat{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
 .msgs{height:min(58vh,520px);overflow-y:auto;padding:14px 12px 8px;display:flex;flex-direction:column;gap:3px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .msgs>*{flex-shrink:0}
+input,textarea,select{font-size:16px!important}
+#lockIn{font-size:1.6rem!important}
 .mempty{margin:auto;text-align:center;color:var(--muted);font-size:.9rem;padding:0 20px}
 .mday{align-self:center;font-size:.72rem;font-weight:600;color:var(--muted);margin:12px 0 6px}
 .mrow{display:flex;gap:8px;align-items:flex-end}
@@ -731,11 +733,13 @@ details.pl summary{cursor:pointer;font-weight:600}
       <div class="cmt"><input type="text" id="avCap" maxlength="80" placeholder="Missing you already · Gym then home · Date night soon?"><button class="secondary" id="avCapSave">Save</button></div>
     </div>
     <div class="phero" id="partnerHero" hidden></div>
-    <div class="stack" style="gap:10px">
-      <div class="row between"><h2 id="answersTitle">About you</h2><button class="link small" id="editProfile">Edit answers</button></div>
-      <p class="muted small" id="meIntro">Your answers shape the ideas you and your partner get.</p>
-      <div class="stack" style="gap:10px" id="profileSummary"></div>
-    </div>
+    <details class="sec" id="secAnswers">
+      <summary><div class="sh"><h2 id="answersTitle">About you</h2><span class="ssum" id="sumAnswers"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody">
+        <div class="row between" style="flex-wrap:nowrap;gap:10px"><p class="muted small" id="meIntro" style="margin:0">Your answers shape the ideas you and your partner get.</p><button class="link small" id="editProfile" style="flex:none">Edit all</button></div>
+        <div class="stack" style="gap:10px" id="profileSummary"></div>
+      </div>
+    </details>
     <div class="stack setgrid" id="settingsBox">
       <h2>Settings</h2>
       <details class="sec" id="secNotif">
@@ -2298,6 +2302,9 @@ function renderProfileView(){
   $("answersTitle").textContent=isP?`About ${pn}`:"About you";
   $("meIntro").textContent=isP?`What helps ${pn} feel loved and supported, in their own words.`:`${p?pn:"Your partner"} sees these answers. They shape the ideas you both get.`;
   const box=$("profileSummary");box.textContent="";
+  {let total=0,filled=0;ACARDS.forEach(([, , ,rows])=>rows.forEach(([,qid])=>{total++;if(chipsFor(pr,qid).length)filled++}));
+   const loved=chipsFor(pr,"lang");
+   setSum("sumAnswers",`${filled} of ${total} answered${loved.length?" · Feels loved: "+loved.join(", ").toLowerCase():""}${!isP&&filled<total?" · tap to finish":""}`)}
   ACARDS.forEach(([em,title,stepIdx,rows])=>{
     const c=el("div","acard"),h=el("div","ah");h.append(el("span","em",em),el("h3",null,title));
     if(!isP){const e=el("button","link small","Edit");e.setAttribute("aria-label","Edit "+title);e.onclick=()=>{openSheet(false);step=stepIdx;renderStep();$("sheet").scrollTop=0};h.append(e)}
@@ -2317,7 +2324,7 @@ function renderSettingsSums(){
   setSum("sum_secLinks",p&&members[p]?.onboarded?`${nm(p)} has joined · your personal link`:"Invite your partner");
   setSum("sum_secHelp",`Send feedback · What's new · Version ${APP_VERSION}`);
 }
-$("pvMe").onclick=()=>{profView="me";renderProfileView()};$("pvPartner").onclick=()=>{profView="partner";renderProfileView()};
+$("pvMe").onclick=()=>{profView="me";renderProfileView()};$("pvPartner").onclick=()=>{profView="partner";$("secAnswers").open=true;renderProfileView()};
 function profileFacts(who){
   const pr=P(who);
   const days=(a,q)=>(a||[]).map(d=>d==="na"?Q[q].na:DAYNAMES[d]).join(", ");
@@ -2993,7 +3000,7 @@ async function setRemind(k){
 $("remAm").onclick=()=>setRemind("am");$("remMid").onclick=()=>setRemind("mid");
 
 /* ---- Collapsible sections ---- */
-const SECS=["secSelf","secFor","secWeek","secRead","secInv","secCh","secSent","secNotif","secAi","secLock","secAd","secLinks","secHelp"];
+const SECS=["secAnswers","secSelf","secFor","secWeek","secRead","secInv","secCh","secSent","secNotif","secAi","secLock","secAd","secLinks","secHelp"];
 function initSecs(){SECS.forEach(id=>{const d=$(id);if(!d)return;let v=null;try{v=localStorage.getItem("ut_sec_"+id)}catch(x){}if(v!=null)d.open=v==="1";d.addEventListener("toggle",()=>{try{localStorage.setItem("ut_sec_"+id,d.open?"1":"0")}catch(x){}})})}
 initSecs();
 function setSum(id,t){const n=$(id);if(n)n.textContent=t||""}
@@ -3655,7 +3662,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.25";
+const APP_VERSION="2026-10-17.26";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
