@@ -392,13 +392,18 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .setgrid{display:flex;flex-direction:column;gap:10px}
 .setgrid .sec>.secbody>.card>h3:first-child{display:none}
 .pnick{font-size:.9rem;color:var(--muted);margin-top:-6px}
-.hside .hnick{font-weight:700;font-size:.92rem;line-height:1.2}
-.sring{position:relative;border-radius:50%;padding:4px;flex:none;border:0;background:none;cursor:pointer}
-.sring.has{background:conic-gradient(from 210deg,#f2a04c,#d6517d,#8f4fd0,#f2a04c)}
-.sring.seen{background:var(--line)}
+.hside .hnick{font-weight:700;font-size:.92rem;line-height:1.2;margin-top:4px}
+.sring{position:relative;border-radius:50%;padding:5px;flex:none;border:0;background:none;cursor:pointer}
+.sring.has{padding:6px;background:conic-gradient(from 0deg,#ffb23f,#ff5a5f,#e0338a,#8f4fd0,#4f7cff,#ffb23f);animation:sglow 1.6s ease-in-out infinite}
+.sring.has::before{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px solid #e0338a;opacity:0;animation:sping 1.6s ease-out infinite;pointer-events:none}
+.sring.seen{padding:5px;background:#b9b9c4}
+@keyframes sglow{0%,100%{box-shadow:0 0 0 0 rgba(224,51,138,.0)}50%{box-shadow:0 0 16px 4px rgba(224,51,138,.55)}}
+@keyframes sping{0%{transform:scale(.92);opacity:.85}100%{transform:scale(1.12);opacity:0}}
+.snew{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);background:linear-gradient(90deg,#ff5a5f,#e0338a);color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:2px 8px;border:2px solid var(--surface);white-space:nowrap;z-index:2}
+@media (prefers-reduced-motion:reduce){.sring.has,.sring.has::before,.mebtn.has{animation:none}}
 .sring>.hring{background-clip:padding-box}
 .sring .sadd{position:absolute;right:2px;bottom:2px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);border:3px solid var(--surface);display:grid;place-items:center;font-size:1rem;font-weight:800;line-height:1;padding:0;box-sizing:border-box}
-.mebtn.has{border:0;background:conic-gradient(from 210deg,#f2a04c,#d6517d,#8f4fd0,#f2a04c);padding:3px}
+.mebtn.has{border:0;background:conic-gradient(from 0deg,#ffb23f,#ff5a5f,#e0338a,#8f4fd0,#4f7cff,#ffb23f);padding:3px;animation:sglow 1.6s ease-in-out infinite}
 .mebtn.has .avatar{border:2px solid var(--bg);box-sizing:border-box}
 .story{position:fixed;inset:0;z-index:45;background:#000;color:#fff;display:flex;flex-direction:column}
 .story .sbars{display:flex;gap:4px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 6px}
@@ -1582,7 +1587,7 @@ $("notifOn").onclick=()=>enableNotifs();
 $("notifTest").onclick=()=>{notify(me,"Us, Today","Notifications are working 🎉","test");toast("Test sent")};
 function notify(toId,title,body,tag){
   const sub=members[toId]?.push;if(!WORKER_URL||!sub)return;
-  fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sub,title,body,url:linkFor(toId)+(tag==="chat"?"#chat":""),tag:tag||""})}).catch(()=>{});
+  fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sub,title,body,url:linkFor(toId)+(tag==="chat"?"#chat":tag==="story"?"#story":""),tag:tag||""})}).catch(()=>{});
 }
 const TOUCH_TEXT={hug:"Sent you a hug 🤗",kiss:"Sent you a kiss 💋",grab:"Sent you a butt grab 🍑",five:"Sent you a high five ✋"};
 function notifyForItem(d){
@@ -3173,10 +3178,13 @@ function nickClash(v){
 
 /* ================= Stories (disappear after 24 hours) ================= */
 const STORY_TTL=24*3600000,STORY_DAILY=5;
-let stories=[];
+let stories=[],storiesLoaded=false;
 function watchStories(){
   db.collection("stories").where("createdAt",">=",Date.now()-STORY_TTL).onSnapshot(q=>{
+    const before=new Set(stories.map(x=>x.id)),first=!storiesLoaded;storiesLoaded=true;
     stories=q.docs.map(d=>({id:d.id,...(d.data()||{})})).filter(x=>(x.by===A||x.by===B)&&(x.kind==="photo"||x.kind==="clip")&&x.asset).sort((a,b)=>a.createdAt-b.createdAt);
+    if(!first&&partnerId&&stories.some(x=>x.by===partnerId&&!before.has(x.id))&&$("storyView").hidden)toast(`${nickOf(partnerId)||nm(partnerId)} added to their story 📸`);
+    if(pendingStory&&partnerId&&activeStories(partnerId).length&&$("sheet").hidden){pendingStory=false;setTab("home");openStory(partnerId)}
     renderAll();
   },()=>{});
   setTimeout(cleanStories,4000);
@@ -3190,6 +3198,7 @@ function storyRing(p,inner,big){
   const list=p?activeStories(p):[],mine=p===me;
   const w=el("div","sring"+(list.length?(mine||unseenStories(p).length?" has":" seen"):""));
   w.append(inner);
+  if(!mine&&p&&unseenStories(p).length)w.append(el("span","snew","New"));
   if(list.length){w.setAttribute("role","button");w.tabIndex=0;w.setAttribute("aria-label",(mine?"Your story":`${nm(p)}'s story`)+", "+list.length+" item"+(list.length>1?"s":""));
     const open=()=>openStory(p);w.onclick=e=>{if(e.target.closest(".sadd"))return;open()};w.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}}}
   if(mine&&signedIn()&&!big){const b=el("button","sadd","+");b.type="button";b.setAttribute("aria-label","Add to your story");b.onclick=e=>{e.stopPropagation();pickStory()};w.append(b)}
@@ -3219,7 +3228,7 @@ $("storyFile").onchange=e=>{
       if(isV){const r=await job;go.textContent="Sharing…";asset=await uploadClip(r);kind="clip";dur=Math.round((r.dur||0)*10)/10}
       else{asset=await uploadPhoto(f,1600);kind="photo"}
       await db.collection("stories").add({by:me,kind,asset,dur,caption:cap.value.trim().slice(0,100),createdAt:Date.now()});
-      track({"n.story":1});if(partnerId)notify(partnerId,nm(me),"Added to their story 📸","story");
+      track({"n.story":1});if(partnerId){const cp=cap.value.trim();notify(partnerId,nm(me),`Added to their story 📸${cp?": “"+cp.slice(0,80)+"”":" Tap to watch."}`,"story")}
       closeStory();toast("Added to your story")}
     catch(x){console.error(x);go.disabled=false;go.textContent="Share";toast(isV?clipErr(x):photoErr(x))}})();
   };
@@ -3429,9 +3438,9 @@ $("joinBtn").onclick=()=>{
   useLink(L);$("welcome").hidden=true;$("loading").hidden=false;startSpace(false);
 };
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
-const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash);
+const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.20";
+const APP_VERSION="2026-10-17.21";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
@@ -3441,7 +3450,7 @@ async function checkUpdate(){
 $("updBtn").onclick=()=>{if(dirty&&!confirm("You have an unsaved check-in. Refresh anyway?"))return;$("updBtn").textContent="Refreshing…";location.replace(spaceKey?linkFor(me)+"&r="+Date.now():location.pathname+"?r="+Date.now())};
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkUpdate()});
 setTimeout(checkUpdate,4000);setInterval(checkUpdate,10*60000);
-if("serviceWorker" in navigator)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.open==="chat"&&spaceKey)setTab("chat")});
+if("serviceWorker" in navigator)navigator.serviceWorker.addEventListener("message",e=>{if(!e.data||!spaceKey)return;if(e.data.open==="chat")setTab("chat");if(e.data.open==="story"){setTab("home");if(partnerId&&activeStories(partnerId).length)openStory(partnerId);else pendingStory=true}});
 (function boot(){
   const L=parseLink(location.href);
   if(L)useLink(L);else{try{spaceKey=localStorage.getItem("ut_space")}catch(e){}}
