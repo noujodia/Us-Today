@@ -3214,7 +3214,7 @@ function renderHome(){
   const side=who=>{const sd=el("div","hside");sd.append(storyRing(who,ringFor(who),false));const nk=who?nickOf(who):"";if(nk)sd.append(el("span","hnick",nk));const cp=who?capOf(who):"";
     if(cp)sd.append(el("span","hcap","“"+cp+"”"));
     if(who&&who!==me&&wishOf(who)){const a=el("a","hwish","🎁 Wish list");a.href=wishOf(who);a.target="_blank";a.rel="noopener";sd.append(a)}
-    else if(who===me&&signedIn()){const b=el("button","hcap add","Add a caption");b.onclick=()=>goTo(["me","avCap"]);sd.append(b)}
+    else if(who===me&&!cp&&signedIn()){const b=el("button","hcap add","Add a caption");b.onclick=()=>goTo(["me","avCap"]);sd.append(b)}
     return sd};
   pair.append(side(me),ht,side(p));c.append(pair);
   c.append(el("span","hnames",p?`${nm(me)} & ${pn}`:nm(me)));
@@ -3840,7 +3840,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.28";
+const APP_VERSION="2026-10-17.29";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
