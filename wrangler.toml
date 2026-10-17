@@ -5,3 +5,7 @@ workers_dev = true
 
 [triggers]
 crons = ["*/15 * * * *"]
+
+[[kv_namespaces]]
+binding = "REMIND"
+id = "a8dbbc8eb90541c091a2ee85dd8a33f6"
