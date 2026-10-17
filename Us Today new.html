@@ -428,6 +428,11 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .story .sfoot .snd{border:0;background:#fff;color:#000;border-radius:999px;padding:0 14px;height:40px;font-weight:700;flex:none}
 .story .sseen{font-size:.85rem;opacity:.85;flex:1}
 .story .sdel{border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:999px;padding:0 14px;height:40px;font-weight:600}
+.wishbtn{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:10px 14px;font-weight:700;text-decoration:none;background:#fff1e0;color:#8a4b00;border:0;font-size:.92rem}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wishbtn{background:#3a2a14;color:#f3c27a}}
+.hside .hwish{font-size:.78rem;font-weight:700;color:#8a4b00;text-decoration:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hside .hwish{color:#f3c27a}}
+.chip.shop{background:none;border:1px solid var(--line);color:var(--accent);font-weight:600;text-decoration:none}
 .aic{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .aic .eyebrow{color:var(--accent)}
 .aic .hl{font-weight:600;font-size:1rem;line-height:1.4}
@@ -731,6 +736,9 @@ details.pl summary{cursor:pointer;font-weight:600}
       <div class="cmt"><input type="text" id="avNick" maxlength="24" placeholder="Babe, Hun, Papi…"><button class="secondary" id="avNickSave">Save</button></div>
       <label for="avCap" class="small" style="font-weight:600">Caption under your photo</label>
       <div class="cmt"><input type="text" id="avCap" maxlength="80" placeholder="Missing you already · Gym then home · Date night soon?"><button class="secondary" id="avCapSave">Save</button></div>
+      <label for="avWish" class="small" style="font-weight:600">🎁 Your wish list</label>
+      <div class="cmt"><input type="text" id="avWish" inputmode="url" maxlength="400" placeholder="Paste your Amazon wish list link"><button class="secondary" id="avWishSave">Save</button></div>
+      <p class="small muted" style="margin:0">In Amazon: Account → Your Lists → pick a list → Share → Copy link. Any store's list works.</p>
     </div>
     <div class="phero" id="partnerHero" hidden></div>
     <details class="sec" id="secAnswers">
@@ -2220,6 +2228,7 @@ $("editProfile").onclick=()=>openSheet(false);
 function renderPhotoBox(){
   $("meAvatar").replaceChildren(storyRing(me,avatar(me,"av-l"),true));const nk=nickOf(me);$("meName").textContent=nk||nm(me);$("meReal").hidden=!nk;$("meReal").textContent=nm(me);
   if(document.activeElement!==$("avNick"))$("avNick").value=nk;
+  if(document.activeElement!==$("avWish"))$("avWish").value=wishOf(me);
   if(document.activeElement!==$("avCap"))$("avCap").value=capOf(me);
   const has=!!P(me).photo;$("avChange").textContent=has?"Change photo":"Upload photo";$("avRemove").hidden=!has;
 }
@@ -2230,6 +2239,16 @@ async function setPhoto(id){
   members[me]={...(members[me]||{}),profile:prof};renderAll();renderPhotoBox();
 }
 $("avChange").onclick=()=>$("avFile").click();
+$("avWishSave").onclick=async()=>{
+  const raw=$("avWish").value.trim(),btn=$("avWishSave");let v="";
+  if(raw){const m=raw.match(/https?:\/\/\S+/i);v=m?safeUrl(m[0].replace(/[).,]+$/,"")):null;if(!v){$("avMsg").textContent="That doesn't look like a link. Copy the whole link from Amazon's Share button.";return}}
+  btn.disabled=true;$("avMsg").textContent="Saving…";
+  try{if(!signedIn())throw{code:"signed_out"};const prof={...P(me)};if(v)prof.wish=v;else delete prof.wish;
+    await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),profile:prof});
+    members[me]={...(members[me]||{}),profile:prof};$("avMsg").textContent=v?"Wish list saved 🎁":"Wish list removed";$("avWish").value=v||"";renderAll();
+    if(v&&partnerId)notify(partnerId,nm(me),"Added a wish list 🎁 See it on their profile.","wish")}
+  catch(e){console.error(e);$("avMsg").textContent=saveErr(e)}finally{btn.disabled=false}
+};
 $("avNickSave").onclick=async()=>{
   const v=$("avNick").value.trim().slice(0,24),btn=$("avNickSave");const clash=nickClash(v);if(clash){$("avMsg").textContent=clash;return}
   btn.disabled=true;$("avMsg").textContent="Saving…";
@@ -2298,7 +2317,8 @@ function renderProfileView(){
   $("profView").hidden=!p;$("pvPartner").textContent=nickOf(p)||pn;$("pvMe").setAttribute("aria-pressed",String(!isP));$("pvPartner").setAttribute("aria-pressed",String(isP));
   $("photoBox").hidden=isP;$("settingsBox").hidden=isP;$("editProfile").hidden=isP;
   const ph=$("partnerHero");ph.hidden=!isP;ph.textContent="";
-  if(isP){ph.append(storyRing(p,avatar(p,"av-l"),true));const nk=nickOf(p);ph.append(el("span","pname",nk||pn));if(nk)ph.append(el("span","pnick",pn));const c=capOf(p);if(c)ph.append(el("span","pcap","“"+c+"”"));}
+  if(isP){ph.append(storyRing(p,avatar(p,"av-l"),true));const nk=nickOf(p);ph.append(el("span","pname",nk||pn));if(nk)ph.append(el("span","pnick",pn));const c=capOf(p);if(c)ph.append(el("span","pcap","“"+c+"”"));
+    if(wishOf(p))ph.append(wishBtn(p));else{const a=el("button","link small",`🎁 Ask ${nk||pn} to add a wish list`);a.onclick=askWish;ph.append(a)}}
   $("answersTitle").textContent=isP?`About ${pn}`:"About you";
   $("meIntro").textContent=isP?`What helps ${pn} feel loved and supported, in their own words.`:`${p?pn:"Your partner"} sees these answers. They shape the ideas you both get.`;
   const box=$("profileSummary");box.textContent="";
@@ -2311,6 +2331,7 @@ function renderProfileView(){
     c.append(h);
     rows.forEach(([lab,qid])=>{const vals=chipsFor(pr,qid),r=el("div","arow");r.append(el("span","alab",lab));const ch=el("div","chips");
       if(vals.length)vals.forEach(v=>ch.append(el("span","chip",v)));else ch.append(el("span","chip none",isP?"Not answered yet":"Add an answer"));
+      if(isP&&vals.length&&(qid==="flowers"||qid==="treat")){const a=el("a","chip shop","🛒 Amazon");a.href=amazonQ(vals[0]);a.target="_blank";a.rel="noopener";a.setAttribute("aria-label",`Shop ${vals[0]} on Amazon`);ch.append(a)}
       r.append(ch);c.append(r)});
     box.append(c);
   });
@@ -2628,6 +2649,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17k",date:"Oct 17, 2026",items:[
+    {em:"🎁",t:"Wish lists",b:"Paste your Amazon (or any store's) wish list in About me. Your partner sees a wish list button on your profile and on Home, so gifts are never a guess.",go:["me","avWish"]}
+  ]},
   {id:"2026-10-17j",date:"Oct 17, 2026",items:[
     {em:"🔒",t:"Privacy lock",b:"Protect your space with a 6-digit passcode you both share. Phones that haven't entered it can't see anything, even with your link. Turn it on in About me → Privacy lock.",go:["me","lockCard"]}
   ]},
@@ -3142,7 +3166,7 @@ function nextItems(){
     const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id],c=rep?.count||0,t=it.target||1;if(c>=t)return;
     out.push({ic:"🏁",t:it.text,sub:it.dir==="in"?`From ${pn}`:`You challenged ${pn}`,prog:c/t,rt:`${c} of ${t}`,go:()=>setTab("connect"),sort:it.createdAt});
   });
-  const si=sinceInfo();if(si&&si.until<=60)out.push({ic:"🎉",t:si.until===0?`Happy ${si.years}-year anniversary!`:"Your anniversary",sub:si.next.toLocaleDateString(undefined,{month:"long",day:"numeric"})+` · ${si.years} years`,rt:si.until===0?"Today":si.until+" days",sort:si.next.getTime()});
+  const si=sinceInfo();if(si&&si.until<=60)out.push({ic:"🎉",t:si.until===0?`Happy ${si.years}-year anniversary!`:"Your anniversary",sub:si.next.toLocaleDateString(undefined,{month:"long",day:"numeric"})+` · ${si.years} years`+(partnerId&&wishOf(partnerId)?` · 🎁 tap for ${nickOf(partnerId)||nm(partnerId)}'s wish list`:""),rt:si.until===0?"Today":si.until+" days",sort:si.next.getTime(),go:partnerId&&wishOf(partnerId)?()=>window.open(wishOf(partnerId),"_blank","noopener"):null});
   return out.sort((a,b)=>a.sort-b.sort).slice(0,4);
 }
 function renderHome(){
@@ -3153,6 +3177,7 @@ function renderHome(){
   const pair=el("div","hpair");const ht=el("div","hheart");ht.append(svgI("heart",16,true));
   const side=who=>{const sd=el("div","hside");sd.append(storyRing(who,ringFor(who),false));const nk=who?nickOf(who):"";if(nk)sd.append(el("span","hnick",nk));const cp=who?capOf(who):"";
     if(cp)sd.append(el("span","hcap","“"+cp+"”"));
+    if(who&&who!==me&&wishOf(who)){const a=el("a","hwish","🎁 Wish list");a.href=wishOf(who);a.target="_blank";a.rel="noopener";sd.append(a)}
     else if(who===me&&signedIn()){const b=el("button","hcap add","Add a caption");b.onclick=()=>goTo(["me","avCap"]);sd.append(b)}
     return sd};
   pair.append(side(me),ht,side(p));c.append(pair);
@@ -3235,6 +3260,10 @@ function renderHome(){
 $("homeAll").onclick=()=>{setTab("connect");setTimeout(()=>{const s4=$("secSent");if(s4){s4.open=true;s4.scrollIntoView({behavior:"smooth",block:"start"})}},80)};
 
 /* ================= Nicknames ================= */
+const wishOf=p=>{const w=p&&members[p]?.profile?.wish;return typeof w==="string"&&/^https?:\/\//.test(w)?w:""};
+const amazonQ=t=>"https://www.amazon.com/s?k="+encodeURIComponent(t);
+function wishBtn(p,label){const a=el("a","wishbtn",label||`🎁 ${nickOf(p)||nm(p)}'s wish list`);a.href=wishOf(p);a.target="_blank";a.rel="noopener";return a}
+async function askWish(){if(!partnerId||!signedIn())return;try{await db.collection(`${base(me)}/messages`).add({text:"Can you add your wish list in About me? 🎁",createdAt:Date.now()});notify(partnerId,nm(me),"Can you add your wish list in About me? 🎁","chat");toast("Asked in chat 🎁")}catch(e){toast(saveErr(e))}}
 const nickOf=p=>{const n=p&&members[p]?.profile?.nick;return typeof n==="string"?n.trim().slice(0,24):""};
 const normNick=x=>String(x||"").trim().toLowerCase().replace(/\s+/g," ");
 function nickClash(v){
@@ -3662,7 +3691,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.26";
+const APP_VERSION="2026-10-17.27";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
