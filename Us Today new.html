@@ -1582,7 +1582,7 @@ function cleanTrack(r){
   return{id:String(r.trackId||""),name:String(r.trackName).slice(0,120),artist:String(r.artistName||"").slice(0,120),album:String(r.collectionName||"").slice(0,120),
     art:okHttps(String(r.artworkUrl100||"").replace(/100x100bb/,"300x300bb"),/(^|\.)(mzstatic\.com|dzcdn\.net)$/),
     preview:okHttps(r.previewUrl||"",/(^|\.)(apple\.com|mzstatic\.com|dzcdn\.net)$/),
-    apple:okHttps(r.trackViewUrl||"",/(^|\.)apple\.com$/)};
+    apple:okHttps(r.trackViewUrl||"",/(^|\.)apple\.com$/)||"https://music.apple.com/us/search?term="+encodeURIComponent(String(r.trackName)+" "+String(r.artistName||""))};
 }
 async function songSearch(term){
   try{const r=await fetch(WORKER_URL+"search?term="+encodeURIComponent(term));if(r.ok){const d=await r.json();const l=(d.results||[]).map(cleanTrack).filter(Boolean);if(l.length||Array.isArray(d.results))return l}}catch(e){}
@@ -1610,13 +1610,27 @@ function syncPlayers(){
     else if(n.classList.contains("sprog")){const i=n.firstElementChild;const d=player.id===n.dataset.sid&&player.a?(player.a.currentTime/(player.a.duration||30)):0;i.style.width=Math.min(100,d*100)+"%"}
   });
 }
+const SILENT="data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAGAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA";
+const freshPrev={};
+/* Deezer preview links expire after a few hours, so older shares get a fresh link when played. */
+function prevExpired(u){const m=String(u||"").match(/exp=(\d+)/);return m?(+m[1]*1000<Date.now()+60000):false}
 function togglePreview(t){
   if(!t.preview){toast("No preview for this song. Use the full-song buttons.");return}
-  if(!player.a){player.a=new Audio();player.a.preload="none";["play","pause","ended","timeupdate"].forEach(e=>player.a.addEventListener(e,syncPlayers));player.a.addEventListener("error",()=>{if(player.id)toast("Couldn't play the preview")})}
+  if(!player.a){player.a=new Audio();player.a.preload="none";["play","pause","ended","timeupdate"].forEach(e=>player.a.addEventListener(e,syncPlayers));player.a.addEventListener("error",()=>{if(player.id&&player.a.src!==SILENT)toast("Couldn't play the preview")})}
   const a=player.a;
   if(player.id===t.id&&!a.paused){a.pause();return}
-  if(player.id!==t.id){a.src=t.preview;player.id=t.id}
-  a.play().catch(()=>toast("Couldn't play the preview"));syncPlayers();
+  const isDz=/^dz\d+$/.test(t.id),cached=freshPrev[t.id]&&!prevExpired(freshPrev[t.id])?freshPrev[t.id]:null;
+  if(player.id===t.id&&!(isDz&&prevExpired(a.src))){a.play().catch(()=>toast("Couldn't play the preview"));syncPlayers();return}
+  player.id=t.id;
+  if(isDz&&prevExpired(t.preview)&&!cached){
+    a.src=SILENT;a.play().catch(()=>{});
+    fetch(WORKER_URL+"preview?id="+t.id).then(r=>r.json()).then(d=>{
+      const u=okHttps(d.preview||"",/(^|\.)dzcdn\.net$/);if(!u)throw 0;freshPrev[t.id]=u;
+      if(player.id!==t.id)return;a.src=u;a.play().catch(()=>toast("Couldn't play the preview"));syncPlayers();
+    }).catch(()=>{if(player.id===t.id)toast("Couldn't play the preview")});
+    syncPlayers();return;
+  }
+  a.src=cached||t.preview;a.play().catch(()=>toast("Couldn't play the preview"));syncPlayers();
 }
 function playBtn(t){const b=el("button","pbtn","▶");b.type="button";b.dataset.sid=t.id;b.onclick=e=>{e.stopPropagation();togglePreview(t)};return b}
 function songEl(t){
@@ -2110,7 +2124,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.6";
+const APP_VERSION="2026-10-17.7";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();

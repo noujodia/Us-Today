@@ -75,6 +75,14 @@ export default {
     const origin = req.headers.get("Origin") || "";
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
     const path = new URL(req.url).pathname;
+    if (req.method === "GET" && path === "/preview") {
+      if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
+      const id = (new URL(req.url).searchParams.get("id") || "").replace(/^dz/, "");
+      if (!/^\d{1,15}$/.test(id)) return reply({ error: "bad id" }, 400, origin);
+      let preview = "";
+      try { const r = await fetch("https://api.deezer.com/track/" + id); if (r.ok) preview = (await r.json()).preview || ""; } catch (_) {}
+      return reply({ preview }, 200, origin);
+    }
     if (req.method === "GET" && path === "/search") {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
       const results = await searchSongs(new URL(req.url).searchParams.get("term") || "");
