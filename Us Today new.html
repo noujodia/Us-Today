@@ -433,6 +433,21 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wishbtn{background:#3a2a14;color:#f3c27a}}
 .hside .hwish{font-size:.78rem;font-weight:700;color:#8a4b00;text-decoration:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hside .hwish{color:#f3c27a}}
+.hgroup{border:1px solid var(--line);border-radius:14px;background:var(--card,transparent)}
+.hgroup>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.hgroup>summary::-webkit-details-marker{display:none}.hgroup>summary b{flex:1}.hgroup .hic{font-size:1.2rem}
+.hgroup>.stack{padding:0 10px 10px}
+.faq{border-radius:10px;background:var(--soft)}
+.faq>summary{cursor:pointer;padding:10px 12px;font-weight:600;font-size:.93rem;list-style:none}
+.faq>summary::-webkit-details-marker{display:none}.faq>summary::after{content:"＋";float:right;color:var(--muted)}.faq[open]>summary::after{content:"－"}
+.faq .fa{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}.faq .fa p{margin:0;font-size:.9rem;line-height:1.45}
+.fhelp{display:flex;align-items:center;gap:6px}.fbtn{border:1px solid var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:1rem;cursor:pointer}
+.chkbox{border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.chk{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line)}.chk .ct{flex:1;display:flex;flex-direction:column}.chk.ok b{font-weight:500}
+.chkbox p.ok{color:#1f8a5b;font-weight:600}
+.hempty{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:8px 2px}
+.helpq{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--muted);font-weight:700;font-size:.85rem;margin-right:6px;cursor:pointer;padding:0}
+.erow{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-top:1px solid var(--line)}.erow b{font-weight:600;font-size:.88rem;word-break:break-word}
 .datesbox{display:flex;flex-direction:column;gap:8px;text-align:left;align-self:stretch;width:100%;box-sizing:border-box;margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
 .dgrid{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center}
 .dgrid input{min-width:0;width:100%;box-sizing:border-box}
@@ -838,6 +853,11 @@ details.pl summary{cursor:pointer;font-weight:600}
       <details class="sec" id="secHelp">
         <summary><div class="sh"><h2>Help &amp; feedback</h2><span class="ssum" id="sum_secHelp"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
         <div class="secbody">
+    <div class="card stack" id="helpCard">
+      <h3>Need a hand?</h3>
+      <p class="small muted">Answers to common questions, and a quick check of everything on your phone.</p>
+      <div class="row"><button class="primary" id="helpOpen">❓ Help &amp; FAQ</button><button class="secondary" id="chkOpen">🩺 Check my setup</button></div>
+    </div>
     <div class="card stack" id="fbCard">
       <h3>Help us improve</h3>
       <p class="small muted">Found a bug or have an idea? Tell us. It goes straight to the person who built this app.</p>
@@ -946,6 +966,15 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="panel">
     <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="codesTitle">Beta invites</h2></div><button class="x" id="codesX" aria-label="Close">×</button></div>
     <div id="codesBody" class="stack" style="gap:12px"></div>
+  </div>
+</div>
+<div class="ov" id="helpSheet" hidden role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="panel">
+    <div class="phead"><div class="stack" style="gap:2px"><h2 id="helpTitle">Help &amp; FAQ</h2><p class="small muted" style="margin:0">Search, or browse by topic.</p></div><button class="x" id="helpX" aria-label="Close">×</button></div>
+    <input type="search" id="helpQ" placeholder="Search: notifications, passcode, wish list…" aria-label="Search help" autocomplete="off">
+    <div class="chkbox"><div class="row between"><b>🩺 Check my setup</b><button class="secondary small" id="chkRun">Run check</button></div><div id="chkList" class="stack" style="gap:6px"></div></div>
+    <div id="helpList" class="stack" style="gap:8px"></div>
+    <p class="small muted" style="margin:0">Still stuck? About me → Help &amp; feedback → Send feedback.</p>
   </div>
 </div>
 <div class="ov" id="fbSheet" hidden role="dialog" aria-modal="true" aria-labelledby="fbTitle">
@@ -2682,6 +2711,10 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17m",date:"Oct 17, 2026",items:[
+    {em:"❓",t:"Help & FAQ",b:"Answers for every part of the app, with search. Tap the ? on any section to jump straight to its answers.",go:["me","helpCard"]},
+    {em:"🩺",t:"Check my setup",b:"One tap checks notifications, your Home Screen icon, updates, dates, wish list, AI and your passcode, with a fix button for anything that's off.",go:["me","helpCard"]}
+  ]},
   {id:"2026-10-17l",date:"Oct 17, 2026",items:[
     {em:"📅",t:"Dates to remember",b:"Add your partner's birthday, the day you met and your wedding anniversary in About me. You'll both get a reminder a week before and the day before.",go:["me","dtBday"]},
     {em:"🎁",t:"Gift reminders",b:"Two weeks before a birthday, anniversary, Valentine's Day or Christmas, a card on Home shows your partner's wish list and gift ideas from their favorites."},
@@ -2782,6 +2815,7 @@ function gsSteps(){
     {t:"Add Us, Today to your Home Screen",done:isInstalled(),go:openInstall},
     {t:"Turn on notifications",done:!!members[me]?.push,go:()=>{if(isIOS&&!isStandalone())openInstall();else goTo(["me","notifCard"])}},
     {t:"Choose your check-in reminders",done:!!members[me]?.remind,go:()=>{if(!members[me]?.push)openInstall();else goTo(["me","remindBox"])}},
+    {t:"Run Check my setup",done:(()=>{try{return !!localStorage.getItem("ut_chkok_"+spaceHash)}catch(e){return false}})(),go:()=>openHelp(null,true)},
     {t:"Add your partner's birthday and anniversary",done:!!bdayOf(other(me)),go:()=>goTo(["me","dtBday"])},
     {t:"Send a hug or a photo",done:outgoing().length>0,go:()=>goTo(["connect","tray"])},
     {t:"Send a chat message",done:(msgs[me]||[]).length>0,go:()=>goTo(["chat","msgIn"])},
@@ -2965,10 +2999,188 @@ function renderStats(){
   const tt=el("div","chartc");tt.append(el("b",null,"All-time totals"));
   [["Chat messages",tot("chat")],["Hugs, kisses and emojis",tot("touch")],["Photos",tot("photo")],["Videos",tot("video")],["Songs and links",tot("song")],["Date invites",tot("invite")],["Challenges",tot("challenge")],["Chat reactions",tot("react")]].forEach(([t,v])=>{const r=el("div","row between small");r.append(el("span",null,t),el("b",null,String(v)));tt.append(r)});
   box.append(tt);
+  renderHelpStats(box,S);
   box.append(el("p","small muted","Counts only. No messages, check-ins, photos or names are collected. Counting started Oct 17, 2026, so totals before then aren't included."));
+}
+function renderHelpStats(box,S){
+  const sum=(path)=>{const o={};S.forEach(x=>{const m=path.split(".").reduce((a,k)=>a&&a[k],x);if(m&&typeof m==="object")Object.entries(m).forEach(([k,v])=>{if(typeof v==="number")o[k]=(o[k]||0)+v})});return o};
+  const qName=id=>helpItems().find(i=>i.id===id)?.q||id;
+  const card=(t,sub)=>{const c=el("div","chartc");c.append(el("b",null,t));if(sub)c.append(el("span","small muted",sub));return c};
+  const rows=(c,list,empty)=>{if(!list.length){c.append(el("p","small muted",empty));return}const mx=Math.max(...list.map(x=>x[1]));list.forEach(([t,v,extra])=>{const r=el("div","hb");r.append(el("span",null,t),el("span","v",extra||String(v)));const tr=el("div","tr"),fi=el("i");fi.style.width=Math.round(v/mx*100)+"%";tr.append(fi);r.append(tr);c.append(r)})};
+  // FAQ views and helpfulness
+  const v=sum("h.v"),up=sum("h.up"),dn=sum("h.dn"),opens=S.reduce((a,x)=>a+(+(x.h&&x.h.open)||0),0);
+  const c1=card("Help: most viewed questions",`${opens} help opens across all couples`);rows(c1,Object.entries(v).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id,n])=>[qName(id),n,`${n} views · 👍 ${up[id]||0} · 👎 ${dn[id]||0}`]),"No questions opened yet.");box.append(c1);
+  const c2=card("Answers that didn't help","Rewrite these, or fix what's behind them");rows(c2,Object.entries(dn).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([id,n])=>[qName(id),n,`👎 ${n} · 👍 ${up[id]||0}`]),"None yet. 🎉");box.append(c2);
+  // Missed searches
+  const ms={};S.forEach(x=>Object.values(x.ms||{}).forEach(m=>{if(!m||!m.t)return;const k=m.t;ms[k]=ms[k]||{n:0,at:0};ms[k].n+=+m.n||1;ms[k].at=Math.max(ms[k].at,+m.at||0)}));
+  const c3=card("Searches with no answer","Questions to add next");rows(c3,Object.entries(ms).sort((a,b)=>b[1].n-a[1].n||b[1].at-a[1].at).slice(0,10).map(([t,m])=>[`“${t}”`,m.n,`${m.n}×`]),"Nothing missed yet.");box.append(c3);
+  // Setup status
+  const CHK=[["partner","Partner joined"],["about","About me filled out"],["install","On the Home Screen"],["notif","Notifications on"],["remind","Reminders on"],["dates","Dates added"],["wish","Wish list added"],["ai","AI on for both"],["lock","Passcode on"],["ios","iOS new enough"],["version","On latest version"]];
+  const c4=card("Setup across couples","Share of couples with each thing working (checked daily when the app opens)");
+  CHK.forEach(([id,t])=>{const has=S.filter(x=>x.c&&typeof x.c[id]==="boolean"),ok=has.filter(x=>x.c[id]).length;if(!has.length)return;const pct=Math.round(ok/has.length*100);const r=el("div","hb");r.append(el("span",null,t),el("span","v",`${ok} of ${has.length} · ${pct}%`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);c4.append(r)});
+  if(c4.childNodes.length<=2)c4.append(el("p","small muted","No setup checks yet."));box.append(c4);
+  // Errors
+  const er={};S.forEach(x=>Object.values(x.e||{}).forEach(e=>{if(!e||!e.m)return;const k=(e.t||"")+"|"+e.m;const o=er[k]=er[k]||{n:0,at:0,m:e.m,t:e.t,k:e.k,p:{},v:e.v,c:0};o.n+=+e.n||1;o.c++;o.p[e.p||"?"]=(o.p[e.p||"?"]||0)+(+e.n||1);if(+e.at>o.at){o.at=+e.at;o.v=e.v}}));
+  const c5=card("Errors","What broke, where, on which phones. Newest first.");const list=Object.values(er).sort((a,b)=>b.at-a.at).slice(0,15);
+  if(!list.length)c5.append(el("p","small muted","No errors reported. 🎉"));
+  list.forEach(e=>{const r=el("div","erow");const pl=Object.entries(e.p).map(([k,n])=>`${k==="ios"?"iPhone":k==="android"?"Android":k==="desktop"?"Computer":k} ${n}`).join(", ");
+    r.append(el("b",null,e.m),el("span","small muted",`${e.n}× · ${e.c} couple${e.c>1?"s":""} · ${e.t||"app"} · ${pl} · v${e.v||"?"} · ${e.at?timeAgo(e.at):""}`));c5.append(r)});
+  box.append(c5);
 }
 $("statsOpen").onclick=openStats;$("statsX").onclick=()=>{$("statsSheet").hidden=true};
 $("statsSheet").addEventListener("click",e=>{if(e.target.id==="statsSheet")$("statsSheet").hidden=true});
+
+/* ================= Help, FAQ & setup check ================= */
+const HELP=[
+ {g:"start",t:"Getting started",ic:"🚀",items:[
+  ["code","What's a beta invite code?","Us, Today is in a private beta. Each new couple needs a one-time code (like US-AB12CD) to start a space. Once used, a code can't be used again, so passing on the link won't let someone else in."],
+  ["link","How does my partner join?","After you set up, go to About me → Invite & your link and send your partner their invite link. They open it, add their name and answers, and you're connected. Each of you then has your own personal link.",["me","inviteCard"],"Open my links"],
+  ["perslink","What is my personal link?","It's the link that opens your side of the app. Keep it to yourself and use it to add the app to your Home Screen. Opening your partner's link would show their side.",["me","inviteCard"],"Open my links"],
+  ["switch","I see both names at the top. Which is me?","The pink name at the top is whose side you're on. If you're on your partner's side by mistake, tap your own name. Opening the app from your personal link always starts on your side."],
+  ["sides","What does my partner see?","They see your check-ins, your About me answers, your caption, stories, wish list, and anything you send them. They never see your drafts, and AI ideas only use data after you both turn them on."]]},
+ {g:"home",t:"Home",ic:"🏠",items:[
+  ["streak","How do streaks work?","A streak counts the days in a row that you both checked in. If either of you misses a day, it starts over."],
+  ["question","What is Today's question?","A new question for the two of you each day. Answer it to see your partner's answer.",["home","homeQ"],"Go to today's question"],
+  ["nextup","What shows in Next up?","Invites waiting on an answer, accepted plans, birthdays and anniversaries coming up, and open challenges, in that order."],
+  ["stories","How do stories work?","Tap the + on your photo to post a photo story. It lasts 24 hours, and your partner gets a notification. A glowing ring means there's a story you haven't seen yet. You can post up to 5 a day.",["home","homeHead"],"Go to Home"],
+  ["nick","How do I change my nickname or caption?","In About me, at the top. Nicknames show on your profile and must be different from your partner's.",["me","avNick"],"Edit nickname"]]},
+ {g:"checkin",t:"Check-in",ic:"💗",items:[
+  ["howci","How do I check in?","Open Check-in, move the sliders for how you feel, add a note about what would help, and tap Save. It takes about 30 seconds.",["today","dialBox"],"Check in now"],
+  ["midday","What is the midday check?","After 11 AM, if you checked in that morning, the app asks if anything changed. Update it, or tap Still the same so your partner knows you're doing the same."],
+  ["seeci","When does my partner see my check-in?","Right after you tap Save. If notifications are on, they get a heads-up too."],
+  ["past","Can I look at past days?","Yes. Use the history in Check-in to look back at earlier days."],
+  ["forpartner","Where are the ideas to help my partner?","On Check-in under For your partner today. With AI ideas on, you'll get suggestions based on their check-in and About me answers.",["today","secFor"],"Open ideas"]]},
+ {g:"chat",t:"Chat & sending",ic:"💬",items:[
+  ["chatmedia","How do I send photos or videos in chat?","Tap ＋ next to the message box. Videos are trimmed to 15 seconds. You can send 2 photos and 2 videos a day.",["chat","msgIn"],"Open chat"],
+  ["react","How do I react to a message?","Tap a message to pick a quick reaction, or tap + for any emoji. Tap your reaction again to remove it."],
+  ["clipfail","My video won't send","Videos must be 15 seconds or shorter, and you can send 2 a day. Try a shorter clip with a good connection. If it keeps failing, tap 👎 below and we'll look into it."],
+  ["song","How do I send a song?","In Connect → Send a song or video, search for a song, play a 30-second preview, and send it. Your partner can play the preview in the app or open the full song.",["connect","songCard"],"Send a song"],
+  ["songfail","Song search isn't working","Check your internet connection and try a simpler search, like the song name only. Some previews expire after a while; tap play again and it refreshes."],
+  ["sent","Where's everything I sent?","Connect → Everything you sent, with filters for photos, videos, songs, invites and challenges.",["connect","secSent"],"Open"]]},
+ {g:"plans",t:"Dates, invites & challenges",ic:"💌",items:[
+  ["invite","How do I invite my partner on a date?","Connect → Plan a date or invite. Pick an idea or tap ✏️ Type your own, choose a time, and send. You'll see it waiting on Home until they answer.",["connect","secInv"],"Plan a date"],
+  ["book","Can I book a table?","Pick Dinner out to get quick links to map nearby spots or book on OpenTable or Resy. Add the place to the invite so it shows on their side."],
+  ["calendar","How do I add a date to my calendar?","Once an invite is accepted, tap Apple / Outlook or Google under it. You'll also get a reminder an hour before."],
+  ["challenge","How do challenges work?","Send a fun challenge, like 5 kisses today. Your partner taps to count their progress, and finished challenges show up in Moments.",["connect","secCh"],"Send a challenge"]]},
+ {g:"gifts",t:"Dates to remember & gifts",ic:"🎁",items:[
+  ["dates","Where do I add birthdays and anniversaries?","About me → Dates to remember. You add your partner's birthday, plus when you met and your wedding anniversary. Your own birthday is added by your partner.",["me","dtBday"],"Add dates"],
+  ["giftrem","When do gift reminders show?","Two weeks before a birthday, anniversary, Valentine's Day or Christmas, a card shows on Home. You also get notifications a week before, the day before and on the day."],
+  ["wish","How do I add my wish list?","Copy your Amazon (or any store's) wish list link and paste it in About me. In Amazon: Account → Your Lists → pick a list → Share → Copy link.",["me","avWish"],"Add wish list"],
+  ["calyear","Can our dates go in my calendar?","Yes. In About me → Dates to remember, each date has Apple / Outlook and Google buttons. They repeat every year."]]},
+ {g:"ai",t:"AI ideas",ic:"✨",items:[
+  ["aiwhat","What does AI ideas use?","Only your check-ins, About me answers and schedules. It never uses chat messages or photos."],
+  ["aiboth","Why do we both have to turn it on?","AI ideas read both of your check-ins, so each person decides for themselves. Until you both turn it on, it stays off.",["me","aiCard"],"Open AI settings"],
+  ["week","When is the weekly summary written?","On Sundays, once you've had at least 3 check-ins that week. You can also tap to write it early."]]},
+ {g:"privacy",t:"Privacy & storage",ic:"🔒",items:[
+  ["seedata","Can anyone see our data?","Your space is private to the two of you. The app's builder can't open your profile, check-ins or chat. During the beta, please don't share anything too intimate, like explicit photos."],
+  ["lock","What does the privacy passcode do?","With the passcode on, no phone can see your space until it enters your shared 6-digit code, even with your link. Tell your partner the code in person.",["me","lockCard"],"Set a passcode"],
+  ["lockstuck","I'm stuck on a passcode screen I never set","Tap No passcode set? Try again. If that doesn't work, close the app fully and reopen it from your personal link."],
+  ["autodel","How does auto-delete work?","In About me → Photos & videos, choose to delete after 15 or 30 days, or keep everything. It applies to both of you.",["me","secAd"],"Open storage settings"]]},
+ {g:"phone",t:"Phone setup & notifications",ic:"📱",items:[
+  ["iphoneinstall","How do I add the app to my iPhone Home Screen?","In Safari, tap Share ⬆︎ → Add to Home Screen → Add. Then always open Us, Today from that icon. Notifications on iPhone only work from the icon.",null,"Show me how","install"],
+  ["androidinstall","How do I add it on Android (Pixel, Samsung)?","In Chrome, tap ⋮ → Add to Home screen → Install. It gets its own icon and opens full screen.",null,"Show me how","install"],
+  ["notifon","How do I turn on notifications?","About me → Notifications & reminders → Turn on notifications, then Allow. On iPhone, open the app from your Home Screen icon first.",["me","notifCard"],"Turn on"],
+  ["notifnone","I'm not getting notifications","Run Check my setup above. Most often: the app isn't opened from the Home Screen icon (iPhone), notifications were blocked in phone Settings, or Focus / Do Not Disturb is on. If you blocked them, go to phone Settings → Notifications → Us, Today → Allow."],
+  ["reminders","When do check-in reminders come?","Weekdays around 9:00 AM, and around 12:30 PM if you haven't checked in or if your morning check-in may have changed. You can turn each one off.",["me","remindBox"],"Reminder settings"],
+  ["update","How do I get the latest version?","When an update is ready, a banner says Update ready. Tap it. You can also close the app fully and reopen it."],
+  ["slow","The app is blank, stuck or won't load","Check your internet, then close the app fully and reopen it from your personal link. If it still won't load, send feedback with a screenshot."]]}
+];
+const HELP_FOR={secFor:"checkin",secWeek:"ai",secRead:"checkin",secInv:"plans",secCh:"plans",secSent:"chat",secNotif:"phone",secAi:"ai",secLock:"privacy",secAd:"privacy",secLinks:"start",secAnswers:"start"};
+const helpItems=()=>HELP.flatMap(g=>g.items.map(([id,q,a,go,goT,special])=>({id,q,a,go,goT,special,g:g.g,gt:g.t})));
+const H_STOP=new Set("the and for how what why when where who can does did doesnt dont isnt cant wont not are was were you your our its it this that with have has get got from into about there their them they she her his him use using app any all just like way want need help please is to do my me an on in of or at by be if no".split(" "));
+const H_TAGS={notifnone:"notification push alert not working broken stopped",notifon:"notification push alert enable",lockstuck:"locked code pin stuck screen",lock:"code pin password security",clipfail:"video clip upload fail error",songfail:"music song search broken",update:"refresh new version banner",slow:"blank white loading frozen crash stuck",autodel:"delete storage space remove photos",seedata:"privacy private secure safe data",wish:"amazon gift list",dates:"birthday anniversary wedding met",giftrem:"gift present birthday reminder",iphoneinstall:"icon home screen install iphone ios",androidinstall:"icon home screen install android pixel samsung",perslink:"link url",link:"join partner invite connect",code:"invite beta code",calendar:"calendar google apple outlook",chatmedia:"photo picture video",react:"emoji reaction like heart",streak:"streak days",stories:"story stories ring"};
+const hNorm=t=>String(t||"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+const hSlug=t=>hNorm(t).replace(/ /g,"_").slice(0,40);
+let helpSeen=new Set(),helpMissSent=new Set(),helpMissT=0;
+function faqEl(it){
+  const d=el("details","faq");d.dataset.id=it.id;const s=el("summary",null,it.q);d.append(s);
+  const b=el("div","fa");b.append(el("p",null,it.a));
+  if(it.go||it.special){const g=el("button","secondary small",it.goT||"Take me there");g.onclick=()=>{closeHelp();if(it.special==="install")openInstall();else goTo(it.go)};b.append(g)}
+  const fb=el("div","fhelp");fb.append(el("span","small muted","Did this help?"));
+  const up=el("button","fbtn","👍"),dn=el("button","fbtn","👎");up.setAttribute("aria-label","Yes, this helped");dn.setAttribute("aria-label","No, this didn't help");
+  up.onclick=()=>{track({["h.up."+it.id]:1});fb.textContent="";fb.append(el("span","small muted","Thanks! 💞"))};
+  dn.onclick=()=>{track({["h.dn."+it.id]:1});closeHelp();openFeedback("bug",`About “${it.q}”: `)};
+  fb.append(up,dn);b.append(fb);d.append(b);
+  d.addEventListener("toggle",()=>{if(d.open&&!helpSeen.has(it.id)){helpSeen.add(it.id);track({["h.v."+it.id]:1})}});
+  return d;
+}
+function renderHelp(focusGroup){
+  const box=$("helpList");box.textContent="";const q=hNorm($("helpQ").value);
+  if(q){
+    const words=q.split(" ").filter(w=>w.length>2&&!H_STOP.has(w)).map(w=>{const t=w.replace(/(ings?|ed|es|s)$/,"");return t.length>=4?t:w});
+    const hits=!words.length?[]:helpItems().map(it=>{const hay=hNorm(it.q+" "+it.a+" "+it.gt+" "+(H_TAGS[it.id]||"")),hq=hNorm(it.q);let hit=0,sc=0;words.forEach(w=>{if(hay.includes(w)){hit++;sc+=hq.includes(w)?2:1}});return{it,sc,hit}}).filter(x=>x.hit>=(words.length<=2?1:Math.ceil(words.length*0.6))).sort((a,b)=>b.hit-a.hit||b.sc-a.sc).slice(0,6);
+    if(!hits.length){const e=el("div","hempty");e.append(el("p",null,"No answer for that yet."));const a=el("button","secondary","Ask us instead");a.onclick=()=>{closeHelp();openFeedback("other",$("helpQ").value.trim()+" — ")};e.append(a);box.append(e);
+      clearTimeout(helpMissT);if(q.length>=4&&!helpMissSent.has(q))helpMissT=setTimeout(()=>{helpMissSent.add(q);const sl=hSlug(q);if(sl)track({["ms."+sl+".n"]:1},{["ms."+sl+".t"]:q.slice(0,60),["ms."+sl+".at"]:Date.now()})},1500);return}
+    hits.forEach(({it})=>box.append(faqEl(it)));return;
+  }
+  HELP.forEach(g=>{const d=el("details","hgroup");d.id="hg-"+g.g;if(g.g===focusGroup)d.open=true;const s=el("summary");s.append(el("span","hic",g.ic),el("b",null,g.t),el("span","small muted",String(g.items.length)));d.append(s);
+    const inner=el("div","stack");inner.style.gap="6px";g.items.forEach(([id,q,a,go,goT,special])=>inner.append(faqEl({id,q,a,go,goT,special,g:g.g,gt:g.t})));d.append(inner);box.append(d)});
+  if(focusGroup)setTimeout(()=>$("hg-"+focusGroup)?.scrollIntoView({block:"start"}),60);
+}
+function openHelp(group,check){
+  $("helpQ").value="";$("helpSheet").hidden=false;renderHelp(group);track({"h.open":1});
+  if(check)runSetupCheck(true);else{$("chkList").textContent="";$("chkRun").hidden=false}
+  if(group)track({["h.ctx."+group]:1});
+}
+function closeHelp(){$("helpSheet").hidden=true}
+function openFeedback(kind,text){$("fbOpen").click();fbKind=kind||"";renderFbKinds();if(text){$("fbText").value=text;setTimeout(()=>{const t=$("fbText");t.focus();t.setSelectionRange(t.value.length,t.value.length)},120)}}
+$("helpX").onclick=closeHelp;$("helpSheet").addEventListener("click",e=>{if(e.target.id==="helpSheet")closeHelp()});
+$("helpQ").addEventListener("input",()=>renderHelp());
+$("helpOpen").onclick=()=>openHelp();$("chkOpen").onclick=()=>openHelp(null,true);$("chkRun").onclick=()=>runSetupCheck(true);
+// "?" on each section
+Object.entries(HELP_FOR).forEach(([sec,g])=>{const sm=document.querySelector("#"+sec+" > summary");if(!sm)return;const b=el("button","helpq","?");b.type="button";b.setAttribute("aria-label","Help with this section");b.onclick=e=>{e.preventDefault();e.stopPropagation();openHelp(g)};sm.insertBefore(b,sm.querySelector(".chev"))});
+// Setup check
+const iosVer=()=>{const m=navigator.userAgent.match(/OS (\d+)[_.](\d+)/);return isIOS&&m?+m[1]+(+m[2])/100:0};
+async function setupChecks(live){
+  const p=partnerId,pn=p&&members[p]?.profile?.name?(nickOf(p)||nm(p)):"your partner",pr=remPrefs(),mobile=platformKey()!=="desktop",out=[];
+  const add=(id,label,ok,fixT,fix,why)=>{if(ok==null)return;out.push({id,label,ok:!!ok,fixT,fix,why})};
+  let online=navigator.onLine&&signedIn(),latest=null,server=null;
+  if(live){
+    try{const r=await fetch(location.pathname+"?vcheck="+Date.now(),{cache:"no-store"});const m=(await r.text()).match(/const APP_VERSION="(\d[^"]*)"/);latest=m?m[1]===APP_VERSION:null}catch(e){latest=null}
+    if(WORKER_URL)try{const r=await fetch(WORKER_URL,{cache:"no-store"});server=r.ok}catch(e){server=false}
+  }
+  add("online","Connected to your space",online,"Reload",()=>location.reload(),"Check your Wi-Fi or data, then reopen the app.");
+  if(live)add("server","Notification service reachable",server,null,null,"It may be down for a moment. Try again later.");
+  if(live)add("version","On the latest version",latest,"Update now",()=>$("updBtn").click(),"A newer version is ready.");
+  add("about","About me filled out",members[me]?.onboarded,"Finish",()=>openSheet(false),"Your answers shape the ideas you both get.");
+  add("partner",`${p&&members[p]?.onboarded?pn:"Your partner"} has joined`,p&&members[p]?.onboarded,"Invite",()=>goTo(["me","inviteCard"]),"Send your partner their invite link.");
+  add("install","Added to your Home Screen",mobile?isInstalled():null,"Show me how",openInstall,"Opens faster, full screen, and needed for notifications on iPhone.");
+  if(isIOS)add("ios","iPhone up to date (iOS 16.4 or newer)",iosVer()?iosVer()>=16.04:null,null,null,"Update in Settings → General → Software Update to get notifications.");
+  add("notif","Notifications on",notifsOn(),"Turn on",()=>{if(isIOS&&!isStandalone())openInstall();else goTo(["me","notifCard"])},isIOS&&!isStandalone()?"On iPhone, open the app from your Home Screen icon first.":typeof Notification!=="undefined"&&Notification.permission==="denied"?"Blocked in phone settings: Settings → Notifications → allow Us, Today.":"So you know when your partner checks in or sends something.");
+  if(notifsOn())add("remind","Check-in reminders on",pr.am||pr.mid,"Turn on",()=>goTo(["me","remindBox"]),"A nudge at 9 AM and midday on weekdays.");
+  add("dates","Birthday and anniversary added",!!(bdayOf(other(me))&&(isYmd(coupleSettings.since)||isYmd(coupleSettings.wed))),"Add dates",()=>goTo(["me","dtBday"]),"So gift reminders show up in time.");
+  add("wish","Your wish list added",!!wishOf(me),"Add",()=>goTo(["me","avWish"]),`So ${pn} knows what to get you.`);
+  add("ai","AI ideas on for both of you",aiOk(me)&&!!p&&aiOk(p),aiOk(me)?null:"Turn on",aiOk(me)?null:()=>goTo(["me","aiCard"]),aiOk(me)?`Waiting for ${pn} to turn it on.`:"Personal ideas for helping each other.");
+  add("lock","Privacy passcode on",!!lockDoc,"Set one",()=>goTo(["me","lockCard"]),"Keeps your space private even if someone gets your link.");
+  return out;
+}
+async function runSetupCheck(show){
+  const box=$("chkList");if(show){box.textContent="";box.append(el("p","small muted","Checking…"));$("chkRun").hidden=true}
+  const list=await setupChecks(!!show);
+  const set={};list.forEach(c=>set["c."+c.id]=c.ok);set.cAt=Date.now();set.plat=platformKey();track({},set);
+  if(!show)return list;
+  try{localStorage.setItem("ut_chkok_"+spaceHash,"1")}catch(e){}renderGs();
+  box.textContent="";const bad=list.filter(c=>!c.ok).length;
+  box.append(el("p","small "+(bad?"":"ok"),bad?`${bad} thing${bad>1?"s":""} to fix`:"Everything looks good ✅"));
+  [...list.filter(c=>!c.ok),...list.filter(c=>c.ok)].forEach(c=>{const r=el("div","chk"+(c.ok?" ok":""));r.append(el("span","ci3",c.ok?"✅":"⚠️"));const t=el("div","ct");t.append(el("b",null,c.label));if(!c.ok&&c.why)t.append(el("span","small muted",c.why));r.append(t);
+    if(!c.ok&&c.fix){const b=el("button","secondary small",c.fixT||"Fix");b.onclick=()=>{track({["c_fix."+c.id]:1});closeHelp();c.fix()};r.append(b)}box.append(r)});
+  const again=el("button","link small","Check again");again.onclick=()=>runSetupCheck(true);box.append(again);
+  return list;
+}
+// Quietly record setup status once a day so the owner dashboard reflects every couple, not just those who open Help.
+function dailySetupPing(){if(!spaceHash||!signedIn())return;const k="ut_chk_"+spaceHash+"_"+me;let last="";try{last=localStorage.getItem(k)||""}catch(e){}if(last===todayKey())return;try{localStorage.setItem(k,todayKey())}catch(e){}runSetupCheck(false)}
+/* ---- Automatic error reports: what broke and where. Never message text, photos or names. ---- */
+let errSent=new Set(),errCount=0;
+function reportErr(kind,msg){
+  try{if(!spaceHash||errCount>=12)return;const m=String(msg||"").replace(/https?:\/\/\S+/g,"<url>").replace(/\d{3,}/g,"#").slice(0,140);
+    const code=hSlug((tab||"app")+" "+kind+" "+m).slice(0,48)||"unknown";if(errSent.has(code))return;errSent.add(code);errCount++;
+    track({["e."+code+".n"]:1},{["e."+code+".m"]:m,["e."+code+".k"]:kind,["e."+code+".t"]:tab||"",["e."+code+".p"]:platformKey(),["e."+code+".v"]:APP_VERSION,["e."+code+".at"]:Date.now()});
+  }catch(x){}
+}
+window.addEventListener("error",e=>reportErr("crash",e.message||"error"));
+window.addEventListener("unhandledrejection",e=>reportErr("crash",e.reason?.message||e.reason?.code||String(e.reason||"rejection")));
+{const ce=console.error.bind(console);console.error=(...a)=>{ce(...a);const x=a.find(v=>v&&(v.message||v.code))||a[0];reportErr("fail",x?.code?(x.code+" "+(x.message||"")):x?.message||String(x||""))}}
+{const ot=toast;toast=t=>{ot(t);if(/^(Couldn't|Not connected|The database refused|Something went wrong|Upload failed)/i.test(String(t)))reportErr("toast",t)}}
 
 /* ================= Chat reactions ================= */
 const QUICK_REACT=["❤️","👍","👎","😂","😮","😢","🔥","🙏"];
@@ -3808,7 +4020,7 @@ async function startSpace(firstTime){
   else if(!OWNER_LINK)maybeWhatsNew();
   done();
   initOwner();
-  hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen();setTimeout(syncReminder,1500)});
+  hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen();setTimeout(syncReminder,1500);setTimeout(dailySetupPing,8000)});
   refreshPushSub();
   db.doc("settings/couple").onSnapshot(s=>{coupleSettings=s.exists?(s.data()||{}):{};if(tab==="home")renderHome();if(tab==="me")renderDates();remSoon()},()=>{});
   watchQuestion();
@@ -3843,12 +4055,12 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.33";
+const APP_VERSION="2026-10-17.34";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
   try{const r=await fetch(location.pathname+"?vcheck="+Date.now(),{cache:"no-store"});if(!r.ok)return;
-    const m=(await r.text()).match(/const APP_VERSION="([^"]+)"/);if(m&&m[1]!==APP_VERSION)$("updBar").hidden=false}catch(e){}
+    const m=(await r.text()).match(/const APP_VERSION="(\d[^"]*)"/);if(m&&m[1]!==APP_VERSION)$("updBar").hidden=false}catch(e){}
 }
 $("updBtn").onclick=()=>{if(dirty&&!confirm("You have an unsaved check-in. Refresh anyway?"))return;$("updBtn").textContent="Refreshing…";location.replace(spaceKey?linkFor(me)+"&r="+Date.now():location.pathname+"?r="+Date.now())};
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkUpdate()});
