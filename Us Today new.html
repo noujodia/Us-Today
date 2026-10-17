@@ -3195,18 +3195,19 @@ function nextItems(){
     const fresh=it.at?it.at>now-3*3600000:it.createdAt>now-3*86400000;
     if(!fresh)return;
     const what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(invLabel(it));
-    let rt="",sub=it.when+(rep?.status==="yes"?" · Accepted":rep?.status==="later"?" · Not this time":it.dir==="in"?" · Tap to answer":" · Waiting");
+    let rt="",sub=it.when+(rep?.status==="yes"?" · Accepted":rep?.status==="later"?" · Not this time":it.dir==="in"?" · Tap to answer":` · Waiting for ${nickOf(partnerId)||pn} to accept`);
     if(rep?.status==="later")return;
     if(it.at){const dd=Math.round((new Date(it.at).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/86400000);rt=dd<=0?"Today":dd===1?"Tomorrow":dd+" days"}
-    out.push({ic:"💌",t:it.dir==="in"?`${pn} invited you: ${what}`:what,sub,rt,go:()=>setTab("connect"),sort:it.at||it.createdAt});
+    out.push({ic:"💌",t:it.dir==="in"?`${pn} invited you: ${what}`:rep?.status==="yes"?what:`You invited ${nickOf(partnerId)||pn}: ${what}`,sub,rt,go:()=>goTo(["connect",it.dir==="in"?"inbox":"secInv"]),sort:it.at||it.createdAt,pri:rep?.status==="yes"?1:0});
   });
   all.filter(x=>x.kind==="challenge"&&x.createdAt>now-3*86400000).forEach(it=>{
     const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id],c=rep?.count||0,t=it.target||1;if(c>=t)return;
-    out.push({ic:"🏁",t:it.text,sub:it.dir==="in"?`From ${pn}`:`You challenged ${pn}`,prog:c/t,rt:`${c} of ${t}`,go:()=>setTab("connect"),sort:it.createdAt});
+    out.push({ic:"🏁",t:it.text,sub:it.dir==="in"?`From ${pn}`:`You challenged ${pn}`,prog:c/t,rt:`${c} of ${t}`,go:()=>setTab("connect"),sort:it.createdAt,pri:3});
   });
   occasions().filter(o=>o.until<=(o.holiday?GIFT_DAYS:45)).slice(0,2).forEach(o=>{const w=o.gift&&partnerId&&wishOf(partnerId);
-    out.push({ic:o.ic,t:o.until===0?(o.mine?"Happy birthday to you! 🎉":`${o.t} is today`):o.t,sub:o.date.toLocaleDateString(undefined,{weekday:"short",month:"long",day:"numeric"})+(w?` · 🎁 tap for ${nickOf(partnerId)||nm(partnerId)}'s wish list`:""),rt:o.until===0?"Today":o.until===1?"Tomorrow":o.until+" days",sort:o.date.getTime()+1,go:w?()=>window.open(w,"_blank","noopener"):null})});
-  return out.sort((a,b)=>a.sort-b.sort).slice(0,4);
+    out.push({ic:o.ic,t:o.until===0?(o.mine?"Happy birthday to you! 🎉":`${o.t} is today`):o.t,sub:o.date.toLocaleDateString(undefined,{weekday:"short",month:"long",day:"numeric"})+(w?` · 🎁 tap for ${nickOf(partnerId)||nm(partnerId)}'s wish list`:""),rt:o.until===0?"Today":o.until===1?"Tomorrow":o.until+" days",sort:o.date.getTime()+1,pri:2,go:w?()=>window.open(w,"_blank","noopener"):null})});
+  // Invites waiting on an answer come first, then accepted plans, special days, challenges.
+  return out.sort((a,b)=>(a.pri||0)-(b.pri||0)||a.sort-b.sort).slice(0,5);
 }
 function renderHome(){
   if(!$("pHome"))return;
@@ -3226,7 +3227,7 @@ function renderHome(){
   else if(p&&signedIn()){const f=el("div","since"),lab=el("label","small muted","Together since");const inp=el("input");inp.type="date";inp.id="sinceIn";lab.htmlFor="sinceIn";inp.max=k;const b=el("button","secondary","Save");b.onclick=()=>saveSince(inp.value);f.append(lab,inp,b);c.append(f)}
   const pills=el("div","hpills"),st=streakDays();
   if(p){const sp=el("span","hpill streak");sp.append(svgI("flame",15),document.createTextNode(st?`${st}${st>=39?"+":""}-day streak`:"Start a streak: both check in today"));pills.append(sp)}
-  const nx=nextItems();if(nx[0]&&nx[0].rt)pills.append(el("span","hpill",`Next: ${nx[0].t.replace(/^.*invited you: /,"")} · ${nx[0].rt}`));
+  const nx=nextItems();if(nx[0]&&nx[0].rt)pills.append(el("span","hpill",`Next: ${nx[0].t.replace(/^.*invited (you|[^:]+): /,"")} · ${nx[0].rt}`));
   c.append(pills);hh.append(c);
   // glance
   const g=$("homeGlance");g.textContent="";
@@ -3841,7 +3842,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.31";
+const APP_VERSION="2026-10-17.32";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
