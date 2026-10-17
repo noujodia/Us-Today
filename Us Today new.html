@@ -232,7 +232,7 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .orline{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.8rem}.orline::before,.orline::after{content:"";flex:1;height:1px;background:var(--line)}
 .yt{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .ov{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
-.ov .panel{background:var(--bg);width:100%;max-width:520px;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px max(16px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.ov .panel{box-sizing:border-box;background:var(--bg);width:100%;max-width:520px;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px max(16px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
 @media (min-width:600px){.ov{align-items:center}.ov .panel{border-radius:20px}}
 .ov .phead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .ov .x{border:0;background:var(--soft);color:var(--ink);width:32px;height:32px;border-radius:50%;flex:none;font-size:1.1rem;padding:0}
@@ -264,7 +264,7 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .fbi .meta{font-size:.75rem;color:var(--muted)}
 .fbi img{max-height:220px;width:auto;max-width:100%;border-radius:10px;align-self:flex-start;cursor:zoom-in;border:1px solid var(--line)}
 .fbi .acts{display:flex;gap:14px}
-.code{font-family:ui-monospace,Menlo,monospace;font-size:.75rem;background:var(--soft);border-radius:10px;padding:10px;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.code{max-width:100%;box-sizing:border-box;font-family:ui-monospace,Menlo,monospace;font-size:.75rem;background:var(--soft);border-radius:10px;padding:10px;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
 .aic{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .aic .eyebrow{color:var(--accent)}
 .aic .hl{font-weight:600;font-size:1rem;line-height:1.4}
@@ -2527,7 +2527,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.11";
+const APP_VERSION="2026-10-17.12";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
