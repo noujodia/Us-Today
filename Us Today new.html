@@ -307,6 +307,15 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .sw{position:relative;width:48px;height:28px;flex:none;border-radius:999px;border:0;background:var(--line);padding:0;transition:background .2s}
 .sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
 .sw[aria-checked="true"]{background:var(--accent)}.sw[aria-checked="true"]::after{transform:translateX(20px)}
+.ig{display:flex;flex-direction:column;gap:10px}
+.ig ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:ig}
+.ig li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;counter-increment:ig;font-size:.94rem;line-height:1.4}
+.ig li::before{content:counter(ig);width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.ig .ico{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 6px;border-radius:7px;background:var(--soft);border:1px solid var(--line);font-weight:700;font-size:.9rem;vertical-align:middle;margin:0 2px}
+.ig .note{font-size:.82rem;color:var(--muted);margin:0}
+.ig .done{display:flex;gap:8px;align-items:center;background:var(--accent-soft);border-radius:12px;padding:10px 12px;font-weight:600;font-size:.9rem}
+.obsec{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.obsec h3{margin:0;font-size:1rem;display:flex;align-items:center;gap:8px}.obsec h3 .okb{margin-left:auto;font-size:.75rem;font-weight:700;color:var(--ok)}
 .aic{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .aic .eyebrow{color:var(--accent)}
 .aic .hl{font-weight:600;font-size:1rem;line-height:1.4}
@@ -598,6 +607,7 @@ details.pl summary{cursor:pointer;font-weight:600}
       <h3>Notifications</h3>
       <p class="small muted" id="notifMsg">Checking…</p>
       <div class="row"><button class="primary" id="notifOn" hidden>Turn on notifications</button><button class="secondary" id="notifTest" hidden>Send me a test</button></div>
+      <button class="link small" id="howHome" style="align-self:flex-start">How to add Us, Today to your Home Screen</button>
       <div id="remindBox" hidden>
         <div class="tog"><div class="tl"><b>Morning reminder</b><span>Weekdays at 9:00 AM, only if you haven't checked in</span></div><button class="sw" id="remAm" role="switch" aria-checked="true" aria-label="Morning reminder"></button></div>
         <div class="tog"><div class="tl"><b>Midday check</b><span>Weekdays at 12:30 PM: anything changed since this morning?</span></div><button class="sw" id="remMid" role="switch" aria-checked="true" aria-label="Midday check"></button></div>
@@ -696,6 +706,12 @@ details.pl summary{cursor:pointer;font-weight:600}
     <div class="epick" id="epGrid"></div>
   </div>
 </div>
+<div class="ov" id="installSheet" hidden role="dialog" aria-modal="true" aria-labelledby="installTitle">
+  <div class="panel">
+    <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Get notifications</span><h2 id="installTitle">Add to your Home Screen</h2></div><button class="x" id="installX" aria-label="Close">×</button></div>
+    <div id="installBody" class="stack" style="gap:12px"></div>
+  </div>
+</div>
 <div class="ov" id="fbSheet" hidden role="dialog" aria-modal="true" aria-labelledby="fbTitle">
   <div class="panel">
     <div class="phead"><div class="stack" style="gap:2px"><h2 id="fbTitle">Send feedback</h2><p class="small muted" style="margin:0">What happened, or what would make the app better?</p></div><button class="x" id="fbX" aria-label="Close">×</button></div>
@@ -767,7 +783,7 @@ const Q={
   area:{type:"text",q:"Your town or ZIP",ph:"Framingham, MA",hint:"Used to find places near you"}
 };
 const STEPS=[
-  {t:"Let's set you up",s:"Nine quick steps. Your partner sees your answers, and they shape the ideas you both get.",q:["name"]},
+  {t:"Let's set you up",s:"Ten quick steps. Your partner sees your answers, and they shape the ideas you both get.",q:["name"]},
   {t:"How you feel loved",s:"Pick up to 2.",q:["lang"]},
   {t:"When things are hard",s:"So your partner knows what helps and what doesn't.",q:["upset","avoid"]},
   {t:"When you're stressed",s:"Pick up to 2.",q:["stress"]},
@@ -775,7 +791,8 @@ const STEPS=[
   {t:"You and the kids",s:"So suggestions work with family life.",q:["kids","kidnights"]},
   {t:"Time for us",s:"Pick up to 2 for each.",q:["connect","intimacy"]},
   {t:"Hobbies and dates",s:"Used for date ideas and finding places near you.",q:["hobbies","hobbyother","datestyle","cuisines","area"]},
-  {t:"A few favorites",s:"Used for surprises. Skip any you like.",q:["flowers","treat","food","smile"]}
+  {t:"A few favorites",s:"Used for surprises. Skip any you like.",q:["flowers","treat","food","smile"]},
+  {t:"Stay in the loop",s:"Get a heads-up when your partner checks in or sends something, plus gentle check-in reminders.",q:[],special:"notify"}
 ];
 Object.values(Q).forEach(q=>{if(q.na&&q.opts&&!q.opts.some(o=>o[0]==="na"))q.opts.push(["na",q.na])});
 const label=(qid,v)=>{if(v==="na")return Q[qid].na||"N/A";const o=Q[qid].opts?.find(x=>x[0]===v);return o?o[1]:v};
@@ -1390,6 +1407,7 @@ async function refreshPushSub(){
   }catch(e){console.error(e)}
 }
 function renderNotifCard(){
+  $("howHome").hidden=isStandalone();
   const msg=$("notifMsg"),on=$("notifOn"),test=$("notifTest");on.hidden=true;test.hidden=true;
   if(!WORKER_URL){msg.textContent="Notifications are almost ready. Setup is still in progress.";return}
   if(!pushSupported()){msg.textContent=isIOS?"Open Us, Today from its Home Screen icon to turn on notifications. On iPhone this needs iOS 16.4 or newer.":"This browser doesn't support notifications.";return}
@@ -1901,6 +1919,7 @@ function renderConnect(){renderConnectHead();renderTouches();renderPicCard();ren
 /* ================= About me + onboarding ================= */
 let step=0,pd={},firstRun=false;
 function openSheet(first){
+  pdRemindInit=false;
   firstRun=!!first;pd=JSON.parse(JSON.stringify(P(me)));if(!pd.name&&acctNames[me])pd.name=acctNames[me];
   step=0;$("sheet").hidden=false;$("sheetClose").hidden=firstRun&&mode!=="shared";renderStep();
 }
@@ -1919,6 +1938,7 @@ function renderStep(){
     info.append(el("label",null,"Profile photo"),b,m);info.firstChild.style.fontWeight="600";
     w.append(avatar(me,"av-l",pd.photo||null),info,inp);body.append(w);
   }
+  if(S.special==="notify")body.append(...notifyStepEls());
   S.q.forEach(id=>{
     const qq=Q[id],w=el("div","q"),h=el("label",null,qq.q);h.style.fontWeight="600";w.append(h);
     if(qq.hint)w.append(el("span","hint",qq.hint));
@@ -1950,18 +1970,32 @@ $("stepBack").onclick=()=>{if(step>0){step--;renderStep();$("sheet").scrollTop=0
 $("sheetClose").onclick=()=>{$("sheet").hidden=true};
 $("stepNext").onclick=async()=>{
   if(step===0&&!(pd.name||"").trim()){$("sheetErr").textContent="Add a name so your partner knows it's you.";return}
-  if(step<STEPS.length-1){step++;renderStep();$("sheet").scrollTop=0;return}
+  if(step<STEPS.length-1){
+    if(STEPS[step+1].special==="notify"){const ok=await saveProfile(true);if(!ok)return}
+    step++;renderStep();$("sheet").scrollTop=0;return}
+  if(STEPS[step].special==="notify"){
+    const btn=$("stepNext");btn.disabled=true;btn.textContent="Saving…";
+    try{const r={am:pd.remind?.am!==false,mid:pd.remind?.mid!==false};await db.doc(base(me)).update({remind:r});members[me]={...(members[me]||{}),remind:r};syncReminder();
+      $("sheet").hidden=true;if(firstRun)markRelSeen();toast(firstRun?"You're all set. Do your first check-in.":"Saved");if(firstRun)setTab("today");renderAll()}
+    catch(e){console.error(e);$("sheetErr").textContent=saveErr(e)}
+    finally{btn.disabled=false;btn.textContent="Finish"}
+    return;
+  }
+  await saveProfile(false);
+};
+async function saveProfile(quiet){
   const clean={};if(pd.photo)clean.photo=pd.photo;if(typeof pd.caption==="string"&&pd.caption){clean.caption=pd.caption;if(pd.captionAt)clean.captionAt=pd.captionAt}Object.keys(Q).forEach(k=>{const v=pd[k];if(Q[k].type==="text"){if(v&&String(v).trim())clean[k]=String(v).trim()}else if(Array.isArray(v)){if(v.length)clean[k]=v}else if(v)clean[k]=v});
   const btn=$("stepNext");btn.disabled=true;btn.textContent="Saving…";
   try{
     if(!signedIn())throw{code:"signed_out"};
     await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),onboarded:true,profile:clean});
     members[me]={...(members[me]||{}),onboarded:true,profile:clean};
+    if(quiet)return true;
     $("sheet").hidden=true;if(firstRun)markRelSeen();toast(firstRun?"You're all set. Do your first check-in.":"Answers saved");
-    if(firstRun)setTab("today");renderAll();
-  }catch(e){console.error(e);$("sheetErr").textContent=saveErr(e)}
-  finally{btn.disabled=false;btn.textContent="Finish"}
-};
+    if(firstRun)setTab("today");renderAll();return true;
+  }catch(e){console.error(e);$("sheetErr").textContent=saveErr(e);return false}
+  finally{btn.disabled=false;btn.textContent=step===STEPS.length-1?"Finish":"Next"}
+}
 $("editProfile").onclick=()=>openSheet(false);
 function renderPhotoBox(){
   $("meAvatar").replaceChildren(avatar(me,"av-l"));
@@ -2312,6 +2346,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17e",date:"Oct 17, 2026",items:[
+    {em:"📲",t:"Get notifications on your phone",b:"Step-by-step help for adding Us, Today to your Home Screen on iPhone and Android, so notifications and reminders reach you.",go:["me","notifCard"]}
+  ]},
   {id:"2026-10-17d",date:"Oct 17, 2026",items:[
     {em:"🌤️",t:"Midday check",b:"Checked in this morning? After 11 AM you'll get a quick “Anything changed?” with Update or Still the same. Your partner sees what changed.",go:["today","middayBox"]},
     {em:"⏰",t:"Weekday reminders",b:"A reminder at 9:00 AM if you haven't checked in, and a midday check at 12:30 PM. Turn either off in About me → Notifications.",go:["me","notifCard"]},
@@ -2379,7 +2416,9 @@ function gsSteps(){
     {t:"Fill out About me",done:!!members[me]?.onboarded,go:()=>openSheet(false)},
     {t:"Invite your partner",done:!!(p&&members[p]?.onboarded),go:()=>goTo(["me","inviteCard"])},
     {t:"Do your first check-in",done:Object.keys(E(me)).length>0,go:()=>{setTab("today");setTimeout(()=>{const n=$("save");n&&n.scrollIntoView({behavior:"smooth",block:"center"})},100)}},
-    {t:"Turn on notifications",done:!!members[me]?.push,go:()=>goTo(["me","notifCard"])},
+    {t:"Add Us, Today to your Home Screen",done:isInstalled(),go:openInstall},
+    {t:"Turn on notifications",done:!!members[me]?.push,go:()=>{if(isIOS&&!isStandalone())openInstall();else goTo(["me","notifCard"])}},
+    {t:"Choose your check-in reminders",done:!!members[me]?.remind,go:()=>{if(!members[me]?.push)openInstall();else goTo(["me","remindBox"])}},
     {t:"Send a hug or a photo",done:outgoing().length>0,go:()=>goTo(["connect","tray"])},
     {t:"Send a chat message",done:(msgs[me]||[]).length>0,go:()=>goTo(["chat","msgIn"])},
     {t:"Turn on AI ideas",done:!!members[me]?.aiOk,go:()=>goTo(["me","aiCard"])}
@@ -2640,6 +2679,78 @@ function initSecs(){SECS.forEach(id=>{const d=$(id);if(!d)return;let v=null;try{
 initSecs();
 function setSum(id,t){const n=$(id);if(n)n.textContent=t||""}
 
+/* ================= Home Screen + notifications guide ================= */
+const isAndroid=/Android/i.test(navigator.userAgent);
+const platformKey=()=>isIOS?"ios":isAndroid?"android":"desktop";
+const installedFlag=()=>{try{return !!localStorage.getItem("ut_installed")}catch(e){return false}};
+const isInstalled=()=>isStandalone()||installedFlag();
+const notifsOn=()=>!!members[me]?.push&&typeof Notification!=="undefined"&&Notification.permission==="granted";
+if(isStandalone()){try{localStorage.setItem("ut_installed","1")}catch(e){}}
+function guideSteps(pf){
+  const w=el("div","ig"),ol=el("ol"),li=(...parts)=>{const l=el("li"),sp=el("span");parts.forEach(x=>sp.append(typeof x==="string"?document.createTextNode(x):x));l.append(sp);ol.append(l)},ico=t=>el("span","ico",t);
+  if(pf==="ios"){
+    li("In Safari, tap the Share button ",ico("⬆︎")," at the bottom of the screen (top right on iPad).");
+    li("Scroll down and tap ",el("b",null,"Add to Home Screen"),".");
+    li("Tap ",el("b",null,"Add"),". Us, Today now has its own icon.");
+    li("Close Safari and open ",el("b",null,"Us, Today from the new icon"),", then tap Turn on notifications.");
+    w.append(ol,el("p","note","Needs iOS 16.4 or newer. Using Chrome on iPhone? Tap the share icon in the address bar, then Add to Home Screen. Notifications only work from the Home Screen icon on iPhone."));
+  }else if(pf==="android"){
+    li("In Chrome, tap the menu ",ico("⋮")," at the top right.");
+    li("Tap ",el("b",null,"Add to Home screen"),", or ",el("b",null,"Install app")," if you see it.");
+    li("Tap ",el("b",null,"Add"),". Us, Today now has its own icon.");
+    li("Open it and tap ",el("b",null,"Turn on notifications"),", then ",el("b",null,"Allow"),".");
+    w.append(ol,el("p","note","On Android, notifications also work straight from Chrome. The icon just makes the app quicker to open."));
+  }else{
+    li("Notifications work right here in your browser. Tap Turn on notifications and allow them.");
+    li("For the best experience, open your personal link on your phone and add it to your Home Screen.");
+    w.append(ol);
+  }
+  return w;
+}
+function guideTabs(box,cur,onPick){
+  const t=el("div","opts");[["ios","iPhone"],["android","Android"]].forEach(([k,n])=>{const b=el("button","opt",n);b.setAttribute("aria-pressed",String(cur===k));b.onclick=()=>onPick(k);t.append(b)});box.append(t);
+}
+function notifAction(after){
+  const wrap=el("div","stack");wrap.style.gap="6px";
+  if(notifsOn()){const d=el("div","done");d.append(el("span",null,"✅"),el("span",null,"Notifications are on"));wrap.append(d);return wrap}
+  const canNow=pushSupported()&&!(isIOS&&!isStandalone());
+  if(canNow){
+    if(typeof Notification!=="undefined"&&Notification.permission==="denied"){wrap.append(el("p","small muted",isIOS?"Notifications are blocked. Turn them on in iPhone Settings → Notifications → Us, Today.":"Notifications are blocked. Allow them in your browser's site settings."));return wrap}
+    const b=el("button","primary","Turn on notifications");b.style.alignSelf="flex-start";b.onclick=async()=>{b.disabled=true;b.textContent="Turning on…";await enableNotifs();after&&after()};wrap.append(b);
+  }else wrap.append(el("p","small muted",isIOS?"On iPhone, notifications turn on from the Home Screen icon. Follow the steps above, then come back here.":"This browser doesn't support notifications. Try Chrome or Safari on your phone."));
+  return wrap;
+}
+let guidePf=null;
+function renderInstall(){
+  const box=$("installBody");box.textContent="";const pf=guidePf||platformKey();
+  if(isStandalone()){const d=el("div","ig");const ok=el("div","done");ok.append(el("span",null,"✅"),el("span",null,"You're using Us, Today from your Home Screen"));d.append(ok);box.append(d)}
+  else{guideTabs(box,guidePf||(platformKey()==="desktop"?null:platformKey()),k=>{guidePf=k;renderInstall()});box.append(guideSteps(pf))}
+  box.append(notifAction(renderInstall));
+  if(!isStandalone()&&(guidePf||platformKey())==="android"&&!installedFlag()){const b=el("button","link small","I added it to my Home Screen");b.style.alignSelf="flex-start";b.onclick=()=>{try{localStorage.setItem("ut_installed","1")}catch(e){}toast("Nice! 🎉");renderInstall();renderAll()};box.append(b)}
+}
+function openInstall(){guidePf=null;renderInstall();$("installSheet").hidden=false}
+$("installX").onclick=()=>{$("installSheet").hidden=true};$("installSheet").addEventListener("click",e=>{if(e.target.id==="installSheet")$("installSheet").hidden=true});
+$("howHome").onclick=openInstall;
+/* Onboarding final step */
+let pdRemindInit=false;
+function notifyStepEls(){
+  if(!pdRemindInit){pd.remind={...remPrefs()};pdRemindInit=true}
+  const out=[];
+  const s1=el("div","obsec"),h1=el("h3",null,"📲 Add to your Home Screen");if(isInstalled())h1.append(el("span","okb","Done"));s1.append(h1);
+  if(isStandalone())s1.append(el("p","small muted","You're already using the Home Screen app."));
+  else{const pf=platformKey();s1.append(guideSteps(pf));if(pf==="android"&&!installedFlag()){const b=el("button","link small","I added it");b.style.alignSelf="flex-start";b.onclick=()=>{try{localStorage.setItem("ut_installed","1")}catch(e){}renderStep()};s1.append(b)}
+    s1.append(el("p","note small muted","Your answers so far are saved, so it's safe to leave and open the new icon."))}
+  out.push(s1);
+  const s2=el("div","obsec"),h2=el("h3",null,"🔔 Turn on notifications");if(notifsOn())h2.append(el("span","okb","On"));s2.append(h2);
+  s2.append(el("p","small muted","Know when your partner checks in, sends a hug, a photo or a message."),notifAction(()=>renderStep()));out.push(s2);
+  const s3=el("div","obsec");s3.append(el("h3",null,"🌤️ Your daily rhythm"));
+  s3.append(el("p","small","Check in once in the morning. Around midday the app asks “Anything changed?” Tap Update or Still the same, so your partner always sees how you really are."));
+  [["am","Morning reminder","Weekdays at 9:00 AM, only if you haven't checked in"],["mid","Midday check","Weekdays at 12:30 PM"]].forEach(([k,t,sub])=>{const r=el("div","tog"),tl=el("div","tl");tl.append(el("b",null,t),el("span",null,sub));const sw=el("button","sw");sw.setAttribute("role","switch");sw.setAttribute("aria-label",t);sw.setAttribute("aria-checked",String(pd.remind[k]!==false));sw.onclick=()=>{pd.remind[k]=pd.remind[k]===false;renderStep()};r.append(tl,sw);s3.append(r)});
+  s3.append(el("p","note small muted","Reminders need notifications on. You can change these any time in About me."));
+  out.push(s3);
+  return out;
+}
+
 /* ================= Tabs ================= */
 function setTab(t){
   tab=t;
@@ -2785,7 +2896,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.15";
+const APP_VERSION="2026-10-17.16";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
