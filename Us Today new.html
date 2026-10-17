@@ -243,7 +243,8 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .rel h4{margin:6px 0 0;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .ndot{display:inline-block;margin-left:8px;vertical-align:middle;background:var(--accent);color:var(--accent-ink);font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 7px;line-height:1.4}
 .tabs .ndot{position:absolute;top:2px;right:6px;margin:0;width:8px;height:8px;padding:0;font-size:0;border-radius:50%}
-.tabs button{position:relative}
+.tabs button{position:relative;white-space:nowrap}
+.tabs .badge{position:absolute;top:-6px;right:-2px;margin:0;box-shadow:0 0 0 2px var(--bg)}
 .attach{position:relative}.attach .ndot{position:absolute;top:0;right:0;width:10px;height:10px;padding:0;font-size:0;margin:0;border-radius:50%}
 .pulse{animation:pulse 1.6s ease-out 2}@keyframes pulse{0%{box-shadow:0 0 0 0 var(--accent)}100%{box-shadow:0 0 0 14px transparent}}
 @media (prefers-reduced-motion:reduce){.pulse{animation:none;outline:2px solid var(--accent)}}
@@ -316,6 +317,57 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .ig .done{display:flex;gap:8px;align-items:center;background:var(--accent-soft);border-radius:12px;padding:10px 12px;font-weight:600;font-size:.9rem}
 .obsec{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
 .obsec h3{margin:0;font-size:1rem;display:flex;align-items:center;gap:8px}.obsec h3 .okb{margin-left:auto;font-size:.75rem;font-weight:700;color:var(--ok)}
+.mebtn{width:46px;height:46px;border-radius:50%;border:2px solid var(--accent);background:var(--accent-soft);padding:0;display:grid;place-items:center;flex:none;overflow:hidden}
+.mebtn .avatar{width:100%;height:100%;font-size:1rem;border-radius:50%}
+.mebtn[aria-selected="true"]{box-shadow:0 0 0 3px var(--accent-soft)}
+.hcard{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.hpair{display:flex;align-items:center}
+.hring{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;flex:none}
+.hring.empty{background:none;border:2px dashed var(--line);box-sizing:border-box}
+.hring .avatar{width:80px;height:80px;font-size:1.7rem;border:3px solid var(--surface);box-sizing:border-box}
+.hheart{width:34px;height:34px;border-radius:50%;background:var(--accent);margin:0 -12px;z-index:1;display:grid;place-items:center;border:3px solid var(--surface);color:var(--accent-ink)}
+.hnames{font-family:"Bricolage Grotesque",var(--f);font-weight:800;font-size:1.4rem;line-height:1.15}
+.hpills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.hpill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.86rem;background:var(--accent-soft);color:var(--accent)}
+.hpill.streak{background:#fff1e0;color:#8a4b00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hpill.streak{background:#3a2a14;color:#f3c27a}}
+.since{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.since input{width:auto}
+.glance{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.gl{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.gl.hot{border:1.5px solid var(--accent)}
+.gl .who{font-size:.8rem;color:var(--muted);font-weight:600}
+.gl .feel{font-weight:600;font-size:.95rem;line-height:1.3}
+.gl .act{font-size:.82rem;font-weight:700;color:var(--accent);background:none;border:0;padding:0;text-align:left;align-self:flex-start}
+.gl .ok{font-size:.8rem;font-weight:600;color:var(--ok)}
+.qa{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.qa button{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;padding:0;color:var(--ink);font-size:.8rem;font-weight:600}
+.qa .ci{width:58px;height:58px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;box-sizing:border-box;color:var(--accent)}
+.qa button:first-child .ci{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.dq{background:#2b1f33;color:#fff;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.dq .eyebrow{color:#f2bfd0}
+.dq .qt{font-family:"Bricolage Grotesque",var(--f);font-weight:700;font-size:1.25rem;line-height:1.25}
+.dq .ans{background:rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;font-size:.92rem;display:flex;gap:10px;align-items:flex-start}
+.dq .ans .avatar{flex:none}
+.dq .row input{flex:1;min-width:0;border:0}
+.dq .row button{border:0;border-radius:12px;background:#f2bfd0;color:#2b1f33;font-weight:700;padding:0 16px;min-height:44px}
+.nx{background:var(--surface);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column}
+.nxr{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.nxr+.nxr{border-top:1px solid var(--line)}
+.nxr .ic2{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;font-size:1.2rem;background:var(--accent-soft)}
+.nxr .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.nxr .tx b{font-weight:600}.nxr .tx span{font-size:.82rem;color:var(--muted)}
+.nxr .rt{font-weight:800;font-size:1rem;color:var(--accent);flex:none;text-align:right}
+.nxr .bar2{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}.nxr .bar2 i{display:block;height:100%;background:#e39a1f;border-radius:3px}
+.mo{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.mo .mh{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.mo .mh .t{display:flex;flex-direction:column}.mo .mh .t span{font-size:.8rem;color:var(--muted)}
+.mo .mb{padding:0 14px 12px;display:flex;flex-direction:column;gap:8px}
+.mo .pic,.mo .clip{border-radius:0}
+.mo .mb.flush{padding:0}
+.otd{background:#fff8ef;border:1px dashed #e3b77a;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.otd .eyebrow{color:#8a4b00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .otd{background:#2c2216;border-color:#6b5432}:root:not([data-theme="light"]) .otd .eyebrow{color:#f3c27a}}
 .aic{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .aic .eyebrow{color:var(--accent)}
 .aic .hl{font-weight:600;font-size:1rem;line-height:1.4}
@@ -432,17 +484,20 @@ details.pl summary{cursor:pointer;font-weight:600}
 </head>
 <body>
 <div class="wrap">
-  <div class="stack" style="gap:4px">
-    <span class="eyebrow" id="dateLabel">Today</span>
-    <h1 id="hello">How are we feeling?</h1>
+  <div class="row between" style="align-items:flex-start;gap:12px;flex-wrap:nowrap">
+    <div class="stack" style="gap:4px;min-width:0">
+      <span class="eyebrow" id="dateLabel">Today</span>
+      <h1 id="hello">How are we feeling?</h1>
+    </div>
+    <button class="mebtn" role="tab" id="tabMe" aria-selected="false" aria-label="About me"></button>
   </div>
   <div class="switch" id="whoSwitch" role="group" aria-label="Who's using the app" hidden><button id="whoA">Me</button><button id="whoB">Partner</button></div>
 
   <div class="tabs" role="tablist">
-    <button role="tab" id="tabToday" aria-selected="true">Check-in<span class="badge" id="badgeCi" hidden>1</span></button>
-    <button role="tab" id="tabConnect" aria-selected="false">Connect<span class="badge" id="badge" hidden></span></button>
+    <button role="tab" id="tabHome" aria-selected="true">Home</button>
+    <button role="tab" id="tabToday" aria-selected="false">Check-in<span class="badge" id="badgeCi" hidden>1</span></button>
     <button role="tab" id="tabChat" aria-selected="false">Chat<span class="badge" id="badgeChat" hidden></span></button>
-    <button role="tab" id="tabMe" aria-selected="false">About me</button>
+    <button role="tab" id="tabConnect" aria-selected="false">Connect<span class="badge" id="badge" hidden></span></button>
   </div>
 
   <div class="upd" id="updBar" hidden role="status"><p>New update available ✨</p><button id="updBtn">Refresh</button></div>
@@ -450,8 +505,17 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div id="ciBanner"></div>
   <div id="bannerBox"></div>
 
-  <div id="pToday" class="stack" style="gap:22px">
+  <div id="pHome" class="stack" style="gap:18px">
+    <div id="homeHead"></div>
     <div id="gsBox"></div>
+    <div class="stack" style="gap:10px"><h2>Today at a glance</h2><div class="glance" id="homeGlance"></div></div>
+    <div class="qa" id="homeActions"></div>
+    <div id="homeQ"></div>
+    <div class="stack" style="gap:10px" id="homeNextBox"><h2>Next up</h2><div id="homeNext"></div></div>
+    <div class="stack" style="gap:10px"><div class="row between"><h2>Moments</h2><button class="link small" id="homeAll">See all</button></div><div class="stack" style="gap:10px" id="homeMoments"></div></div>
+  </div>
+
+  <div id="pToday" class="stack" style="gap:22px" hidden>
     <div id="middayBox"></div>
     <div class="pair"><div class="person" id="meCard"></div><div class="person" id="partnerCard"></div></div>
 
@@ -836,7 +900,7 @@ const timeAgo=t=>{const m=Math.round((Date.now()-t)/60000);if(m<1)return"just no
 /* ================= State ================= */
 let db=null,me="__local",partnerId=null,joinedAt=null,spaceKey=null;
 let acctNames={},members={},entries={},sent={},replies={},msgs={};
-let selDate=todayKey(),draft={levels:{},note:""},dirty=false,tab="today";
+let selDate=todayKey(),draft={levels:{},note:""},dirty=false,tab="home";
 const A="a",B="b";let mode="shared",lastSeen=0;
 const base=p=>`people/${p}`;
 let ciSeen=0;
@@ -1035,6 +1099,7 @@ function renderTop(){
   $("dateLabel").textContent=d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
   const n=nm(me);$("hello").textContent=n!=="You"?`Hi ${n}. How are we feeling?`:"How are we feeling?";
   $("todayBtn").hidden=isToday;
+  $("tabMe").replaceChildren(avatar(me,"av-m"));
   if(A){$("whoA").replaceChildren(avatar(A,"av-s"),P(A).name||acctNames[A]||"Me");$("whoB").replaceChildren(avatar(B,"av-s"),P(B).name||"Partner");$("whoA").setAttribute("aria-pressed",String(me===A));$("whoB").setAttribute("aria-pressed",String(me===B))}
   $("dialTitle").textContent=isToday?"Your check-in":"Your check-in for "+d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
   renderCard($("meCard"),"You",draft,isToday?"Check in below":"No check-in that day",isToday?schedLine(me):"",me==="__local"?null:me);
@@ -2369,6 +2434,11 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17g",date:"Oct 17, 2026",items:[
+    {em:"🏠",t:"A new Home page",b:"See both of you at a glance: mood rings, your streak, today's question, what's next and your latest moments. Add the date you got together for a countdown to your anniversary.",go:["home","homeHead"]},
+    {em:"💬",t:"Today's question",b:"One question a day for the two of you. Your partner's answer stays hidden until you answer too.",go:["home","homeQ"]},
+    {em:"👤",t:"About me moved",b:"Tap your photo in the top corner to open About me.",go:["me","fbCard"]}
+  ]},
   {id:"2026-10-17f",date:"Oct 17, 2026",items:[
     {em:"🗂️",t:"Tidier Connect page",b:"Plan a date, Challenges and Everything you sent now fold up with a summary. Filter what you sent by photos and videos, hugs and emojis, songs, invites or challenges.",go:["connect","secSent"]}
   ]},
@@ -2777,18 +2847,172 @@ function notifyStepEls(){
   return out;
 }
 
+/* ================= Home ================= */
+let coupleSettings={};
+const QUESTIONS=["What's one small thing I did this week that made you smile?","What's a place you'd love for us to go together?","What's your favorite memory of us from this year?","What's something you'd like more of from me lately?","What song reminds you of us?","What's a little thing I do that you never want me to stop?","If we had a free Saturday with no kids, how would you spend it?","What's something you're proud of yourself for this week?","What's one thing on your mind you haven't told me yet?","What was your first impression of me?","What's a dream you have for us five years from now?","What's your ideal way to unwind after a long day?","What's one thing I can take off your plate this week?","When do you feel closest to me?","What's a date we haven't done that you'd love to try?","What's something that made you laugh recently?","What's a habit of mine you secretly love?","What's a meal you want us to cook together?","How can I support you better when you're stressed?","What's one word you'd use to describe us right now?","What's a tradition you'd like us to start?","What's the best compliment I've ever given you?","What's a small surprise that would make your day?","What are you most looking forward to this month?","What's something new you'd like us to learn together?","What do you love most about our family?","What's a moment you felt really seen by me?","What does a perfect morning together look like?","What's a goal you want my help with?","What's your favorite thing about coming home?"];
+const dayNum=k=>Math.floor(fromKey(k).getTime()/86400000);
+const qOfDay=k=>QUESTIONS[((dayNum(k)%QUESTIONS.length)+QUESTIONS.length)%QUESTIONS.length];
+let qDoc={},qKey="",qUnsub=null;
+function watchQuestion(){
+  const k=todayKey();if(qKey===k&&qUnsub)return;qKey=k;try{qUnsub&&qUnsub()}catch(e){}
+  qUnsub=db.doc(`q/${k}`).onSnapshot(s=>{const prev=qDoc[partnerId]?.t;qDoc=s.exists?(s.data()||{}):{};if(tab==="home")renderHome()},()=>{});
+}
+async function answerQ(text){
+  text=String(text||"").trim().slice(0,400);if(!text){toast("Write your answer first");return}
+  if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
+  const k=todayKey();
+  try{await db.doc(`q/${k}`).merge({[me]:{t:text,at:Date.now()},q:qOfDay(k)});qDoc={...qDoc,[me]:{t:text,at:Date.now()}};
+    track({"n.question":1});
+    if(partnerId)notify(partnerId,nm(me),qDoc[partnerId]?`Answered today's question 💬 See what they said.`:`Answered today's question 💬 Answer to see theirs.`,"question");
+    toast("Answer shared 💬");renderHome()}
+  catch(e){console.error(e);toast(saveErr(e))}
+}
+function bothOn(k){return !!(E(me)[k]&&partnerId&&E(partnerId)[k])}
+function streakDays(){
+  let d=new Date(),n=0;if(!bothOn(key(d)))d.setDate(d.getDate()-1);
+  for(let i=0;i<40;i++){if(!bothOn(key(d)))break;n++;d.setDate(d.getDate()-1)}
+  return n;
+}
+function sinceInfo(){
+  const s=coupleSettings.since;if(!s||!/^\d{4}-\d{2}-\d{2}$/.test(s))return null;
+  const d=fromKey(s),now=new Date();now.setHours(0,0,0,0);
+  const days=Math.round((now-d)/86400000);
+  let next=new Date(now.getFullYear(),d.getMonth(),d.getDate());if(next<now)next=new Date(now.getFullYear()+1,d.getMonth(),d.getDate());
+  const until=Math.round((next-now)/86400000),years=next.getFullYear()-d.getFullYear();
+  return{d,days,until,years,next};
+}
+async function saveSince(v){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v||"")){toast("Pick a date");return}
+  try{await db.doc("settings/couple").merge({since:v,sinceBy:me});coupleSettings={...coupleSettings,since:v};toast("Saved 💞");renderHome()}catch(e){console.error(e);toast(saveErr(e))}
+}
+const ICO={
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  heart:'<path d="M12 21s-7.5-4.6-9.6-9.4C.9 8.1 3 4.5 6.6 4.5c2.1 0 3.6 1.1 5.4 3.1 1.8-2 3.3-3.1 5.4-3.1 3.6 0 5.7 3.6 4.2 7.1C19.5 16.4 12 21 12 21z"/>',
+  chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  camera:'<rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/>',
+  flame:'<path d="M12 22c4.4 0 7-3 7-7 0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-3 2-5 5-5 8 0 4 2.6 7 7 7z"/>'
+};
+function svgI(name,size,fill){const ns="http://www.w3.org/2000/svg",sv=document.createElementNS(ns,"svg");sv.setAttribute("width",size||24);sv.setAttribute("height",size||24);sv.setAttribute("viewBox","0 0 24 24");sv.setAttribute("fill",fill?"currentColor":"none");sv.setAttribute("stroke","currentColor");sv.setAttribute("stroke-width","2");sv.setAttribute("stroke-linecap","round");sv.setAttribute("stroke-linejoin","round");sv.setAttribute("aria-hidden","true");sv.innerHTML=ICO[name];return sv}
+function ringFor(p){const e=p?E(p)[todayKey()]:null,bg=e?ringBg(e.levels):null,r=el("div","hring"+(bg?"":" empty"));if(bg)r.style.background=bg;r.append(avatar(p,"av-l"));return r}
+const feelsShort=e=>{const t=topList(e.levels,2).map(x=>word(x.k,x.v));return t.length?cap1(t.join(", ").toLowerCase()):"No feelings marked"};
+function nextItems(){
+  const now=Date.now(),out=[],pn=nm(partnerId);
+  const all=[...incoming().map(x=>({...x,dir:"in"})),...outgoing().map(x=>({...x,dir:"out"}))];
+  all.filter(x=>x.kind==="invite").forEach(it=>{
+    const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id];
+    const fresh=it.at?it.at>now-3*3600000:it.createdAt>now-3*86400000;
+    if(!fresh)return;
+    const what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(pick(INV_TYPES,it.type)?.[1]||"Date");
+    let rt="",sub=it.when+(rep?.status==="yes"?" · Accepted":rep?.status==="later"?" · Not this time":it.dir==="in"?" · Tap to answer":" · Waiting");
+    if(rep?.status==="later")return;
+    if(it.at){const dd=Math.round((new Date(it.at).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/86400000);rt=dd<=0?"Today":dd===1?"Tomorrow":dd+" days"}
+    out.push({ic:"💌",t:it.dir==="in"?`${pn} invited you: ${what}`:what,sub,rt,go:()=>setTab("connect"),sort:it.at||it.createdAt});
+  });
+  all.filter(x=>x.kind==="challenge"&&x.createdAt>now-3*86400000).forEach(it=>{
+    const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id],c=rep?.count||0,t=it.target||1;if(c>=t)return;
+    out.push({ic:"🏁",t:it.text,sub:it.dir==="in"?`From ${pn}`:`You challenged ${pn}`,prog:c/t,rt:`${c} of ${t}`,go:()=>setTab("connect"),sort:it.createdAt});
+  });
+  const si=sinceInfo();if(si&&si.until<=60)out.push({ic:"🎉",t:si.until===0?`Happy ${si.years}-year anniversary!`:"Your anniversary",sub:si.next.toLocaleDateString(undefined,{month:"long",day:"numeric"})+` · ${si.years} years`,rt:si.until===0?"Today":si.until+" days",sort:si.next.getTime()});
+  return out.sort((a,b)=>a.sort-b.sort).slice(0,4);
+}
+function renderHome(){
+  if(!$("pHome"))return;
+  const p=partnerId,pn=p?nm(p):"Your partner",k=todayKey();
+  // header
+  const hh=$("homeHead");hh.textContent="";const c=el("div","hcard");
+  const pair=el("div","hpair");const ht=el("div","hheart");ht.append(svgI("heart",16,true));pair.append(ringFor(me),ht,ringFor(p));c.append(pair);
+  c.append(el("span","hnames",p?`${nm(me)} & ${pn}`:nm(me)));
+  const si=sinceInfo();
+  if(si)c.append(el("span","small muted",`Together since ${si.d.toLocaleDateString(undefined,{month:"long",year:"numeric"})} · ${si.days.toLocaleString()} days`));
+  else if(p&&signedIn()){const f=el("div","since"),lab=el("label","small muted","Together since");const inp=el("input");inp.type="date";inp.id="sinceIn";lab.htmlFor="sinceIn";inp.max=k;const b=el("button","secondary","Save");b.onclick=()=>saveSince(inp.value);f.append(lab,inp,b);c.append(f)}
+  const pills=el("div","hpills"),st=streakDays();
+  if(p){const sp=el("span","hpill streak");sp.append(svgI("flame",15),document.createTextNode(st?`${st}${st>=39?"+":""}-day streak`:"Start a streak: both check in today"));pills.append(sp)}
+  const nx=nextItems();if(nx[0]&&nx[0].rt)pills.append(el("span","hpill",`Next: ${nx[0].t.replace(/^.*invited you: /,"")} · ${nx[0].rt}`));
+  c.append(pills);hh.append(c);
+  // glance
+  const g=$("homeGlance");g.textContent="";
+  const mine=E(me)[k],theirs=p?E(p)[k]:null;
+  {const card=el("div","gl");card.append(el("span","who",mine?`You · ${hm(mine.updatedAt)}`:"You"));
+    if(mine){card.append(el("span","feel",feelsShort(mine)));
+      if(middayDue()){const u=el("button","act","Anything changed? Update");u.onclick=()=>{setTab("today");editOpen=true;openGroups=new Set([0,1,2]);renderDials();setTimeout(()=>$("dialBox")?.scrollIntoView({behavior:"smooth",block:"start"}),80)};const s2=el("button","act","Still the same");s2.onclick=markSame;card.append(u,s2)}
+      else if(mine.sameAt&&!isMorning(mine.sameAt))card.append(el("span","ok",`Still the same at ${hm(mine.sameAt)}`));
+      else{const ed=el("button","act","Update");ed.onclick=()=>{setTab("today");setTimeout(()=>$("dialBox")?.scrollIntoView({behavior:"smooth",block:"start"}),80)};card.append(ed)}}
+    else{card.append(el("span","feel","Not checked in yet"));const b=el("button","act","Check in now");b.onclick=()=>{setTab("today");setTimeout(()=>$("dialBox")?.scrollIntoView({behavior:"smooth",block:"start"}),80)};card.append(b)}
+    g.append(card)}
+  {const card=el("div","gl"+(theirs?" hot":""));
+    if(!p){card.append(el("span","who","Your partner"),el("span","feel","Hasn't joined yet"));const b=el("button","act","Invite them");b.onclick=()=>goTo(["me","inviteCard"]);card.append(b)}
+    else if(theirs){card.append(el("span","who",theirs.morning?`${pn} · updated ${hm(theirs.updatedAt)}`:`${pn} · ${hm(theirs.updatedAt)}`));
+      const ch=theirs.morning?changeText(theirs.morning.levels,theirs.levels,pn):"";card.append(el("span","feel",ch?ch.replace(/^Now /,"Now ").replace(/\.$/,""):feelsShort(theirs)));
+      if(theirs.note)card.append(el("span","small muted","Needs: “"+theirs.note.slice(0,50)+"”"));
+      const b=el("button","act","See how to help");b.onclick=()=>{markCiSeen();setTab("today");setTimeout(()=>$("forBox").scrollIntoView({behavior:"smooth",block:"start"}),80)};card.append(b)}
+    else{card.append(el("span","who",pn),el("span","feel","Hasn't checked in yet"));const b=el("button","act","Send a hug");b.onclick=()=>sendItem({kind:"touch",type:"hug"},"Hug sent 🤗");card.append(b)}
+    g.append(card)}
+  // quick actions
+  const qa=$("homeActions");qa.textContent="";
+  [["check","Check in",()=>{setTab("today");setTimeout(()=>$("dialBox")?.scrollIntoView({behavior:"smooth",block:"start"}),80)}],
+   ["heart","Send hug",()=>{if(!p){toast("Your partner hasn't joined yet");return}sendItem({kind:"touch",type:"hug"},"Hug sent 🤗")}],
+   ["chat","Message",()=>setTab("chat")],
+   ["camera","Photo",()=>{setTab("connect");useDot("video");$("picFile").click()}]
+  ].forEach(([ic,t,fn])=>{const b=el("button");b.type="button";const ci=el("span","ci");ci.append(svgI(ic,24));b.append(ci,document.createTextNode(t));b.onclick=fn;qa.append(b)});
+  // daily question
+  const qb=$("homeQ");qb.textContent="";
+  if(p){const d=el("div","dq");d.append(el("span","eyebrow","Today's question"),el("span","qt",qDoc.q||qOfDay(k)));
+    const my=qDoc[me],th=qDoc[p];
+    if(my){const a1=el("div","ans");a1.append(avatar(me,"av-m"),el("span",null,my.t));d.append(a1);
+      if(th){const a2=el("div","ans");a2.append(avatar(p,"av-m"),el("span",null,th.t));d.append(a2)}
+      else d.append(el("span","small",`Waiting for ${pn}'s answer.`))}
+    else{
+      if(th){const a2=el("div","ans");a2.append(avatar(p,"av-m"),el("span",null,`${pn} answered. Answer to see theirs.`));d.append(a2)}
+      const r=el("div","row");const lab=el("label",null,"Your answer");lab.htmlFor="qIn";lab.style.cssText="position:absolute;left:-9999px";const inp=el("input");inp.type="text";inp.id="qIn";inp.maxLength=400;inp.placeholder="Your answer…";
+      const b=el("button",null,"Share");b.type="button";b.onclick=()=>answerQ(inp.value);inp.onkeydown=e=>{if(e.key==="Enter")answerQ(inp.value)};r.append(lab,inp,b);d.append(r)}
+    qb.append(d)}
+  // next up
+  const nb=$("homeNext");nb.textContent="";
+  if(nx.length){const list=el("div","nx");nx.forEach(it=>{const r=el(it.go?"button":"div","nxr");if(it.go){r.type="button";r.style.cssText="border:0;background:none;width:100%;text-align:left;font:inherit;color:inherit";r.onclick=it.go}
+      r.append(el("span","ic2",it.ic));const tx=el("div","tx");tx.append(el("b",null,it.t));if(it.prog!=null){const br=el("div","bar2"),fi=el("i");fi.style.width=Math.round(it.prog*100)+"%";br.append(fi);tx.append(br)}else tx.append(el("span",null,it.sub));
+      r.append(tx);if(it.rt)r.append(el("span","rt",it.rt));list.append(r)});nb.append(list)}
+  else{const e=el("div","nx");const r=el("div","nxr");r.append(el("span","ic2","💌"));const tx=el("div","tx");tx.append(el("b",null,"Nothing planned yet"),el("span",null,`Invite ${pn} to a date or send a challenge.`));r.append(tx);const b=el("button","secondary","Plan");b.onclick=()=>{setTab("connect");setTimeout(()=>{const s3=$("secInv");if(s3){s3.open=true;s3.scrollIntoView({behavior:"smooth",block:"start"})}},80)};r.append(b);e.append(r);nb.append(e)}
+  // moments
+  const mb=$("homeMoments");mb.textContent="";
+  const all=[...incoming().map(x=>({...x,dir:"in"})),...outgoing().map(x=>({...x,dir:"out"}))];
+  const moments=all.filter(it=>{
+    if(it.kind==="photo"||it.kind==="clip"||it.kind==="media")return true;
+    const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id];
+    if(it.kind==="challenge")return (rep?.count||0)>=(it.target||1);
+    if(it.kind==="invite")return rep?.status==="yes";
+    return false;
+  }).sort((a,b)=>b.createdAt-a.createdAt).slice(0,6);
+  // on this day
+  const md=k.slice(5),otd=all.find(it=>{const d=new Date(it.createdAt);return key(d).slice(5)===md&&key(d).slice(0,4)!==k.slice(0,4)&&(it.kind==="photo"||it.kind==="clip")});
+  if(otd){const o=el("div","otd");const yrs=new Date().getFullYear()-new Date(otd.createdAt).getFullYear();o.append(el("span","eyebrow",`On this day · ${yrs} year${yrs>1?"s":""} ago`),itemMedia(otd));if(otd.caption)o.append(el("span","small",otd.caption));mb.append(o)}
+  if(!moments.length&&!otd){mb.append(el("p","muted small",`Photos, videos, songs, finished challenges and accepted dates show up here.`))}
+  moments.forEach(it=>{
+    const who=it.dir==="in"?p:me,rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id],c2=el("div","mo"),h=el("div","mh");
+    h.append(avatar(who,"av-m"));const t=el("div","t");t.append(el("b",null,itemTitle(it,it.dir).title.replace(/^You sent/,"You sent").replace(/:.*$/,"")),el("span",null,timeAgo(it.createdAt)));h.append(t);c2.append(h);
+    if(isPicLike(it)){const b=el("div","mb flush");b.append(itemMedia(it));c2.append(b);const b2=el("div","mb");b2.style.paddingTop="10px";if(it.caption)b2.append(el("span",null,it.caption));
+      const theirRep=it.dir==="out"?rep:(replies[me]||{})[it.id];if(theirRep?.reaction)b2.append(el("span","small muted",`${it.dir==="out"?pn:"You"} reacted ${theirRep.reaction}`));if(theirRep?.comment)b2.append(el("span","small muted",`${it.dir==="out"?pn:"You"}: “${theirRep.comment}”`));if(b2.childNodes.length)c2.append(b2)}
+    else if(it.kind==="media"){const b=el("div","mb");b.append(mediaFor(it));if(it.note)b.append(el("span","small muted","“"+it.note+"”"));c2.append(b)}
+    else if(it.kind==="challenge"){const b=el("div","mb");b.append(el("span",null,`🏆 ${it.dir==="out"?pn+" finished your challenge":"You finished "+pn+"'s challenge"}: ${it.text}`));c2.append(b)}
+    else if(it.kind==="invite"){const b=el("div","mb");b.append(el("span",null,`💌 Accepted · ${it.when}`));c2.append(b)}
+    mb.append(c2);
+  });
+}
+$("homeAll").onclick=()=>{setTab("connect");setTimeout(()=>{const s4=$("secSent");if(s4){s4.open=true;s4.scrollIntoView({behavior:"smooth",block:"start"})}},80)};
+
 /* ================= Tabs ================= */
 function setTab(t){
   tab=t;
-  [["today","tabToday","pToday"],["connect","tabConnect","pConnect"],["chat","tabChat","pChat"],["me","tabMe","pMe"]].forEach(([k,b,p])=>{$(b).setAttribute("aria-selected",String(k===t));$(p).hidden=k!==t});
+  [["home","tabHome","pHome"],["today","tabToday","pToday"],["connect","tabConnect","pConnect"],["chat","tabChat","pChat"],["me","tabMe","pMe"]].forEach(([k,b,p])=>{$(b).setAttribute("aria-selected",String(k===t));$(p).hidden=k!==t});
   if(t==="connect"){renderConnect();markSeen()}
   if(t==="me")renderProfile();
+  if(t==="home")renderHome();
   if(t==="chat"){renderChat(true);markChatRead()}else renderChatBadge();
+  try{window.scrollTo({top:0})}catch(e){}
   renderBanner();renderCiBanner();
 }
-$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>setTab("me");$("tabChat").onclick=()=>setTab("chat");
+$("tabHome").onclick=()=>setTab("home");$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>setTab("me");$("tabChat").onclick=()=>setTab("chat");
 
-function renderAll(){renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
+function renderAll(){if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
 
 /* ================= Live data ================= */
 const subs={},seenSnap={};
@@ -2827,7 +3051,7 @@ function switchTo(pid){
   switchArmed=false;me=pid;partnerId=pid===A?B:A;
   try{localStorage.setItem("ut_who",pid)}catch(e){}
   syncUrl();
-  loadSeen();selDate=todayKey();editOpen=false;loadDraft();setTab("today");renderAll();
+  loadSeen();selDate=todayKey();editOpen=false;loadDraft();setTab("home");renderAll();
   toast(`Switched to ${nm(pid)}`);
   if(!members[me]?.onboarded)openSheet(true);else maybeWhatsNew();
   syncReminder();
@@ -2849,6 +3073,7 @@ async function connectDb(root){
       set:d=>fs.setDoc(fs.doc(fdb,full(p)),d),
       update:d=>fs.updateDoc(fs.doc(fdb,full(p)),d),
       delete:()=>fs.deleteDoc(fs.doc(fdb,full(p))),
+      merge:d=>fs.setDoc(fs.doc(fdb,full(p)),d,{merge:true}),
       onSnapshot:(n,e)=>fs.onSnapshot(fs.doc(fdb,full(p)),x=>n(snap(x)),e)});
     const coll=(p,c=[])=>({
       where:(f,o,v)=>coll(p,[...c,fs.where(f,o,v)]),
@@ -2894,6 +3119,8 @@ async function startSpace(firstTime){
   initOwner();
   hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen();setTimeout(syncReminder,1500)});
   refreshPushSub();
+  db.doc("settings/couple").onSnapshot(s=>{coupleSettings=s.exists?(s.data()||{}):{};if(tab==="home")renderHome()},()=>{});
+  watchQuestion();
   db.doc("settings/media").onSnapshot(s=>{mediaSettings=s.exists?(s.data()||{}):{autoDelete:0};if(tab==="me")renderAutoDel();maybeCleanup()},()=>{});
   [A,B].forEach(p=>{watch(p);db.doc(base(p)).onSnapshot(s=>{members[p]=s.exists?(s.data()||{}):{};renderAll()},()=>{})});
 }
@@ -2922,7 +3149,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.17";
+const APP_VERSION="2026-10-17.18";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
