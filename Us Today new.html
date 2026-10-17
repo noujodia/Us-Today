@@ -49,7 +49,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .stack{display:flex;flex-direction:column;gap:12px}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .between{justify-content:space-between}
-input[type=text],input[type=search],input[type=datetime-local],textarea{width:100%;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;padding:10px 12px}
+input[type=text],input[type=search],input[type=password],input[type=date],input[type=datetime-local],textarea{width:100%;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;padding:10px 12px}
 textarea{min-height:64px;resize:vertical}
 [hidden]{display:none!important}
 .notice{background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:.9rem}
@@ -763,6 +763,10 @@ details.pl summary{cursor:pointer;font-weight:600}
     </div>
         </div>
       </details>
+      <details class="sec" id="secLock">
+        <summary><div class="sh"><h2>Privacy lock 🔒</h2><span class="ssum" id="sum_secLock"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody"><div class="card stack" id="lockCard"></div></div>
+      </details>
       <details class="sec" id="secAd">
         <summary><div class="sh"><h2>Photos &amp; videos</h2><span class="ssum" id="sum_secAd"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
         <div class="secbody">
@@ -839,6 +843,20 @@ details.pl summary{cursor:pointer;font-weight:600}
       <button class="secondary" id="joinBtn">Join</button>
     </div>
     <p class="small" id="welcomeErr" style="color:var(--warn)"></p>
+  </div>
+</div>
+<div class="sheet" id="lockScreen" hidden role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+  <div class="inner" style="justify-content:center;align-items:stretch">
+    <div class="stack" style="gap:10px;text-align:center;align-items:center">
+      <span style="font-size:2.4rem" aria-hidden="true">🔒</span>
+      <h1 id="lockTitle">Enter your passcode</h1>
+      <p class="muted">This space is protected. Enter the 6-digit passcode you and your partner set. You'll only need it once on this phone.</p>
+    </div>
+    <label for="lockIn" class="small" style="font-weight:600;text-align:center">Passcode</label>
+    <input type="password" id="lockIn" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" style="text-align:center;font-size:1.6rem;letter-spacing:.5em;padding:14px">
+    <button class="primary" id="lockGo">Unlock</button>
+    <p class="small" id="lockErr" style="color:var(--warn);text-align:center;min-height:1.2em"></p>
+    <p class="small muted" style="text-align:center">Forgot it? Your partner can change it in About me → Privacy lock.</p>
   </div>
 </div>
 <div class="lightbox" id="lightbox" hidden></div>
@@ -2238,11 +2256,12 @@ $("copyInv").onclick=async()=>{try{await navigator.clipboard.writeText(inviteLin
 async function copyText(t,msgEl,codeEl){try{await navigator.clipboard.writeText(t);$(msgEl).textContent="Copied"}catch(e){const rg=document.createRange();rg.selectNodeContents($(codeEl));const sl=getSelection();sl.removeAllRanges();sl.addRange(rg);$(msgEl).textContent="Selected. Copy it from here."}}
 $("copyMine").onclick=()=>copyText(linkFor(me),"copyMineMsg","myLink");
 function renderProfile(){
+  renderLockCard();
   renderRemind();
   $("verTap").textContent="Version "+APP_VERSION;
   renderAutoDel();renderAiCard();
   renderNotifCard();
-  {const joined=!!(other(me)&&members[other(me)]?.onboarded);$("invLink").textContent=spaceKey&&!joined?inviteLink():"";$("inviteCard").querySelector("p").textContent=joined?`${nm(other(me))} has joined, so there's nothing to share. Keep your personal link private: anyone who has it can open your space as you.`:"Send this link to your partner and have them open it on their phone. Anyone with the link can open your space, so only share it with each other.";$("copyInv").hidden=joined;$("invLink").hidden=joined}$("myLink").textContent=spaceKey?linkFor(me):"";
+  {const joined=!!(other(me)&&members[other(me)]?.onboarded);$("invLink").textContent=spaceKey&&!joined?inviteLink():"";$("inviteCard").querySelector("p").textContent=joined?`${nm(other(me))} has joined, so there's nothing to share. Keep your personal link private${lockDoc?". With the privacy lock on, a new phone also needs your passcode":": anyone who has it can open your space as you. Turn on the privacy lock for extra protection"}.`:"Send this link to your partner and have them open it on their phone. Anyone with the link can open your space, so only share it with each other.";$("copyInv").hidden=joined;$("invLink").hidden=joined}$("myLink").textContent=spaceKey?linkFor(me):"";
   renderPhotoBox();
   renderProfileView();
 }
@@ -2600,6 +2619,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17j",date:"Oct 17, 2026",items:[
+    {em:"🔒",t:"Privacy lock",b:"Protect your space with a 6-digit passcode you both share. Phones that haven't entered it can't see anything, even with your link. Turn it on in About me → Privacy lock.",go:["me","lockCard"]}
+  ]},
   {id:"2026-10-17i",date:"Oct 17, 2026",items:[
     {em:"📸",t:"Stories",b:"Share a photo or short video that disappears after 24 hours. Tap the + on your photo on Home. When your partner posts one, a colorful ring appears around their photo. Tap it to watch, react or reply.",go:["home","homeHead"]},
     {em:"🏷️",t:"Nicknames",b:"Add a nickname in About me. It shows on your profile and Home. You two can't pick the same one.",go:["me","avNick"]}
@@ -2738,8 +2760,15 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function isOwner() { return request.auth != null && request.auth.uid in ['${uid}']; }
     function hasAccess(key) { return exists(/databases/$(database)/documents/betaAccess/$(key)); }
+    function lockOn(key) { return exists(/databases/$(database)/documents/couples/$(key)/lock/main); }
+    function onDevice(key) { return exists(/databases/$(database)/documents/couples/$(key)/devices/$(request.auth.uid)); }
     match /couples/{key}/{document=**} {
-      allow read, write: if request.auth != null && key.size() >= 20 && hasAccess(key);
+      allow read, write: if request.auth != null && key.size() >= 20 && hasAccess(key)
+        && (!lockOn(key) || onDevice(key));
+    }
+    match /couples/{key}/devices/{uid} {
+      allow create, update: if request.auth != null && request.auth.uid == uid && hasAccess(key) && lockOn(key)
+        && request.resource.data.ph == get(/databases/$(database)/documents/couples/$(key)/lock/main).data.ph;
     }
     match /betaCodes/{code} {
       allow get: if request.auth != null;
@@ -2962,7 +2991,7 @@ async function setRemind(k){
 $("remAm").onclick=()=>setRemind("am");$("remMid").onclick=()=>setRemind("mid");
 
 /* ---- Collapsible sections ---- */
-const SECS=["secSelf","secFor","secWeek","secRead","secInv","secCh","secSent","secNotif","secAi","secAd","secLinks","secHelp"];
+const SECS=["secSelf","secFor","secWeek","secRead","secInv","secCh","secSent","secNotif","secAi","secLock","secAd","secLinks","secHelp"];
 function initSecs(){SECS.forEach(id=>{const d=$(id);if(!d)return;let v=null;try{v=localStorage.getItem("ut_sec_"+id)}catch(x){}if(v!=null)d.open=v==="1";d.addEventListener("toggle",()=>{try{localStorage.setItem("ut_sec_"+id,d.open?"1":"0")}catch(x){}})})}
 initSecs();
 function setSum(id,t){const n=$(id);if(n)n.textContent=t||""}
@@ -3378,9 +3407,81 @@ function renderCodes(){
     box.append(r)})};
   sec(`Unused (${unused.length})`,unused);sec(`Used (${used.length})`,used);
   if(!codesList.length)box.append(el("p","muted small","No codes yet. Create one for each couple you invite."));
+  const rr=el("details");rr.append(el("summary","small muted","Latest Firebase rules (copy after app updates that need them)"));const pre=el("pre","code",ownerRules(db?.uid||""));const cb=el("button","secondary","Copy rules");cb.onclick=async()=>{try{await navigator.clipboard.writeText(ownerRules(db?.uid||""));toast("Rules copied")}catch(x){toast("Couldn't copy")}};
+  const lk=el("a","link small","Open Firebase rules");lk.href="https://console.firebase.google.com/project/us-today-e354e/firestore/rules";lk.target="_blank";lk.rel="noopener";rr.append(pre,cb,lk);box.append(rr);
 }
 $("codesOpen").onclick=()=>{watchCodes();renderCodes();$("codesSheet").hidden=false};
 $("codesX").onclick=()=>{$("codesSheet").hidden=true};$("codesSheet").addEventListener("click",e=>{if(e.target.id==="codesSheet")$("codesSheet").hidden=true});
+
+/* ================= Privacy lock (shared 6-digit passcode, enforced by the server) ================= */
+let lockDoc=null,devicesList=[],lockWatching=false,lockRetry=null,lockFails=0,lockWaitUntil=0;
+async function lockHash(pin){const t="ut-lock|"+spaceKey+"|"+pin;try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}catch(e){return fnvHex(t)+fnvHex(t+"#")}}
+const validPin=v=>/^\d{6}$/.test(v||"");
+function showLock(after){lockRetry=after;$("lockErr").textContent="";$("lockIn").value="";$("lockScreen").hidden=false;setTimeout(()=>$("lockIn").focus(),100)}
+$("lockGo").onclick=async()=>{
+  const pin=$("lockIn").value.trim();if(!validPin(pin)){$("lockErr").textContent="Enter all 6 digits.";return}
+  if(Date.now()<lockWaitUntil){$("lockErr").textContent=`Too many tries. Wait ${Math.ceil((lockWaitUntil-Date.now())/1000)} seconds.`;return}
+  const btn=$("lockGo");btn.disabled=true;btn.textContent="Checking…";
+  try{const ph=await lockHash(pin);await db.doc(`devices/${db.uid}`).set({ph,who:me,at:Date.now(),ua:deviceName(navigator.userAgent)});
+    lockFails=0;$("lockScreen").hidden=true;toast("Unlocked 🔓");const f=lockRetry;lockRetry=null;f&&f()}
+  catch(e){lockFails++;if(lockFails>=5){lockWaitUntil=Date.now()+30000;lockFails=0}$("lockErr").textContent=isDenied(e)?"That passcode isn't right. Try again.":"Couldn't check. Check your connection.";$("lockIn").value=""}
+  finally{btn.disabled=false;btn.textContent="Unlock"}
+};
+$("lockIn").addEventListener("keydown",e=>{if(e.key==="Enter")$("lockGo").click()});
+function watchLock(){
+  if(lockWatching||!signedIn())return;lockWatching=true;
+  db.doc("lock/main").onSnapshot(s=>{lockDoc=s.exists?(s.data()||{}):null;if(lockDoc&&db.uid)db.doc(`devices/${db.uid}`).update({at:Date.now()}).catch(()=>{});if(tab==="me")renderLockCard()},()=>{});
+  db.collection("devices").onSnapshot(q=>{devicesList=q.docs.map(d=>({id:d.id,...(d.data()||{})}));if(tab==="me")renderLockCard()},()=>{});
+}
+/* If this phone gets signed out while the app is open (partner turned the lock on), show the passcode screen. */
+async function lockProbe(){if(!signedIn()||!$("lockScreen").hidden)return;try{await db.doc(base(A)).get()}catch(e){if(isDenied(e))showLock(()=>location.reload())}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")lockProbe()});
+function pinForm(label,onSave){
+  const w=el("div","stack");w.style.gap="8px";
+  const l1=el("label","small",label);l1.style.fontWeight="600";const a=el("input");a.type="password";a.inputMode="numeric";a.maxLength=6;a.autocomplete="new-password";a.id="pinA";l1.htmlFor="pinA";
+  const l2=el("label","small","Type it again");l2.style.fontWeight="600";const b2=el("input");b2.type="password";b2.inputMode="numeric";b2.maxLength=6;b2.autocomplete="new-password";b2.id="pinB";l2.htmlFor="pinB";
+  const err=el("p","small");err.style.color="var(--warn)";
+  const go=el("button","primary","Save passcode");go.onclick=async()=>{if(!validPin(a.value)){err.textContent="Use exactly 6 digits.";return}if(a.value!==b2.value){err.textContent="The two passcodes don't match.";return}go.disabled=true;go.textContent="Saving…";await onSave(a.value,err);go.disabled=false;go.textContent="Save passcode"};
+  w.append(l1,a,l2,b2,go,err);return w;
+}
+async function signOutOthers(){const q=await db.collection("devices").get();for(const d of q.docs)if(d.id!==db.uid)await db.doc(`devices/${d.id}`).delete().catch(()=>{})}
+async function enableLock(pin,err){
+  try{const ph=await lockHash(pin),t=Date.now();
+    await db.doc(`devices/${db.uid}`).set({ph,who:me,at:t,ua:deviceName(navigator.userAgent)});
+    await db.doc("lock/main").set({ph,by:me,at:t});
+    await signOutOthers();
+    if(partnerId)notify(partnerId,nm(me),"Turned on a passcode lock for your space 🔒 Ask them for the code. You'll enter it once on your phone.","lock");
+    lockDoc={ph,by:me,at:t};lockFormOpen=false;toast("Privacy lock on 🔒");renderLockCard(true)}
+  catch(e){console.error(e);err.textContent=isDenied(e)?"The app's server rules need an update first. Ask the app owner.":"Couldn't turn it on. Try again."}
+}
+async function changeLock(pin,err){
+  try{const ph=await lockHash(pin),t=Date.now();await db.doc(`devices/${db.uid}`).set({ph,who:me,at:t,ua:deviceName(navigator.userAgent)});await db.doc("lock/main").set({ph,by:me,at:t});await signOutOthers();
+    if(partnerId)notify(partnerId,nm(me),"Changed the passcode for your space 🔒 Ask them for the new one.","lock");lockFormOpen=false;toast("Passcode changed");renderLockCard(true)}
+  catch(e){console.error(e);err.textContent="Couldn't change it. Try again."}
+}
+async function disableLock(){if(!confirm("Turn off the privacy lock? Anyone with your link could open your space again."))return;try{await db.doc("lock/main").delete();lockDoc=null;toast("Privacy lock off");renderLockCard(true)}catch(e){console.error(e);toast(saveErr(e))}}
+let lockFormOpen=false;
+function renderLockCard(force){
+  const box=$("lockCard");if(!box)return;const pn=partnerId?(nickOf(partnerId)||nm(partnerId)):"your partner";
+  setSum("sum_secLock",lockDoc?`On · ${devicesList.length} phone${devicesList.length===1?"":"s"} unlocked`:"Off · anyone with your link can open your space");
+  if(!force&&lockFormOpen&&$("pinA")&&box.contains($("pinA"))&&box.dataset.mode===(lockDoc?"on":"off"))return;
+  box.dataset.mode=lockDoc?"on":"off";box.textContent="";
+  if(!lockDoc){
+    box.append(el("p","small","Protect your space with a 6-digit passcode you and "+pn+" share. Any phone that hasn't entered it can't see anything, even with your link."),
+      el("p","small muted","Turning it on signs out every other phone. You'll each enter the passcode once."));
+    if(!lockFormOpen){const b=el("button","primary","Turn on privacy lock");b.style.alignSelf="flex-start";b.onclick=()=>{lockFormOpen=true;renderLockCard(true)};box.append(b)}
+    else box.append(pinForm("New 6-digit passcode",enableLock));
+    return;
+  }
+  box.append(el("p","small",`On. New phones need the passcode. Tell ${pn} the passcode in person.`));
+  const list=el("div","stack");list.style.gap="6px";list.append(el("b",null,"Unlocked phones"));
+  devicesList.slice().sort((a,b)=>(b.at||0)-(a.at||0)).forEach(d=>{const r=el("div","row between");const t=el("div","stack");t.style.gap="0";t.append(el("span",null,`${d.who?nm(d.who):"Someone"} · ${d.ua||"Phone"}${d.id===db.uid?" (this phone)":""}`),el("span","small muted",d.at?"Last used "+timeAgo(d.at):""));r.append(t);
+    if(d.id!==db.uid){const x=el("button","link small","Sign out");x.style.color="var(--warn)";x.onclick=()=>{if(confirm("Sign out this phone? It will need the passcode again."))db.doc(`devices/${d.id}`).delete().then(()=>toast("Signed out")).catch(()=>toast("Couldn't sign out"))};r.append(x)}
+    list.append(r)});
+  box.append(list);
+  if(lockFormOpen)box.append(pinForm("New 6-digit passcode",changeLock));
+  const row=el("div","row");const ch=el("button","secondary",lockFormOpen?"Cancel":"Change passcode");ch.onclick=()=>{lockFormOpen=!lockFormOpen;renderLockCard(true)};const off=el("button","link small","Turn off");off.style.color="var(--warn)";off.onclick=disableLock;row.append(ch,off);box.append(row);
+}
 
 /* ================= Tabs ================= */
 function setTab(t){
@@ -3446,7 +3547,7 @@ const FIREBASE_CONFIG={apiKey:"AIzaSyCCs95bZHbU3SVthQK168vy29sc78tWu9U",authDoma
 const FB="https://www.gstatic.com/firebasejs/10.12.2/";
 async function connectDb(root){
   const [{initializeApp},auth,fs]=await Promise.all([import(FB+"firebase-app.js"),import(FB+"firebase-auth.js"),import(FB+"firebase-firestore.js")]);
-  const app=initializeApp(FIREBASE_CONFIG);
+  const app=connectDb.app||(connectDb.app=initializeApp(FIREBASE_CONFIG));
   const cred=await auth.signInAnonymously(auth.getAuth(app));
   const fdb=fs.getFirestore(app);
   const snap=x=>({id:x.id,exists:x.exists(),data:()=>x.data()});
@@ -3497,7 +3598,7 @@ async function startSpace(firstTime){
     const [sa,sb]=await Promise.all([db.doc(base(A)).get(),db.doc(base(B)).get()]);
     members[A]=sa.exists?(sa.data()||{}):{};members[B]=sb.exists?(sb.data()||{}):{};
     if(!sa.exists&&me===A)await db.doc(base(A)).set({joinedAt:Date.now(),profile:{}});
-  }catch(e){console.error(e);done();showNotice("Couldn't load your space. Check the security rules in Firebase, then reopen the app.");return}
+  }catch(e){console.error(e);done();if(isDenied(e)){showLock(()=>{$("loading").hidden=false;startSpace(false)});return}showNotice("Couldn't load your space. Check the security rules in Firebase, then reopen the app.");return}
   $("whoSwitch").hidden=false;
   syncUrl();
   loadSeen();renderAll();
@@ -3512,6 +3613,7 @@ async function startSpace(firstTime){
   db.doc("settings/couple").onSnapshot(s=>{coupleSettings=s.exists?(s.data()||{}):{};if(tab==="home")renderHome()},()=>{});
   watchQuestion();
   watchStories();
+  watchLock();
   db.doc("settings/media").onSnapshot(s=>{mediaSettings=s.exists?(s.data()||{}):{autoDelete:0};if(tab==="me")renderAutoDel();maybeCleanup()},()=>{});
   [A,B].forEach(p=>{watch(p);db.doc(base(p)).onSnapshot(s=>{members[p]=s.exists?(s.data()||{}):{};renderAll()},()=>{})});
 }
@@ -3541,7 +3643,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.22";
+const APP_VERSION="2026-10-17.23";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
