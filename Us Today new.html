@@ -160,6 +160,7 @@ textarea{min-height:64px;resize:vertical}
 .prog i{display:block;height:100%;background:var(--accent);border-radius:3px}
 .chat{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
 .msgs{height:min(58vh,520px);overflow-y:auto;padding:14px 12px 8px;display:flex;flex-direction:column;gap:3px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.msgs>*{flex-shrink:0}
 .mempty{margin:auto;text-align:center;color:var(--muted);font-size:.9rem;padding:0 20px}
 .mday{align-self:center;font-size:.72rem;font-weight:600;color:var(--muted);margin:12px 0 6px}
 .mrow{display:flex;gap:8px;align-items:flex-end}
@@ -283,7 +284,7 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .mreact{display:flex;gap:2px;margin-top:-6px;margin-bottom:2px;position:relative;z-index:1}
 .mreact.mine{justify-content:flex-end;padding-right:6px}.mreact.theirs{padding-left:36px}
 .mreact span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:1px 6px;font-size:.85rem;line-height:1.4}
-.rbar{display:flex;gap:2px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 6px;box-shadow:0 4px 14px rgba(0,0,0,.12);margin:2px 0 6px;align-self:flex-start;max-width:100%;overflow-x:auto}
+.rbar{flex:none;min-height:44px;box-sizing:border-box;display:flex;gap:2px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 6px;box-shadow:0 4px 14px rgba(0,0,0,.12);margin:2px 0 6px;align-self:flex-start;max-width:100%;overflow-x:auto}
 .rbar.mine{align-self:flex-end}.rbar.theirs{margin-left:30px}
 .rbar button{border:0;background:none;font-size:1.2rem;width:32px;height:32px;border-radius:50%;padding:0;flex:none}
 .rbar button[aria-pressed="true"]{background:var(--accent-soft)}
@@ -3654,7 +3655,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.24";
+const APP_VERSION="2026-10-17.25";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
