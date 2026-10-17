@@ -150,6 +150,24 @@ textarea{min-height:64px;resize:vertical}
 .pill.new{background:var(--accent);color:var(--accent-ink)}
 .prog{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
 .prog i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.chat{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.msgs{height:min(58vh,520px);overflow-y:auto;padding:14px 12px 8px;display:flex;flex-direction:column;gap:3px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.mempty{margin:auto;text-align:center;color:var(--muted);font-size:.9rem;padding:0 20px}
+.mday{align-self:center;font-size:.72rem;font-weight:600;color:var(--muted);margin:12px 0 6px}
+.mrow{display:flex;gap:8px;align-items:flex-end}
+.mrow.mine{justify-content:flex-end}
+.mrow .avatar{flex:none}.mrow .avsp{width:22px;flex:none}
+.bub{max-width:78%;padding:8px 13px;border-radius:18px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.95rem;line-height:1.38;border:0;font:inherit;text-align:left}
+.mine .bub{background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:6px}
+.theirs .bub{background:var(--soft);color:var(--ink);border-bottom-left-radius:6px}
+.bub.bigemo{background:none!important;font-size:2.2rem;line-height:1.1;padding:2px 4px}
+.mmeta{font-size:.7rem;color:var(--muted);padding:2px 4px 6px 34px;display:flex;gap:10px;align-items:center}
+.mmeta.mine{justify-content:flex-end;padding-left:4px}
+.mmeta .link{font-size:.72rem}
+.composer{display:flex;gap:8px;align-items:flex-end;border-top:1px solid var(--line);padding:10px}
+.composer textarea{flex:1;resize:none;min-height:42px;max-height:140px;border-radius:21px;padding:10px 14px;line-height:1.35}
+.composer .primary{width:42px;height:42px;padding:0;border-radius:50%;flex:none;display:grid;place-items:center;font-size:1.1rem}
+.composer .primary:disabled{opacity:.4}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:.9rem;z-index:30;max-width:calc(100% - 32px)}
 
 .sheet{position:fixed;inset:0;background:var(--bg);z-index:20;overflow-y:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -287,6 +305,7 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="tabs" role="tablist">
     <button role="tab" id="tabToday" aria-selected="true">Check-in<span class="badge" id="badgeCi" hidden>1</span></button>
     <button role="tab" id="tabConnect" aria-selected="false">Connect<span class="badge" id="badge" hidden></span></button>
+    <button role="tab" id="tabChat" aria-selected="false">Chat<span class="badge" id="badgeChat" hidden></span></button>
     <button role="tab" id="tabMe" aria-selected="false">About me</button>
   </div>
 
@@ -391,6 +410,17 @@ details.pl summary{cursor:pointer;font-weight:600}
     <div class="stack">
       <h2>You sent</h2>
       <div class="card" style="padding-block:4px" id="sentList"></div>
+    </div>
+  </div>
+
+  <div id="pChat" class="stack" hidden style="gap:12px">
+    <div class="stack" style="gap:4px"><h2 id="chatTitle">Messages</h2><p class="muted small">Just the two of you. Tap one of your messages to delete it.</p></div>
+    <div class="chat">
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <form class="composer" id="composer">
+        <textarea id="msgIn" rows="1" maxlength="1000" placeholder="Message" aria-label="Message"></textarea>
+        <button class="primary" id="msgSend" type="submit" aria-label="Send" disabled>↑</button>
+      </form>
     </div>
   </div>
 
@@ -567,7 +597,7 @@ const timeAgo=t=>{const m=Math.round((Date.now()-t)/60000);if(m<1)return"just no
 
 /* ================= State ================= */
 let db=null,me="__local",partnerId=null,joinedAt=null,spaceKey=null;
-let acctNames={},members={},entries={},sent={},replies={};
+let acctNames={},members={},entries={},sent={},replies={},msgs={};
 let selDate=todayKey(),draft={levels:{},note:""},dirty=false,tab="today";
 const A="a",B="b";let mode="shared",lastSeen=0;
 const base=p=>`people/${p}`;
@@ -1061,13 +1091,13 @@ function renderNotifCard(){
   if(isIOS&&!isStandalone()){msg.textContent="Open Us, Today from its Home Screen icon to turn on notifications. (Share → Add to Home Screen, if you haven't yet.)";return}
   if(Notification.permission==="denied"){msg.textContent=isIOS?"Notifications are blocked. Turn them on in iPhone Settings → Notifications → Us, Today.":"Notifications are blocked. Allow them in your browser's site settings.";return}
   if(Notification.permission==="granted"&&members[me]?.push){msg.textContent=`On. You'll get a notification when ${nm(other(me))} sends you something or checks in.`;test.hidden=false;return}
-  msg.textContent=`Get a heads-up when ${nm(other(me))} sends a hug, a photo, an invite or a challenge, or checks in.`;on.hidden=false;
+  msg.textContent=`Get a heads-up when ${nm(other(me))} sends a message, a hug, a photo, an invite or a challenge, or checks in.`;on.hidden=false;
 }
 $("notifOn").onclick=()=>enableNotifs();
 $("notifTest").onclick=()=>{notify(me,"Us, Today","Notifications are working 🎉","test");toast("Test sent")};
 function notify(toId,title,body,tag){
   const sub=members[toId]?.push;if(!WORKER_URL||!sub)return;
-  fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sub,title,body,url:linkFor(toId),tag:tag||""})}).catch(()=>{});
+  fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sub,title,body,url:linkFor(toId)+(tag==="chat"?"#chat":""),tag:tag||""})}).catch(()=>{});
 }
 const TOUCH_TEXT={hug:"Sent you a hug 🤗",kiss:"Sent you a kiss 💋",grab:"Sent you a butt grab 🍑",five:"Sent you a high five ✋"};
 function notifyForItem(d){
@@ -1513,17 +1543,77 @@ function renderProfile(){
   ].forEach(([k,v])=>{const r=el("div","summary-row");r.append(el("span","muted small",k),el("span",null,v||"—"));box.append(r)});
 }
 
+/* ================= Chat ================= */
+let chatLocalRead={},chatSel=null;
+const chatReadAt=p=>Math.max(+(members[p]?.chatRead)||0,chatLocalRead[p]||0);
+const allMsgs=()=>[...(msgs[me]||[]),...(partnerId?(msgs[partnerId]||[]):[])].sort((a,b)=>a.createdAt-b.createdAt);
+const unreadChat=()=>partnerId?(msgs[partnerId]||[]).filter(x=>x.createdAt>chatReadAt(me)).length:0;
+function renderChatBadge(){const n=unreadChat();$("badgeChat").hidden=!n||tab==="chat";$("badgeChat").textContent=n}
+function markChatRead(){
+  const last=Math.max(0,...(partnerId?(msgs[partnerId]||[]):[]).map(x=>x.createdAt));
+  renderChatBadge();
+  if(!signedIn()||last<=chatReadAt(me))return;
+  chatLocalRead[me]=last;renderChatBadge();
+  db.doc(base(me)).update({chatRead:last}).catch(()=>{});
+}
+const isEmojiOnly=t=>{const x=t.replace(/\s/g,"");if(!x||x.length>16)return false;try{return /^(\p{Extended_Pictographic}|\p{Emoji_Component}|\u200d|\ufe0f)+$/u.test(x)&&!/[0-9#*]/.test(x)}catch(e){return false}};
+const hm=t=>new Date(t).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+function dayLabel(t){const d=new Date(t),k=key(d),y=new Date();y.setDate(y.getDate()-1);if(k===todayKey())return"Today";if(k===key(y))return"Yesterday";return d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}
+function renderChat(toBottom){
+  const box=$("msgs");if(!box)return;
+  const near=box.scrollHeight-box.scrollTop-box.clientHeight<80,keep=box.scrollTop;
+  $("chatTitle").textContent=partnerId?`You and ${nm(partnerId)}`:"Messages";
+  box.textContent="";const list=allMsgs();
+  if(!list.length){box.append(el("div","mempty",`No messages yet. Say something sweet to ${nm(partnerId)} 💬`));return}
+  const seenBy=partnerId?chatReadAt(partnerId):0;
+  const lastMine=[...list].reverse().find(x=>x.from===me);
+  let lastDay="";
+  list.forEach((m,i)=>{
+    const dk=key(new Date(m.createdAt));if(dk!==lastDay){box.append(el("div","mday",dayLabel(m.createdAt)));lastDay=dk}
+    const mine=m.from===me,nx=list[i+1],endGroup=!nx||nx.from!==m.from||nx.createdAt-m.createdAt>5*60000||key(new Date(nx.createdAt))!==dk;
+    const row=el("div","mrow "+(mine?"mine":"theirs"));
+    if(!mine)row.append(endGroup?avatar(m.from,"av-s"):el("span","avsp"));
+    const b=el(mine?"button":"div","bub"+(isEmojiOnly(m.text)?" bigemo":""),m.text);
+    if(mine){b.type="button";b.setAttribute("aria-label","Your message: "+m.text+". Tap for options");b.onclick=()=>{chatSel=chatSel===m.id?null:m.id;renderChat()}}
+    row.append(b);box.append(row);
+    if(endGroup||chatSel===m.id){
+      const meta=el("div","mmeta"+(mine?" mine":""));meta.append(el("span",null,hm(m.createdAt)));
+      if(mine&&m===lastMine&&seenBy>=m.createdAt)meta.append(el("span",null,"Seen"));
+      if(chatSel===m.id){const d=el("button","link","Delete");d.onclick=()=>deleteMsg(m.id);meta.append(d)}
+      box.append(meta);
+    }
+  });
+  if(toBottom||near)box.scrollTop=box.scrollHeight;else box.scrollTop=keep;
+}
+async function deleteMsg(id){
+  try{await db.doc(`${base(me)}/messages/${id}`).delete();chatSel=null;toast("Message deleted")}catch(e){console.error(e);toast(saveErr(e))}
+}
+async function sendMsg(){
+  const inp=$("msgIn"),text=inp.value.trim().slice(0,1000);if(!text)return;
+  if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
+  inp.value="";autoGrow();$("msgSend").disabled=true;chatSel=null;
+  try{await db.collection(`${base(me)}/messages`).add({text,createdAt:Date.now()});
+    notify(partnerId,nm(me),text.length>140?text.slice(0,140)+"…":text,"chat");renderChat(true)}
+  catch(e){console.error(e);inp.value=text;autoGrow();$("msgSend").disabled=false;toast(saveErr(e))}
+}
+function autoGrow(){const t=$("msgIn");t.style.height="auto";t.style.height=Math.min(t.scrollHeight+2,140)+"px"}
+$("msgIn").addEventListener("input",()=>{autoGrow();$("msgSend").disabled=!$("msgIn").value.trim()});
+$("msgIn").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&!matchMedia("(pointer:coarse)").matches){e.preventDefault();sendMsg()}});
+$("composer").onsubmit=e=>{e.preventDefault();sendMsg()};
+$("msgIn").addEventListener("focus",()=>setTimeout(()=>{const b=$("msgs");b.scrollTop=b.scrollHeight},250));
+
 /* ================= Tabs ================= */
 function setTab(t){
   tab=t;
-  [["today","tabToday","pToday"],["connect","tabConnect","pConnect"],["me","tabMe","pMe"]].forEach(([k,b,p])=>{$(b).setAttribute("aria-selected",String(k===t));$(p).hidden=k!==t});
+  [["today","tabToday","pToday"],["connect","tabConnect","pConnect"],["chat","tabChat","pChat"],["me","tabMe","pMe"]].forEach(([k,b,p])=>{$(b).setAttribute("aria-selected",String(k===t));$(p).hidden=k!==t});
   if(t==="connect"){renderConnect();markSeen()}
   if(t==="me")renderProfile();
+  if(t==="chat"){renderChat(true);markChatRead()}else renderChatBadge();
   renderBanner();renderCiBanner();
 }
-$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>setTab("me");
+$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>setTab("me");$("tabChat").onclick=()=>setTab("chat");
 
-function renderAll(){renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile()}
+function renderAll(){renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
 
 /* ================= Live data ================= */
 const subs={},seenSnap={};
@@ -1542,6 +1632,13 @@ function watch(id){
   },()=>{});
   db.collection(`${base(id)}/replies`).onSnapshot(snap=>{
     const m={};snap.docs.forEach(d=>m[d.id]=d.data()||{});replies[id]=m;renderAll();
+  },()=>{});
+  let msgFirst=true;
+  db.collection(`${base(id)}/messages`).orderBy("createdAt","desc").limit(200).onSnapshot(snap=>{
+    const prevMax=Math.max(0,...(msgs[id]||[]).map(x=>x.createdAt||0));
+    msgs[id]=snap.docs.map(d=>{const v=d.data()||{};return{id:d.id,from:id,text:String(v.text||""),createdAt:+v.createdAt||0}});
+    if(!msgFirst&&id===partnerId&&tab!=="chat"){const n=msgs[id].find(x=>x.createdAt>prevMax);if(n)toast(`${nm(id)}: ${n.text.length>60?n.text.slice(0,60)+"…":n.text}`)}
+    msgFirst=false;renderAll();
   },()=>{});
 }
 function resolveNames(){renderAll()}
@@ -1606,6 +1703,7 @@ async function startSpace(firstTime){
   syncUrl();
   loadSeen();renderAll();
   if(!members[me]?.onboarded)openSheet(true);
+  else if(START_CHAT)setTab("chat");
   done();
   refreshPushSub();
   [A,B].forEach(p=>{watch(p);db.doc(base(p)).onSnapshot(s=>{members[p]=s.exists?(s.data()||{}):{};renderAll()},()=>{})});
@@ -1633,6 +1731,8 @@ $("joinBtn").onclick=()=>{
   useLink(L);$("welcome").hidden=true;$("loading").hidden=false;startSpace(false);
 };
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
+const START_CHAT=/#chat\b/.test(location.hash);
+if("serviceWorker" in navigator)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.open==="chat"&&spaceKey)setTab("chat")});
 (function boot(){
   const L=parseLink(location.href);
   if(L)useLink(L);else{try{spaceKey=localStorage.getItem("ut_space")}catch(e){}}
