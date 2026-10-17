@@ -699,6 +699,7 @@ details.pl summary{cursor:pointer;font-weight:600}
       <summary><div class="sh"><h2>Plan a date or invite</h2><span class="ssum" id="sumInv"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
       <div class="secbody"><div class="card stack">
       <div class="opts" id="invTypes"></div>
+      <input type="text" id="invOwn" maxlength="60" hidden placeholder="Type your own: bowling, a drive, breakfast in bed…" aria-label="Your own invite idea">
       <div class="stack" id="datePlan" style="gap:12px"></div>
       <div class="opts" id="invWhen"></div>
       <input type="datetime-local" id="invAt" hidden aria-label="Pick a date and time">
@@ -1048,7 +1049,8 @@ const EMOJI_SETS=[
   ["Nature","🌸 🌺 🌻 🌼 🍀 🌿 🌴 🌊 ❄️ 🍂 🐶 🐱 🐻 🐼 🦋 🐝 🐢 🦄"]
 ].map(([n,l])=>[n,l.split(" ")]);
 let emoTab=0;
-const INV_TYPES=[["date","Date night"],["intimacy","Intimacy"],["cuddle","Cuddle time"],["kiss","Make-out session"],["walk","A walk together"],["movie","Movie night in"]];
+const INV_TYPES=[["date","Date night"],["intimacy","Intimacy"],["cuddle","Cuddle time"],["kiss","Make-out session"],["walk","A walk together"],["movie","Movie night in"],["own","✏️ Type your own"]];
+const invLabel=x=>x&&x.type==="own"?(String(x.custom||"").trim().slice(0,60)||"A date"):(pick(INV_TYPES,x?.type)?.[1]||"Date");
 const INV_WHEN=[["tonight","Tonight"],["tomorrow","Tomorrow night"],["weekend","This weekend"],["pick","Pick a time"]];
 const CH_TYPES=[["kisses5","5 kisses today",5],["hug30","A 30-second hug",1],["spont","Spontaneous intimacy this week",1],["compl3","3 compliments today",3],["nophones","No phones at dinner",1],["dance","Slow dance in the kitchen",1],["note","Leave me a love note",1],["custom","Write your own",1]];
 const pick=(list,k)=>list.find(x=>x[0]===k);
@@ -1667,7 +1669,7 @@ function notifyForItem(d){
   else if(d.kind==="media")body="Sent you "+platformOf(d.url).noun+" 🎵"+(d.note?`: “${d.note}”`:"");
   else if(d.kind==="photo")body="Sent you a photo 📷"+(d.caption?`: “${d.caption}”`:"");
   else if(d.kind==="clip")body="Sent you a video 🎬"+(d.caption?`: “${d.caption}”`:"");
-  else if(d.kind==="invite")body=`Invited you: ${d.type==="date"&&d.dateKind?"Date night, "+label("datestyle",d.dateKind).toLowerCase():(pick(INV_TYPES,d.type)?.[1]||"A date")} · ${d.when} 💌`;
+  else if(d.kind==="invite")body=`Invited you: ${d.type==="date"&&d.dateKind?"Date night, "+label("datestyle",d.dateKind).toLowerCase():invLabel(d)} · ${d.when} 💌`;
   else if(d.kind==="challenge")body=`Challenged you: ${d.text} 🏁`;
   if(body)notify(partnerId,n,body,d.kind);
 }
@@ -1678,8 +1680,8 @@ function notifyForReply(id,data){
   if(isPicLike(it)&&data.reaction&&data.reaction!==prev.reaction)body=`Reacted ${data.reaction} to your ${what}`;
   else if(isPicLike(it)&&data.comment)body=`Replied to your ${what}: “${data.comment}”`;
   else if(it.kind==="media"&&data.status==="loved")body=it.track?`Loved the song you sent ♥ ${it.track.name}`:`Loved the ${platformOf(it.url).noun.replace(/^an? /,"")} you sent ♥`;
-  else if(it.kind==="invite"&&data.status==="yes")body=`Accepted your invite: ${pick(INV_TYPES,it.type)?.[1]||"Date"} 💌`;
-  else if(it.kind==="invite"&&data.status==="later")body=`Can't make it this time: ${pick(INV_TYPES,it.type)?.[1]||"Date"}`;
+  else if(it.kind==="invite"&&data.status==="yes")body=`Accepted your invite: ${invLabel(it)} 💌`;
+  else if(it.kind==="invite"&&data.status==="later")body=`Can't make it this time: ${invLabel(it)}`;
   else if(it.kind==="challenge"&&(data.count||0)>=(it.target||1)&&(prev.count||0)<(it.target||1))body=`Completed your challenge: ${it.text} 🎉`;
   if(body)notify(partnerId,n,body,"reply");
 }
@@ -1691,7 +1693,7 @@ function renderPickers(){
   mk($("invTypes"),INV_TYPES,invType,k=>invType=k);
   mk($("invWhen"),INV_WHEN,invWhen,k=>invWhen=k);
   mk($("chTypes"),CH_TYPES,chType,k=>chType=k);
-  $("invAt").hidden=invWhen!=="pick";$("chText").hidden=chType!=="custom";
+  $("invAt").hidden=invWhen!=="pick";$("invOwn").hidden=invType!=="own";$("chText").hidden=chType!=="custom";
   renderDatePlan();
 }
 
@@ -1806,7 +1808,8 @@ $("sendInv").onclick=async()=>{
   let when=pick(INV_WHEN,invWhen)[1],at=null;
   if(invWhen==="pick"){const v=$("invAt").value;if(!v){toast("Pick a date and time");return}at=new Date(v).getTime();when=new Date(at).toLocaleString(undefined,{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}
   const extra=invType==="date"?{dateKind,place:dpPlace.trim(),area:(dpArea||P(me).area||P(partnerId).area||"").trim()}:{};
-  if(await sendItem({kind:"invite",type:invType,when,at,note:$("invNote").value.trim(),...extra},"Invite sent")){$("invNote").value="";dpPlace="";renderDatePlan()}
+  if(invType==="own"){const c=$("invOwn").value.trim();if(!c){toast("Type what you'd like to do");$("invOwn").focus();return}extra.custom=c.slice(0,60)}
+  if(await sendItem({kind:"invite",type:invType,when,at,note:$("invNote").value.trim(),...extra},"Invite sent")){$("invNote").value="";$("invOwn").value="";dpPlace="";renderDatePlan()}
 };
 $("invAt").addEventListener("change",renderDatePlan);
 $("sendCh").onclick=async()=>{
@@ -1820,7 +1823,7 @@ function itemTitle(it,dir){
   if(it.kind==="touch"){const t=TOUCHMAP[it.type]||["","💌","Something"];return{em:t[1],title:dir==="in"?`${pn} sent you a ${t[2].toLowerCase()}`:`You sent a ${t[2].toLowerCase()}`}}
   if(it.kind==="photo")return{em:"📷",title:dir==="in"?`${pn} sent you a photo`:"You sent a photo"};
   if(it.kind==="clip")return{em:"🎬",title:dir==="in"?`${pn} sent you a video`:"You sent a video"};
-  if(it.kind==="invite"){const what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(pick(INV_TYPES,it.type)?.[1]||"Date");return{em:"💌",title:`${dir==="in"?"Invite":"You invited"}: ${what} · ${it.when}`}}
+  if(it.kind==="invite"){const what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(invLabel(it));return{em:"💌",title:`${dir==="in"?"Invite":"You invited"}: ${what} · ${it.when}`}}
   if(it.kind==="media"){const m=it.track?{noun:"a song"}:platformOf(it.url);return{em:"🎵",title:dir==="in"?`${pn} sent you ${m.noun}`:`You sent ${m.noun}`}}
   return{em:"🏁",title:`${dir==="in"?"Challenge":"You challenged"}: ${it.text}`};
 }
@@ -3191,7 +3194,7 @@ function nextItems(){
     const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id];
     const fresh=it.at?it.at>now-3*3600000:it.createdAt>now-3*86400000;
     if(!fresh)return;
-    const what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(pick(INV_TYPES,it.type)?.[1]||"Date");
+    const what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(invLabel(it));
     let rt="",sub=it.when+(rep?.status==="yes"?" · Accepted":rep?.status==="later"?" · Not this time":it.dir==="in"?" · Tap to answer":" · Waiting");
     if(rep?.status==="later")return;
     if(it.at){const dd=Math.round((new Date(it.at).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/86400000);rt=dd<=0?"Today":dd===1?"Tomorrow":dd+" days"}
@@ -3380,7 +3383,7 @@ function inviteAt(it){
   if(it.when==="Tomorrow night")return new Date(d.getFullYear(),d.getMonth(),d.getDate()+1,19,0).getTime();
   return 0;
 }
-function inviteTitle(it,dir){const what=it.type==="date"&&it.dateKind?"Date night":(pick(INV_TYPES,it.type)?.[1]||"Date");return `${what} with ${partnerId?(nickOf(partnerId)||nm(partnerId)):"you"}`}
+function inviteTitle(it,dir){const what=it.type==="date"&&it.dateKind?"Date night":(invLabel(it));return `${what} with ${partnerId?(nickOf(partnerId)||nm(partnerId)):"you"}`}
 function inviteCal(it,dir){
   const at=inviteAt(it);if(!at||at<Date.now()-3600000)return null;
   const ev={uid:"inv-"+it.id,title:inviteTitle(it,dir),start:new Date(at),end:new Date(at+2*3600000),loc:it.place||"",desc:[it.note,"From Us, Today"].filter(Boolean).join("\n")};
@@ -3838,7 +3841,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.30";
+const APP_VERSION="2026-10-17.31";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
