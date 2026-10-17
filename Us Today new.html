@@ -265,6 +265,31 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .fbi img{max-height:220px;width:auto;max-width:100%;border-radius:10px;align-self:flex-start;cursor:zoom-in;border:1px solid var(--line)}
 .fbi .acts{display:flex;gap:14px}
 .code{max-width:100%;box-sizing:border-box;font-family:ui-monospace,Menlo,monospace;font-size:.75rem;background:var(--soft);border-radius:10px;padding:10px;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.tile b{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}.tile span{font-size:.8rem;color:var(--muted)}
+.chartc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;position:relative}
+.bars{display:flex;align-items:flex-end;gap:2px;height:120px;border-bottom:1px solid var(--line)}
+.bars button{flex:1;border:0;padding:0;background:none;height:100%;display:flex;align-items:flex-end;cursor:pointer;min-width:0}
+.bars button i{display:block;width:100%;background:var(--accent);border-radius:4px 4px 0 0;min-height:0}
+.bars button:hover i,.bars button:focus-visible i{filter:brightness(1.12)}
+.bars button.zero i{background:var(--line);height:2px!important;border-radius:1px}
+.xlab{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted)}
+.ctip{position:absolute;top:8px;right:12px;font-size:.8rem;background:var(--ink);color:var(--bg);border-radius:8px;padding:3px 8px;pointer-events:none}
+.hb{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;font-size:.86rem}
+.hb .tr{grid-column:1/-1;height:6px;border-radius:3px;background:var(--soft);overflow:hidden;margin-bottom:6px}.hb .tr i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.hb .v{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.mreact{display:flex;gap:2px;margin-top:-6px;margin-bottom:2px;position:relative;z-index:1}
+.mreact.mine{justify-content:flex-end;padding-right:6px}.mreact.theirs{padding-left:36px}
+.mreact span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:1px 6px;font-size:.85rem;line-height:1.4}
+.rbar{display:flex;gap:2px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 6px;box-shadow:0 4px 14px rgba(0,0,0,.12);margin:2px 0 6px;align-self:flex-start;max-width:100%;overflow-x:auto}
+.rbar.mine{align-self:flex-end}.rbar.theirs{margin-left:30px}
+.rbar button{border:0;background:none;font-size:1.2rem;width:32px;height:32px;border-radius:50%;padding:0;flex:none}
+.rbar button[aria-pressed="true"]{background:var(--accent-soft)}
+.rbar .more{font-size:1rem;background:var(--soft)}
+.rbar .del{font-size:.8rem;width:auto;padding:0 10px;border-radius:999px;color:var(--warn);font-weight:600}
+.epick{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:4px}
+.epick button{border:0;background:var(--surface);border-radius:10px;font-size:1.45rem;height:44px;padding:0}
 .aic{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .aic .eyebrow{color:var(--accent)}
 .aic .hl{font-weight:600;font-size:1rem;line-height:1.4}
@@ -512,7 +537,7 @@ details.pl summary{cursor:pointer;font-weight:600}
   </div>
 
   <div id="pChat" class="stack" hidden style="gap:12px">
-    <div class="stack" style="gap:4px"><h2 id="chatTitle">Messages</h2><p class="muted small">Just the two of you. Tap one of your messages to delete it. Photos and videos here count toward your 2 a day.</p></div>
+    <div class="stack" style="gap:4px"><h2 id="chatTitle">Messages</h2><p class="muted small">Just the two of you. Tap a message to react with an emoji. Photos and videos here count toward your 2 a day.</p></div>
     <div class="chat">
       <div class="msgs" id="msgs" aria-live="polite"></div>
       <div class="att" id="att" hidden></div>
@@ -550,7 +575,7 @@ details.pl summary{cursor:pointer;font-weight:600}
       <h3>Help us improve</h3>
       <p class="small muted">Found a bug or have an idea? Tell us. It goes straight to the person who built this app.</p>
       <div class="row"><button class="primary" id="fbOpen">Send feedback</button><button class="secondary" id="wnOpen">What's new</button></div>
-      <button class="secondary" id="inboxOpen" hidden>📥 Feedback inbox<span class="badge" id="inboxBadge" hidden></span></button>
+      <div class="row"><button class="secondary" id="inboxOpen" hidden>📥 Feedback inbox<span class="badge" id="inboxBadge" hidden></span></button><button class="secondary" id="statsOpen" hidden>📊 Usage</button></div>
       <span class="small muted" id="verTap" style="user-select:none;-webkit-user-select:none"></span>
     </div>
     <div class="card stack" id="aiCard">
@@ -624,6 +649,19 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="panel">
     <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="inboxTitle">Feedback inbox</h2></div><button class="x" id="inboxX" aria-label="Close">×</button></div>
     <div id="inboxBody" class="stack" style="gap:10px"></div>
+  </div>
+</div>
+<div class="ov" id="statsSheet" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+  <div class="panel">
+    <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="statsTitle">Usage</h2></div><button class="x" id="statsX" aria-label="Close">×</button></div>
+    <div id="statsBody" class="stack" style="gap:12px"></div>
+  </div>
+</div>
+<div class="ov" id="emoSheet" hidden role="dialog" aria-modal="true" aria-labelledby="emoTitle">
+  <div class="panel">
+    <div class="phead"><h2 id="emoTitle">React</h2><button class="x" id="emoX" aria-label="Close">×</button></div>
+    <div class="emo-tabs" id="epTabs"></div>
+    <div class="epick" id="epGrid"></div>
   </div>
 </div>
 <div class="ov" id="fbSheet" hidden role="dialog" aria-modal="true" aria-labelledby="fbTitle">
@@ -1075,6 +1113,7 @@ $("save").onclick=async()=>{
     const doc={date:selDate,levels,na,note:draft.note.trim(),updatedAt:Date.now()};
     const firstToday=selDate===todayKey()&&!E(me)[selDate];
     await db.doc(`${base(me)}/days/${selDate}`).set(doc);
+    if(firstToday)track({"n.checkin":1,["d."+selDate]:1});
     if(firstToday&&partnerId)notify(partnerId,nm(me),`Checked in for today. See how to show up for ${nm(me)}.`,"checkin");
     entries[me]={...E(me),[selDate]:{levels,na,note:doc.note,updatedAt:doc.updatedAt}};
     burst();dirty=false;editOpen=false;$("savedMsg").textContent="Saved";renderAll();
@@ -1464,7 +1503,7 @@ async function sendItem(data,msg){
     if(!signedIn())throw{code:"signed_out"};
     if(!partnerId){toast("Your partner hasn't joined yet");return false}
     await db.collection(`${base(me)}/sent`).add({...data,to:partnerId,createdAt:Date.now()});
-    notifyForItem(data);toast(msg);return true;
+    notifyForItem(data);trackItem(data.kind);toast(msg);return true;
   }catch(e){console.error(e);toast(saveErr(e));return false}
 }
 $("sendInv").onclick=async()=>{
@@ -1971,18 +2010,21 @@ function renderChat(toBottom){
     const toggle=()=>{chatSel=chatSel===m.id?null:m.id;renderChat()};
     if(m.kind&&m.asset){
       const md=el("div","mmedia");md.append(m.gone?goneEl(m.kind):m.kind==="clip"?clipEl(m.asset,m.text,m.dur):picEl(m.asset,m.text));
-      if(mine){const o=el("button","mopt","⋯");o.type="button";o.setAttribute("aria-label","Options for this "+(m.kind==="clip"?"video":"photo"));o.onclick=toggle;row.append(o)}
-      row.append(md);box.append(row);
+      const o=el("button","mopt","⋯");o.type="button";o.setAttribute("aria-label","React to this "+(m.kind==="clip"?"video":"photo"));o.onclick=toggle;
+      if(mine)row.append(o);row.append(md);if(!mine)row.append(o);box.append(row);
       if(m.text){const r2=el("div","mrow "+(mine?"mine":"theirs"));if(!mine){const av=row.firstChild;row.replaceChild(el("span","avsp"),av);r2.append(av)}r2.append(el("div","bub",m.text));box.append(r2)}
     }else{
-      const b=el(mine?"button":"div","bub"+(isEmojiOnly(m.text)?" bigemo":""),m.text);
-      if(mine){b.type="button";b.setAttribute("aria-label","Your message: "+m.text+". Tap for options");b.onclick=toggle}
+      const b=el("button","bub"+(isEmojiOnly(m.text)?" bigemo":""),m.text);
+      b.type="button";b.setAttribute("aria-label",(mine?"Your message: ":"Message: ")+m.text+". Tap to react");b.onclick=toggle;
       row.append(b);box.append(row);
     }
+    const rs=reactsOf(m);
+    if(rs.length){const rr=el("div","mreact "+(mine?"mine":"theirs"));const counts={};rs.forEach(x=>counts[x]=(counts[x]||0)+1);Object.entries(counts).forEach(([em,c])=>rr.append(el("span",null,c>1?em+" "+c:em)));rr.setAttribute("aria-label","Reactions: "+rs.join(" "));box.append(rr)}
+    if(chatSel===m.id)box.append(reactBar(m,mine));
     if(endGroup||chatSel===m.id){
       const meta=el("div","mmeta"+(mine?" mine":""));meta.append(el("span",null,hm(m.createdAt)));
       if(mine&&m===lastMine&&seenBy>=m.createdAt)meta.append(el("span",null,"Seen"));
-      if(chatSel===m.id){const d=el("button","link","Delete");d.onclick=()=>deleteMsg(m.id);meta.append(d)}
+      if(mine&&chatSel===m.id){const d=el("button","link","Delete");d.style.color="var(--warn)";d.onclick=()=>deleteMsg(m.id);meta.append(d)}
       box.append(meta);
     }
   });
@@ -2039,6 +2081,7 @@ function sendMsg(){
       doc.createdAt=Date.now();
     }
     await db.collection(`${base(me)}/messages`).add(doc);
+    track({"n.chat":1,...(doc.kind==="photo"?{"n.photo":1}:doc.kind==="clip"?{"n.video":1}:{})});
     const body=text?(text.length>140?text.slice(0,140)+"…":text):doc.kind==="clip"?"Sent you a video 🎬":"Sent you a photo 📷";
     notify(partnerId,nm(me),(doc.kind&&text?(doc.kind==="clip"?"🎬 ":"📷 "):"")+body,"chat");
     chatBusy=false;if(att)clearAtt();renderChat(true);renderPicCard&&renderPicCard();
@@ -2226,6 +2269,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17c",date:"Oct 17, 2026",items:[
+    {em:"😍",t:"React to messages",b:"Tap any chat message to add a ❤️, 👍, 😂 or any emoji. Tap ＋ for the full set.",go:["chat","msgIn"]}
+  ]},
   {id:"2026-10-17b",date:"Oct 17, 2026",items:[
     {em:"✨",t:"AI ideas for your partner",b:"Turn on AI ideas in About me. When your partner checks in, you get 3 ideas written just for them, plus a weekly summary of your week together.",go:["me","aiCard"],dot:"ai"},
     {em:"💬",t:"Chat, with photos and videos",b:"A private chat for the two of you. Tap ＋ to send a photo or a short video.",go:["chat","msgIn"],dot:"chat"},
@@ -2238,7 +2284,7 @@ const RELEASES=[
 const relKey=()=>"ut_rel_"+spaceKey+me;
 function relSeen(){try{return localStorage.getItem(relKey())||""}catch(e){return""}}
 function markRelSeen(){try{localStorage.setItem(relKey(),RELEASES[0].id)}catch(e){}}
-function unseenReleases(){const s=relSeen();const i=RELEASES.findIndex(r=>r.id===s);return i<0?(s?RELEASES:RELEASES.slice(0,1)):RELEASES.slice(0,i)}
+function unseenReleases(){const s=relSeen();const i=RELEASES.findIndex(r=>r.id===s);return i<0?RELEASES:RELEASES.slice(0,i)}
 function goTo(go){
   const [t,id]=go;setTab(t);
   setTimeout(()=>{const n=$(id);if(!n)return;n.scrollIntoView({behavior:"smooth",block:"center"});const card=n.closest(".card,.chat,.aic")||n;card.classList.remove("pulse");void card.offsetWidth;card.classList.add("pulse");setTimeout(()=>card.classList.remove("pulse"),3400);if(n.tagName==="INPUT"||n.tagName==="TEXTAREA")setTimeout(()=>n.focus(),400)},120);
@@ -2316,7 +2362,7 @@ $("fbFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{fbShot
 $("fbSend").onclick=async()=>{
   const text=$("fbText").value.trim();if(!text&&!fbShot){$("fbMsg").textContent="Write a note or add a screenshot first.";return}
   if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
-  const doc={kind:fbKind||"other",text:text.slice(0,2000),from:nm(me),who:me,space:spaceKey,version:APP_VERSION,device:navigator.userAgent.slice(0,200),createdAt:Date.now()};
+  const doc={kind:fbKind||"other",text:text.slice(0,2000),from:nm(me),who:me,space:spaceHash||"",version:APP_VERSION,device:navigator.userAgent.slice(0,200),createdAt:Date.now()};
   if(fbShot&&fbShot.length<900000)doc.shot=fbShot;
   $("fbSend").disabled=true;$("fbSend").textContent="Sending…";
   try{try{await db.top.collection("feedback").add(doc)}catch(e){await db.collection("feedback").add(doc)}
@@ -2343,6 +2389,11 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null
         && request.auth.uid in ['${uid}'];
     }
+    match /spaces/{id} {
+      allow create, update: if request.auth != null && id.size() == 16;
+      allow read: if request.auth != null
+        && request.auth.uid in ['${uid}'];
+    }
   }
 }`}
 function watchInbox(){
@@ -2350,7 +2401,7 @@ function watchInbox(){
   try{fbUnsub=db.top.collection("feedback").orderBy("createdAt","desc").limit(200).onSnapshot(q=>{
     isOwner=true;try{localStorage.setItem("ut_owner","1")}catch(e){}
     fbItems=q.docs.map(d=>({id:d.id,...(d.data()||{})}));
-    $("inboxOpen").hidden=false;const n=fbItems.filter(x=>!x.done).length;$("inboxBadge").hidden=!n;$("inboxBadge").textContent=n;
+    $("inboxOpen").hidden=false;$("statsOpen").hidden=false;const n=fbItems.filter(x=>!x.done).length;$("inboxBadge").hidden=!n;$("inboxBadge").textContent=n;
     if(!$("inboxSheet").hidden)renderFbInbox();
   },()=>{isOwner=false;fbUnsub=null;$("inboxOpen").hidden=true;if(!$("inboxSheet").hidden)renderFbInbox()})}catch(e){fbUnsub=null}
 }
@@ -2389,6 +2440,85 @@ $("inboxOpen").onclick=openInbox;$("inboxX").onclick=()=>{$("inboxSheet").hidden
 $("inboxSheet").addEventListener("click",e=>{if(e.target.id==="inboxSheet")$("inboxSheet").hidden=true});
 function initOwner(){let flag=false;try{flag=!!localStorage.getItem("ut_owner")}catch(e){}if(OWNER_LINK){try{localStorage.setItem("ut_owner","1")}catch(e){}flag=true}if(flag)watchInbox();if(OWNER_LINK)setTimeout(openInbox,900)}
 
+/* ================= Usage stats (counts only, no content) ================= */
+let spaceHash="";
+function fnvHex(str){let h1=0x811c9dc5,h2=0x01000193^0x5bd1e995;for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);h1=Math.imul(h1^c,16777619)>>>0;h2=Math.imul(h2^c,2246822519)>>>0}return(h1.toString(16).padStart(8,"0")+h2.toString(16).padStart(8,"0")).slice(0,16)}
+async function hashSpace(k){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("ut:"+k));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("").slice(0,16)}catch(e){return fnvHex("ut:"+k)}}
+function track(inc,set){if(!spaceHash||!db?.top?.track)return;db.top.track("spaces/"+spaceHash,{inc:inc||{},set:{...(set||{}),lastActive:Date.now()}}).catch(()=>{})}
+function trackOpen(){
+  const today=todayKey();
+  track({},{["a."+today]:true,createdAt:+members[A]?.joinedAt||Date.now(),partnerJoined:!!members[B]?.onboarded,aiOn:[A,B].filter(p=>members[p]?.aiOk).length,notifOn:[A,B].filter(p=>members[p]?.push).length,v:APP_VERSION});
+}
+const KIND_STAT={touch:"touch",photo:"photo",clip:"video",media:"song",invite:"invite",challenge:"challenge"};
+function trackItem(kind){const k=KIND_STAT[kind];if(k)track({["n."+k]:1})}
+
+let statsData=null;
+async function openStats(){
+  $("statsSheet").hidden=false;const box=$("statsBody");box.textContent="";box.append(el("p","muted small","Loading…"));
+  try{const q=await db.top.collection("spaces").get();statsData=q.docs.map(d=>({id:d.id,...(d.data()||{})}));renderStats()}
+  catch(e){box.textContent="";box.append(el("p","small","Usage needs one more rules update. Copy the rules below, paste them over your Firestore rules and tap Publish. Then reopen Usage."));
+    const pre=el("pre","code",ownerRules(db?.uid||""));box.append(pre);const r=el("div","row");const c=el("button","primary","Copy rules");c.onclick=async()=>{try{await navigator.clipboard.writeText(ownerRules(db?.uid||""));toast("Rules copied")}catch(x){toast("Couldn't copy. Select the text instead.")}};
+    const l=el("a","secondary","Open Firebase rules");l.href="https://console.firebase.google.com/project/us-today-e354e/firestore/rules";l.target="_blank";l.rel="noopener";l.style.cssText="text-decoration:none;display:inline-flex;align-items:center;border-radius:12px;padding:12px 16px;font-weight:600";r.append(c,l);box.append(r)}
+}
+function renderStats(){
+  const box=$("statsBody");box.textContent="";const S=statsData||[];
+  const dayKeys=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dayKeys.push(key(d))}
+  const last7=dayKeys.slice(7);
+  const activeWeek=S.filter(x=>last7.some(k=>x.a&&x.a[k])).length;
+  const ciByDay=dayKeys.map(k=>S.reduce((n,x)=>n+(+(x.d&&x.d[k])||0),0));
+  const ciWeek=ciByDay.slice(7).reduce((a,b)=>a+b,0);
+  const tiles=el("div","tiles");
+  [[S.length,"Couples"],[S.filter(x=>x.partnerJoined).length,"Both partners joined"],[activeWeek,"Active this week"],[ciWeek,"Check-ins this week"]].forEach(([v,t])=>{const c=el("div","tile");c.append(el("b",null,String(v)),el("span",null,t));tiles.append(c)});
+  box.append(tiles);
+  // check-ins per day
+  const cc=el("div","chartc");cc.append(el("b",null,"Check-ins per day"),el("span","small muted","Last 14 days, all couples"));
+  const tip=el("span","ctip");tip.hidden=true;cc.append(tip);
+  const max=Math.max(1,...ciByDay),bars=el("div","bars");bars.setAttribute("role","img");bars.setAttribute("aria-label","Check-ins per day: "+dayKeys.map((k,i)=>`${fromKey(k).toLocaleDateString(undefined,{month:"short",day:"numeric"})} ${ciByDay[i]}`).join(", "));
+  dayKeys.forEach((k,i)=>{const v=ciByDay[i],b=el("button",v?null:"zero"),bar=el("i");bar.style.height=(v/max*100)+"%";b.append(bar);const lab=`${fromKey(k).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}: ${v} check-in${v===1?"":"s"}`;b.setAttribute("aria-label",lab);b.title=lab;
+    const show=()=>{tip.textContent=lab;tip.hidden=false};b.onmouseenter=show;b.onfocus=show;b.onclick=show;b.onmouseleave=()=>{tip.hidden=true};bars.append(b)});
+  cc.append(bars);const xl=el("div","xlab");xl.append(el("span",null,fromKey(dayKeys[0]).toLocaleDateString(undefined,{month:"short",day:"numeric"})),el("span",null,"Today"));cc.append(xl);
+  const det=el("details");det.append(el("summary","small muted","See as a table"));const tb=el("div","stack");tb.style.gap="2px";dayKeys.forEach((k,i)=>{const r=el("div","row between small");r.append(el("span",null,fromKey(k).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})),el("span",null,String(ciByDay[i])));tb.append(r)});det.append(tb);cc.append(det);
+  box.append(cc);
+  // feature adoption
+  const fa=el("div","chartc");fa.append(el("b",null,"What couples use"),el("span","small muted","Share of couples who have used each feature"));
+  const n=Math.max(1,S.length),used=k=>S.filter(x=>x.n&&x.n[k]>0).length;
+  [["Daily check-in",S.filter(x=>x.d&&Object.keys(x.d).length).length],["Chat",used("chat")],["Hugs, kisses and emojis",used("touch")],["Photos",used("photo")],["Videos",used("video")],["Songs and links",used("song")],["Date invites",used("invite")],["Challenges",used("challenge")],["Notifications on (either partner)",S.filter(x=>x.notifOn>0).length],["AI ideas on (both partners)",S.filter(x=>x.aiOn>=2).length]]
+   .forEach(([t,c])=>{const pct=Math.round(c/n*100),r=el("div","hb");r.append(el("span",null,t),el("span","v",`${c} · ${pct}%`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);fa.append(r)});
+  box.append(fa);
+  const tot=k=>S.reduce((a,x)=>a+(+(x.n&&x.n[k])||0),0);
+  const tt=el("div","chartc");tt.append(el("b",null,"All-time totals"));
+  [["Chat messages",tot("chat")],["Hugs, kisses and emojis",tot("touch")],["Photos",tot("photo")],["Videos",tot("video")],["Songs and links",tot("song")],["Date invites",tot("invite")],["Challenges",tot("challenge")],["Chat reactions",tot("react")]].forEach(([t,v])=>{const r=el("div","row between small");r.append(el("span",null,t),el("b",null,String(v)));tt.append(r)});
+  box.append(tt);
+  box.append(el("p","small muted","Counts only. No messages, check-ins, photos or names are collected. Counting started Oct 17, 2026, so totals before then aren't included."));
+}
+$("statsOpen").onclick=openStats;$("statsX").onclick=()=>{$("statsSheet").hidden=true};
+$("statsSheet").addEventListener("click",e=>{if(e.target.id==="statsSheet")$("statsSheet").hidden=true});
+
+/* ================= Chat reactions ================= */
+const QUICK_REACT=["❤️","👍","👎","😂","😮","😢","🔥","🙏"];
+const reactsOf=m=>[m.ra,m.rb].filter(Boolean);
+async function setReaction(m,em){
+  const cur=me===A?m.ra:m.rb,val=cur===em?"":em;
+  try{await db.doc(`${base(m.from)}/messages/${m.id}`).update({["r"+me]:val});
+    if(val){track({"n.react":1});if(m.from!==me)notify(partnerId,nm(me),`Reacted ${val} to “${(m.text||(m.kind==="clip"?"your video":m.kind==="photo"?"your photo":"your message")).slice(0,60)}”`,"chat")}}
+  catch(e){console.error(e);toast(saveErr(e))}
+  chatSel=null;renderChat();
+}
+let epTab=0,epTarget=null;
+function openEmojiPicker(m){epTarget=m;epTab=0;renderEp();$("emoSheet").hidden=false}
+function renderEp(){
+  const tabs=$("epTabs");tabs.textContent="";EMOJI_SETS.forEach(([n],i)=>{const b=el("button","opt",n);b.setAttribute("aria-pressed",String(i===epTab));b.onclick=()=>{epTab=i;renderEp()};tabs.append(b)});
+  const g=$("epGrid");g.textContent="";(Array.isArray(EMOJI_SETS[epTab][1])?EMOJI_SETS[epTab][1]:String(EMOJI_SETS[epTab][1]).split(" ")).filter(Boolean).forEach(em=>{const b=el("button",null,em);b.setAttribute("aria-label","React "+em);b.onclick=()=>{$("emoSheet").hidden=true;if(epTarget)setReaction(epTarget,em)};g.append(b)});
+}
+$("emoX").onclick=()=>{$("emoSheet").hidden=true};$("emoSheet").addEventListener("click",e=>{if(e.target.id==="emoSheet")$("emoSheet").hidden=true});
+function reactBar(m,mine){
+  const bar=el("div","rbar "+(mine?"mine":"theirs"));bar.setAttribute("role","group");bar.setAttribute("aria-label","React to this message");
+  const cur=me===A?m.ra:m.rb;
+  QUICK_REACT.forEach(em=>{const b=el("button",null,em);b.type="button";b.setAttribute("aria-label","React "+em);b.setAttribute("aria-pressed",String(cur===em));b.onclick=()=>setReaction(m,em);bar.append(b)});
+  const more=el("button","more","＋");more.type="button";more.setAttribute("aria-label","More emojis");more.onclick=()=>openEmojiPicker(m);bar.append(more);
+  return bar;
+}
+
 /* ================= Tabs ================= */
 function setTab(t){
   tab=t;
@@ -2423,7 +2553,7 @@ function watch(id){
   let msgFirst=true;
   db.collection(`${base(id)}/messages`).orderBy("createdAt","desc").limit(200).onSnapshot(snap=>{
     const prevMax=Math.max(0,...(msgs[id]||[]).map(x=>x.createdAt||0));
-    msgs[id]=snap.docs.map(d=>{const v=d.data()||{};const k=v.kind==="photo"||v.kind==="clip"?v.kind:null;return{id:d.id,from:id,text:String(v.text||""),createdAt:+v.createdAt||0,kind:k,asset:k?String(v.asset||""):"",dur:+v.dur||0,gone:!!v.gone}});
+    msgs[id]=snap.docs.map(d=>{const v=d.data()||{};const k=v.kind==="photo"||v.kind==="clip"?v.kind:null;return{id:d.id,from:id,text:String(v.text||""),createdAt:+v.createdAt||0,kind:k,asset:k?String(v.asset||""):"",dur:+v.dur||0,gone:!!v.gone,ra:typeof v.ra==="string"?v.ra.slice(0,16):"",rb:typeof v.rb==="string"?v.rb.slice(0,16):""}});
     if(!msgFirst&&id===partnerId&&tab!=="chat"){const n=msgs[id].find(x=>x.createdAt>prevMax);if(n)toast(`${nm(id)}: ${n.text?(n.text.length>60?n.text.slice(0,60)+"…":n.text):n.kind==="clip"?"sent a video 🎬":"sent a photo 📷"}`)}
     msgFirst=false;renderAll();
   },()=>{});
@@ -2472,6 +2602,10 @@ async function connectDb(root){
     return{doc,collection:p=>coll(p)};
   };
   const inSpace=make(p=>root+"/"+p),top=make(p=>p);
+  /* track(path,{inc:{"a.b":1},set:{...}}): merged write; dotted keys become nested maps, inc uses server-side increment. */
+  top.track=(path,{inc={},set={}}={})=>{const o={};const put=(k,v)=>{const ks=k.split(".");let c=o;ks.slice(0,-1).forEach(x=>{c=c[x]=c[x]||{}});c[ks[ks.length-1]]=v};
+    Object.entries(set).forEach(([k,v])=>put(k,v));Object.entries(inc).forEach(([k,v])=>put(k,fs.increment(v)));
+    return fs.setDoc(fs.doc(fdb,path),o,{merge:true})};
   return{...inSpace,top,uid:cred?.user?.uid||""};
 }
 function newKey(){const b=new Uint8Array(18);crypto.getRandomValues(b);return btoa(String.fromCharCode(...b)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
@@ -2498,6 +2632,7 @@ async function startSpace(firstTime){
   else if(!OWNER_LINK)maybeWhatsNew();
   done();
   initOwner();
+  hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen()});
   refreshPushSub();
   db.doc("settings/media").onSnapshot(s=>{mediaSettings=s.exists?(s.data()||{}):{autoDelete:0};if(tab==="me")renderAutoDel();maybeCleanup()},()=>{});
   [A,B].forEach(p=>{watch(p);db.doc(base(p)).onSnapshot(s=>{members[p]=s.exists?(s.data()||{}):{};renderAll()},()=>{})});
@@ -2527,7 +2662,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.13";
+const APP_VERSION="2026-10-17.14";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
