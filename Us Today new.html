@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Us, Today</title>
 <meta name="theme-color" content="#c23d68">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Us, Today">
@@ -3084,8 +3085,8 @@ function guideSteps(pf){
     w.append(ol,el("p","note","Needs iOS 16.4 or newer. Using Chrome on iPhone? Tap the share icon in the address bar, then Add to Home Screen. Notifications only work from the Home Screen icon on iPhone."));
   }else if(pf==="android"){
     li("In Chrome, tap the menu ",ico("⋮")," at the top right.");
-    li("Tap ",el("b",null,"Add to Home screen"),", or ",el("b",null,"Install app")," if you see it.");
-    li("Tap ",el("b",null,"Add"),". Us, Today now has its own icon.");
+    li("Tap ",el("b",null,"Add to Home screen"),", then ",el("b",null,"Install"),". (Some phones say ",el("b",null,"Install app"),".)");
+    li("Tap ",el("b",null,"Install")," again to confirm. Us, Today now has its own icon on your Home screen and in your app drawer.");
     li("Open it and tap ",el("b",null,"Turn on notifications"),", then ",el("b",null,"Allow"),".");
     w.append(ol,el("p","note","On Android, notifications also work straight from Chrome. The icon just makes the app quicker to open."));
   }else{
@@ -3842,7 +3843,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.32";
+const APP_VERSION="2026-10-17.33";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
