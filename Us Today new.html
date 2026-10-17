@@ -116,6 +116,14 @@ textarea{min-height:64px;resize:vertical}
 .switch button{display:inline-flex;align-items:center;gap:6px;padding-left:8px}
 .pic{width:100%;max-height:340px;object-fit:cover;border-radius:12px;display:block;cursor:zoom-in;background:var(--soft)}
 .pic-preview{max-height:220px}
+.clip{position:relative;border-radius:12px;overflow:hidden;background:#000;display:block;width:100%;border:0;padding:0;cursor:pointer}
+.clip img,.clip video{width:100%;max-height:360px;object-fit:contain;display:block;background:#000}
+.clip .play{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:1rem;font-weight:600;background:linear-gradient(transparent 55%,rgba(0,0,0,.45))}
+.clip .play span{width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center;font-size:1.4rem;padding-left:4px}
+.clip .dur{position:absolute;right:8px;bottom:8px;color:#fff;font-size:.75rem;font-weight:600;background:rgba(0,0,0,.55);border-radius:6px;padding:1px 6px}
+.prog{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.upd{display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);border-radius:14px;padding:10px 12px 10px 14px}
+.upd p{flex:1;margin:0;font-size:.9rem;font-weight:600}.upd button{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:8px 14px;font-weight:700}
 .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:40;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .lightbox img{max-width:100%;max-height:100%;border-radius:8px}
 .lightbox p{color:#fff;text-align:center;margin-top:10px}
@@ -309,6 +317,7 @@ details.pl summary{cursor:pointer;font-weight:600}
     <button role="tab" id="tabMe" aria-selected="false">About me</button>
   </div>
 
+  <div class="upd" id="updBar" hidden role="status"><p>New update available ✨</p><button id="updBtn">Refresh</button></div>
   <div class="notice" id="notice" hidden></div>
   <div id="ciBanner"></div>
   <div id="bannerBox"></div>
@@ -372,12 +381,13 @@ details.pl summary{cursor:pointer;font-weight:600}
       </div>
     </div>
     <div class="card stack" id="picCard">
-      <div class="row between"><h2>Send a photo</h2><span class="small muted" id="picLeft"></span></div>
-      <input type="file" id="picFile" accept="image/*" hidden>
+      <div class="stack" style="gap:2px"><h2>Send a photo or video</h2><span class="small muted" id="picLeft"></span></div>
+      <input type="file" id="picFile" accept="image/*,video/*" hidden>
       <div id="picPreview"></div>
+      <div class="prog" id="clipProg" hidden><i></i></div>
       <label for="picCap" style="font-weight:600">Caption</label>
       <input type="text" id="picCap" maxlength="150" placeholder="Write something to go with it…">
-      <div class="row"><button class="secondary" id="picChoose">Choose photo</button><button class="primary" id="picSend" disabled>Send photo</button></div>
+      <div class="row"><button class="secondary" id="picChoose">Choose photo or video</button><button class="primary" id="picSend" disabled>Send photo</button></div>
       <p class="small muted" id="picNote" hidden></p>
     </div>
     <div class="card stack" id="songCard">
@@ -688,10 +698,87 @@ async function uploadPhoto(file,max){
   const ref=await db.collection("photos").add({data,by:me,createdAt:Date.now()});
   photoCache[ref.id]=Promise.resolve(data);return ref.id;
 }
+const clipErr=e=>e?.code==="signed_out"?saveErr(e):e?.code==="too_large"?"That video is too large to send. Try a shorter clip.":e?.code==="unsupported"?"This phone can't shrink videos. Try a shorter clip (a few seconds).":e?.code==="bad_video"?"Couldn't read that video. Try another one.":"Couldn't send the video. Check your connection and try again.";
 const photoErr=e=>e?.code==="signed_out"?saveErr(e):e?.code==="bad_image"?"That file isn't a photo this phone can read. Try a JPG or PNG.":e?.code==="too_large"?"That photo is too large. Try another one.":"Couldn't upload the photo. Check your connection and try again.";
 function openLightbox(id,cap){const lb=$("lightbox");lb.textContent="";const w=el("div");const i=el("img");i.alt=cap||"Photo";loadPhoto(i,id);w.append(i);if(cap)w.append(el("p",null,cap));lb.append(w);lb.hidden=false}
 $("lightbox").onclick=()=>{$("lightbox").hidden=true};
 function picEl(id,cap){const i=el("img","pic");i.alt=cap||"Photo";loadPhoto(i,id);i.onclick=()=>openLightbox(id,cap);return i}
+
+/* ================= Video clips ================= */
+const CLIP_MAX_SEC=15,CLIP_PART=700000,clipCache={};
+const fmtDur=s=>{s=Math.max(1,Math.round(s||0));return"0:"+String(s).padStart(2,"0")};
+function blobToDataUrl(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej({code:"bad_video"});r.readAsDataURL(b)})}
+function pickMime(){
+  if(typeof MediaRecorder==="undefined")return null;
+  return["video/mp4;codecs=avc1,mp4a","video/mp4","video/webm;codecs=vp8,opus","video/webm"].find(m=>{try{return MediaRecorder.isTypeSupported(m)}catch(e){return false}})||null;
+}
+const canReencode=()=>!!pickMime()&&!!HTMLCanvasElement.prototype.captureStream;
+/* All setup happens synchronously so it runs inside the tap (needed on iPhone for sound and playback). */
+function encodeClip(v,onProg){
+  const mime=pickMime();
+  const W0=v.videoWidth||640,H0=v.videoHeight||360,sc=Math.min(1,480/Math.max(W0,H0));
+  const W=Math.max(2,Math.round(W0*sc/2)*2),H=Math.max(2,Math.round(H0*sc/2)*2);
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;const g=cv.getContext("2d");
+  const vs=cv.captureStream(30),tracks=[...vs.getVideoTracks()];
+  let actx=null;
+  try{const AC=window.AudioContext||window.webkitAudioContext;actx=new AC();const src=actx.createMediaElementSource(v),dst=actx.createMediaStreamDestination();src.connect(dst);tracks.push(...dst.stream.getAudioTracks());actx.resume&&actx.resume()}catch(e){}
+  const rec=new MediaRecorder(new MediaStream(tracks),{mimeType:mime,videoBitsPerSecond:750000,audioBitsPerSecond:64000});
+  const chunks=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+  const limit=Math.min(CLIP_MAX_SEC,isFinite(v.duration)&&v.duration>0?v.duration:CLIP_MAX_SEC);
+  let poster="",done=false,raf=0;
+  const draw=()=>{if(done)return;try{g.drawImage(v,0,0,W,H);if(!poster&&v.currentTime>0.05)poster=cv.toDataURL("image/jpeg",.6)}catch(e){}onProg&&onProg(Math.min(1,v.currentTime/limit));if(v.currentTime>=limit){finish();return}raf=v.requestVideoFrameCallback?v.requestVideoFrameCallback(draw):requestAnimationFrame(draw)};
+  let finish;
+  const out=new Promise((res,rej)=>{
+    finish=()=>{if(done)return;done=true;try{v.pause()}catch(e){}try{rec.state!=="inactive"&&rec.stop()}catch(e){rej({code:"bad_video"})}};
+    rec.onstop=()=>{try{actx&&actx.close()}catch(e){}tracks.forEach(t=>t.stop());const blob=new Blob(chunks,{type:mime.split(";")[0]});if(!blob.size)rej({code:"bad_video"});else res({blob,poster,dur:Math.min(limit,v.currentTime||limit),mime:blob.type})};
+    v.onended=finish;v.onerror=()=>{done=true;rej({code:"bad_video"})};
+    setTimeout(()=>{if(!done)finish()},(limit+8)*1000);
+  });
+  v.muted=false;v.currentTime=0;rec.start(250);
+  const pp=v.play();if(pp&&pp.catch)pp.catch(()=>{v.muted=true;v.play().catch(()=>finish())});
+  draw();
+  return out;
+}
+function grabPoster(v){try{const sc=Math.min(1,480/Math.max(v.videoWidth,v.videoHeight)),c=document.createElement("canvas");c.width=Math.round(v.videoWidth*sc);c.height=Math.round(v.videoHeight*sc);c.getContext("2d").drawImage(v,0,0,c.width,c.height);return c.toDataURL("image/jpeg",.6)}catch(e){return""}}
+async function uploadClip(r){
+  if(!signedIn())throw{code:"signed_out"};
+  if(r.blob.size>3500000)throw{code:"too_large"};
+  const data=await blobToDataUrl(r.blob),parts=[];
+  for(let i=0;i<data.length;i+=CLIP_PART)parts.push(data.slice(i,i+CLIP_PART));
+  const ref=await db.collection("videos").add({by:me,createdAt:Date.now(),parts:parts.length,mime:r.mime||"video/mp4",dur:Math.round((r.dur||0)*10)/10,poster:r.poster||"",ready:false});
+  for(let i=0;i<parts.length;i++)await db.doc(`videos/${ref.id}/parts/${i}`).set({i,data:parts[i]});
+  await db.doc(`videos/${ref.id}`).update({ready:true});
+  return ref.id;
+}
+async function loadClipMeta(id){const s=await db.doc(`videos/${id}`).get();return s.exists?s.data():null}
+function loadClipSrc(id){
+  if(!clipCache[id])clipCache[id]=(async()=>{
+    const m=await loadClipMeta(id);if(!m||!m.parts)return"";
+    const ps=await Promise.all(Array.from({length:m.parts},(_,i)=>db.doc(`videos/${id}/parts/${i}`).get()));
+    const data=ps.map(x=>x.exists?(x.data().data||""):"").join("");
+    const b=await (await fetch(data)).blob();return URL.createObjectURL(b);
+  })().catch(e=>{console.error(e);delete clipCache[id];return""});
+  return clipCache[id];
+}
+const liveClips={};
+function clipEl(id,cap,dur){
+  if(liveClips[id]){const box=el("div","clip");box.style.cursor="default";box.append(liveClips[id]);return box}
+  const w=el("button","clip");w.type="button";w.setAttribute("aria-label","Play video"+(cap?": "+cap:""));
+  const im=el("img");im.alt="";w.append(im);
+  const ov=el("div","play");ov.append(el("span",null,"▶"));w.append(ov);
+  if(dur)w.append(el("span","dur",fmtDur(dur)));
+  if(db)loadClipMeta(id).then(m=>{if(m?.poster)im.src=m.poster;if(!dur&&m?.dur)w.append(el("span","dur",fmtDur(m.dur)))}).catch(()=>{});
+  w.onclick=async()=>{
+    if(w.dataset.on)return;w.dataset.on="1";ov.firstChild.textContent="…";
+    const src=await loadClipSrc(id);
+    if(!src){ov.firstChild.textContent="▶";delete w.dataset.on;toast("Couldn't load the video. Try again.");return}
+    const v=el("video");liveClips[id]=v;v.controls=true;v.playsInline=true;v.setAttribute("playsinline","");v.src=src;
+    const box=el("div","clip");box.style.cursor="default";box.append(v);w.replaceWith(box);v.play().catch(()=>{});
+  };
+  return w;
+}
+const itemMedia=it=>it.kind==="clip"?clipEl(it.asset,it.caption,it.dur):picEl(it.asset,it.caption);
+const isPicLike=it=>(it.kind==="photo"||it.kind==="clip")&&it.asset;
 
 /* ================= Rings ================= */
 function ringBg(levels){
@@ -1106,6 +1193,7 @@ function notifyForItem(d){
   else if(d.kind==="touch")body=TOUCH_TEXT[d.type]||"Sent you something";
   else if(d.kind==="media")body="Shared "+platformOf(d.url).noun+" 🎵"+(d.note?`: “${d.note}”`:"");
   else if(d.kind==="photo")body="Sent you a photo 📷"+(d.caption?`: “${d.caption}”`:"");
+  else if(d.kind==="clip")body="Sent you a video 🎬"+(d.caption?`: “${d.caption}”`:"");
   else if(d.kind==="invite")body=`Invited you: ${d.type==="date"&&d.dateKind?"Date night, "+label("datestyle",d.dateKind).toLowerCase():(pick(INV_TYPES,d.type)?.[1]||"A date")} · ${d.when} 💌`;
   else if(d.kind==="challenge")body=`Challenged you: ${d.text} 🏁`;
   if(body)notify(partnerId,n,body,d.kind);
@@ -1113,8 +1201,9 @@ function notifyForItem(d){
 function notifyForReply(id,data){
   const it=incoming().find(x=>x.id===id);if(!it)return;const n=nm(me),prev=(replies[me]||{})[id]||{};
   let body="";
-  if(it.kind==="photo"&&data.reaction&&data.reaction!==prev.reaction)body=`Reacted ${data.reaction} to your photo`;
-  else if(it.kind==="photo"&&data.comment)body=`Replied to your photo: “${data.comment}”`;
+  const what=it.kind==="clip"?"video":"photo";
+  if(isPicLike(it)&&data.reaction&&data.reaction!==prev.reaction)body=`Reacted ${data.reaction} to your ${what}`;
+  else if(isPicLike(it)&&data.comment)body=`Replied to your ${what}: “${data.comment}”`;
   else if(it.kind==="media"&&data.status==="loved")body=`Loved the ${platformOf(it.url).noun.replace(/^an? /,"")} you shared ♥`;
   else if(it.kind==="invite"&&data.status==="yes")body=`Accepted your invite: ${pick(INV_TYPES,it.type)?.[1]||"Date"} 💌`;
   else if(it.kind==="invite"&&data.status==="later")body=`Can't make it this time: ${pick(INV_TYPES,it.type)?.[1]||"Date"}`;
@@ -1257,6 +1346,7 @@ function itemTitle(it,dir){
   if(it.kind==="touch"&&it.type==="emoji"){const em=[...String(it.em||"💌")].slice(0,40).join("");return{em,title:dir==="in"?`${pn} sent you ${em}`:`You sent ${em}`}}
   if(it.kind==="touch"){const t=TOUCHMAP[it.type]||["","💌","Something"];return{em:t[1],title:dir==="in"?`${pn} sent you a ${t[2].toLowerCase()}`:`You sent a ${t[2].toLowerCase()}`}}
   if(it.kind==="photo")return{em:"📷",title:dir==="in"?`${pn} sent you a photo`:"You sent a photo"};
+  if(it.kind==="clip")return{em:"🎬",title:dir==="in"?`${pn} sent you a video`:"You sent a video"};
   if(it.kind==="invite"){const what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(pick(INV_TYPES,it.type)?.[1]||"Date");return{em:"💌",title:`${dir==="in"?"Invite":"You invited"}: ${what} · ${it.when}`}}
   if(it.kind==="media"){const m=platformOf(it.url);return{em:"🎵",title:dir==="in"?`${pn} shared ${m.noun}`:`You shared ${m.noun}`}}
   return{em:"🏁",title:`${dir==="in"?"Challenge":"You challenged"}: ${it.text}`};
@@ -1271,10 +1361,10 @@ function renderBanner(){
   const it=unseen()[0];if(!it||tab==="connect")return;
   const pn=nm(partnerId),d=itemTitle(it,"in");
   const b=el("div","banner"),t=el("div","txt");
-  const simple=it.kind==="touch"||it.kind==="photo"||it.kind==="media";
+  const simple=it.kind==="touch"||it.kind==="photo"||it.kind==="clip"||it.kind==="media";
   const head=simple?d.title:it.kind==="invite"?`${pn} invited you on a date`:`${pn} sent you a challenge`;
   t.append(el("h3",null,head),el("p","small muted",simple?(it.caption||it.note||timeAgo(it.createdAt)):d.title.replace(/^[^:]+: /,"")));
-  const go=el("button","secondary",it.kind==="touch"?"Send one back":it.kind==="photo"?"View":it.kind==="media"?"Listen":"See it");go.onclick=()=>setTab("connect");
+  const go=el("button","secondary",it.kind==="touch"?"Send one back":it.kind==="photo"?"View":it.kind==="clip"?"Watch":it.kind==="media"?"Listen":"See it");go.onclick=()=>setTab("connect");
   b.append(el("span","big",d.em),t,go);box.append(b);
 }
 async function reply(id,data){
@@ -1285,7 +1375,7 @@ function statusPill(it,rep){
   if(it.kind==="invite")return rep?.status==="yes"?["Accepted","ok"]:rep?.status==="later"?["Not this time","no"]:["Waiting",""];
   if(it.kind==="challenge"){const c=rep?.count||0,t=it.target||1;return c>=t?["Done","ok"]:[c?`${c} of ${t}`:"Not started",""]}
   if(it.kind==="media")return rep?.status==="loved"?["Loved it","ok"]:null;
-  if(it.kind==="photo")return rep?.comment?["Replied","ok"]:null;
+  if(it.kind==="photo"||it.kind==="clip")return rep?.comment?["Replied","ok"]:null;
   return null;
 }
 function itemHead(it,dir,extra){
@@ -1303,14 +1393,14 @@ function renderInbox(){
     const rep=(replies[me]||{})[it.id],row=el("div","item");
     row.append(itemHead(it,"in",it.createdAt>lastSeen?el("span","pill new","New"):null));
     if(it.note)row.append(el("p","need","“"+it.note+"”"));
-    if(it.kind==="photo"&&it.asset){
-      row.append(picEl(it.asset,it.caption));if(it.caption)row.append(el("p",null,it.caption));
-      const rs=el("div","reacts");rs.setAttribute("role","group");rs.setAttribute("aria-label","React to this photo");
+    if(isPicLike(it)){
+      row.append(itemMedia(it));if(it.caption)row.append(el("p",null,it.caption));
+      const rs=el("div","reacts");rs.setAttribute("role","group");rs.setAttribute("aria-label","React to this "+(it.kind==="clip"?"video":"photo"));
       REACTIONS.forEach(em=>{const b=el("button","react",em);b.setAttribute("aria-pressed",String(rep?.reaction===em));b.setAttribute("aria-label","React "+em);
         b.onclick=()=>reply(it.id,{reaction:rep?.reaction===em?null:em}).then(ok=>{if(ok&&rep?.reaction!==em)toast("Reacted "+em)});rs.append(b)});
       row.append(rs);
       if(rep?.comment)row.append(el("p","reply-cap","You: "+rep.comment));
-      const c=el("div","cmt"),inp=el("input");inp.type="text";inp.id="cmt-"+it.id;inp.maxLength=150;inp.placeholder=rep?.comment?"Change your reply…":"Write a reply…";inp.setAttribute("aria-label","Reply to photo");
+      const c=el("div","cmt"),inp=el("input");inp.type="text";inp.id="cmt-"+it.id;inp.maxLength=150;inp.placeholder=rep?.comment?"Change your reply…":"Write a reply…";inp.setAttribute("aria-label","Reply to "+(it.kind==="clip"?"video":"photo"));
       const post=el("button","secondary","Post");post.onclick=()=>{const v=inp.value.trim();if(!v){toast("Write something first");return}reply(it.id,{comment:v}).then(ok=>ok&&toast("Reply posted"))};
       inp.onkeydown=ev=>{if(ev.key==="Enter")post.click()};
       c.append(inp,post);row.append(c);
@@ -1341,7 +1431,7 @@ function renderSent(){
   list.forEach(it=>{
     const rep=partnerId?(replies[partnerId]||{})[it.id]:null,s=statusPill(it,rep),row=el("div","item");
     row.append(itemHead(it,"out",s?el("span","pill "+s[1],s[0]):null));
-    if(it.kind==="photo"&&it.asset){const im=picEl(it.asset,it.caption);im.style.maxHeight="160px";row.append(im);if(it.caption)row.append(el("p","small muted",it.caption));if(rep?.reaction){const rr=el("div","reacted",`${nm(partnerId)} reacted`);rr.append(el("b",null,rep.reaction));row.append(rr)}if(rep?.comment)row.append(el("p","reply-cap",`${nm(partnerId)}: ${rep.comment}`))}
+    if(isPicLike(it)){const im=itemMedia(it);if(it.kind==="photo")im.style.maxHeight="160px";row.append(im);if(it.caption)row.append(el("p","small muted",it.caption));if(rep?.reaction){const rr=el("div","reacted",`${nm(partnerId)} reacted`);rr.append(el("b",null,rep.reaction));row.append(rr)}if(rep?.comment)row.append(el("p","reply-cap",`${nm(partnerId)}: ${rep.comment}`))}
     if(it.kind==="media"){if(it.note)row.append(el("p","need","“"+it.note+"”"));row.append(mediaEl(it.url))}
     if(it.kind==="invite"&&it.place)row.append(placeEl(it));
     box.append(row);
@@ -1349,32 +1439,69 @@ function renderSent(){
 }
 const PIC_LIMIT=2;
 const REACTIONS=["❤️","😍","😂","🔥","😘","👍","😮"];
-let picFileSel=null,picBusy=false;
-const picsToday=()=>outgoing().filter(x=>x.kind==="photo"&&key(new Date(x.createdAt))===todayKey()).length;
+const CLIP_LIMIT=2;
+let picFileSel=null,picBusy=false,picKind="photo",procVid=null;
+const sentToday=k=>outgoing().filter(x=>x.kind===k&&key(new Date(x.createdAt))===todayKey()).length;
+const picsToday=()=>sentToday("photo"),clipsToday=()=>sentToday("clip");
+const isVideoFile=f=>/^video\//.test(f.type||"")||/\.(mov|mp4|m4v|webm|3gp)$/i.test(f.name||"");
 function renderPicCard(){
-  const left=Math.max(0,PIC_LIMIT-picsToday());
-  $("picLeft").textContent=`${left} of ${PIC_LIMIT} left today`;
-  const full=left===0;
-  $("picChoose").disabled=full||picBusy;$("picSend").disabled=full||picBusy||!picFileSel;
-  $("picNote").hidden=!full;$("picNote").textContent=full?"You've sent today's 2 photos. Come back tomorrow.":"";
+  const pl=Math.max(0,PIC_LIMIT-picsToday()),cl=Math.max(0,CLIP_LIMIT-clipsToday());
+  $("picLeft").textContent=`Today: ${pl} of ${PIC_LIMIT} photos · ${cl} of ${CLIP_LIMIT} videos left (up to ${CLIP_MAX_SEC} sec)`;
+  const selFull=picFileSel?(picKind==="clip"?cl===0:pl===0):false;
+  $("picChoose").disabled=(pl===0&&cl===0)||picBusy;$("picSend").disabled=picBusy||!picFileSel||selFull;
+  if(!picBusy){$("picSend").textContent=picKind==="clip"&&picFileSel?"Send video":"Send photo"}
+  const n=$("picNote");
+  if(picBusy&&picKind==="clip"){n.hidden=false;n.textContent="Getting your video ready… keep the app open."}
+  else if(pl===0&&cl===0){n.hidden=false;n.textContent="You've sent today's photos and videos. Come back tomorrow."}
+  else if(selFull){n.hidden=false;n.textContent=picKind==="clip"?"You've sent today's 2 videos. You can still send a photo.":"You've sent today's 2 photos. You can still send a video."}
+  else if(picFileSel&&picKind==="clip"&&procVid&&isFinite(procVid.duration)&&procVid.duration>CLIP_MAX_SEC+.5){n.hidden=false;n.textContent=`Only the first ${CLIP_MAX_SEC} seconds will be sent.`}
+  else{n.hidden=true;n.textContent=""}
 }
 $("picChoose").onclick=()=>$("picFile").click();
 $("picFile").onchange=e=>{
-  const f=e.target.files[0];if(!f)return;picFileSel=f;
-  const pv=$("picPreview");pv.textContent="";const i=el("img","pic pic-preview");i.src=URL.createObjectURL(f);i.alt="Selected photo";pv.append(i);renderPicCard();
+  const f=e.target.files[0];if(!f)return;picFileSel=f;picKind=isVideoFile(f)?"clip":"photo";
+  const pv=$("picPreview");pv.textContent="";const u=URL.createObjectURL(f);
+  if(picKind==="clip"){
+    const pvv=el("video","pic pic-preview");pvv.src=u;pvv.controls=true;pvv.playsInline=true;pvv.setAttribute("playsinline","");pvv.muted=true;pvv.style.objectFit="contain";pvv.style.background="#000";pvv.style.cursor="default";pv.append(pvv);
+    procVid=document.createElement("video");procVid.playsInline=true;procVid.setAttribute("playsinline","");procVid.preload="auto";procVid.src=u;
+    procVid.style.cssText="position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0";document.body.append(procVid);
+    procVid.onloadedmetadata=()=>renderPicCard();try{procVid.load()}catch(x){}
+  }else{if(procVid){procVid.remove();procVid=null}const i=el("img","pic pic-preview");i.src=u;i.alt="Selected photo";pv.append(i)}
+  renderPicCard();
 };
-$("picSend").onclick=async()=>{
+function resetPic(){picFileSel=null;$("picFile").value="";$("picCap").value="";$("picPreview").textContent="";if(procVid){procVid.remove();procVid=null}picKind="photo";$("clipProg").hidden=true}
+$("picSend").onclick=()=>{
   if(!picFileSel||picBusy)return;
-  if(picsToday()>=PIC_LIMIT){toast("You've sent today's 2 photos");return}
   if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
   if(!partnerId){toast("Your partner hasn't joined yet");return}
+  if(picKind==="clip")return sendClip();
+  if(picsToday()>=PIC_LIMIT){toast("You've sent today's 2 photos");return}
   picBusy=true;$("picSend").textContent="Sending…";renderPicCard();
-  try{
+  (async()=>{try{
     const id=await uploadPhoto(picFileSel,1600);
-    if(await sendItem({kind:"photo",asset:id,caption:$("picCap").value.trim()},"Photo sent")){picFileSel=null;$("picFile").value="";$("picCap").value="";$("picPreview").textContent=""}
+    if(await sendItem({kind:"photo",asset:id,caption:$("picCap").value.trim()},"Photo sent"))resetPic();
   }catch(e){console.error(e);toast(photoErr(e))}
-  finally{picBusy=false;$("picSend").textContent="Send photo";renderPicCard()}
+  finally{picBusy=false;renderPicCard()}})();
 };
+function sendClip(){
+  if(clipsToday()>=CLIP_LIMIT){toast("You've sent today's 2 videos");return}
+  const f=picFileSel,v=procVid,bar=$("clipProg"),fill=bar.firstElementChild;
+  const setP=x=>{fill.style.width=Math.round(x*100)+"%"};
+  let job;
+  const dur=v&&isFinite(v.duration)?v.duration:0;
+  if(v&&canReencode()&&v.readyState>=1)job=encodeClip(v,x=>setP(x*.85));
+  else if(f.size<=3000000&&(!dur||dur<=CLIP_MAX_SEC+.5))job=Promise.resolve({blob:f,poster:v?grabPoster(v):"",dur,mime:f.type||"video/mp4"});
+  else{toast(clipErr({code:canReencode()?"bad_video":"unsupported"}));return}
+  picBusy=true;bar.hidden=false;setP(.02);$("picSend").textContent="Preparing…";renderPicCard();
+  (async()=>{try{
+    const r=await job;
+    if(r.blob.size>3500000&&f.size<=3000000&&(!dur||dur<=CLIP_MAX_SEC+.5)){r.blob=f;r.mime=f.type||"video/mp4"}
+    $("picSend").textContent="Sending…";setP(.9);
+    const id=await uploadClip(r);setP(1);
+    if(await sendItem({kind:"clip",asset:id,caption:$("picCap").value.trim(),dur:Math.round((r.dur||dur||0)*10)/10},"Video sent"))resetPic();
+  }catch(e){console.error(e);toast(clipErr(e))}
+  finally{picBusy=false;bar.hidden=true;renderPicCard()}})();
+}
 /* ---- Songs and videos ---- */
 function safeUrl(u){try{const x=new URL(String(u||"").trim());return x.protocol==="https:"||x.protocol==="http:"?x.href:null}catch(e){return null}}
 function platformOf(u){
@@ -1732,6 +1859,17 @@ $("joinBtn").onclick=()=>{
 };
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash);
+/* ---- Update check: shows a banner when a newer version is live ---- */
+const APP_VERSION="2026-10-17.3";
+let updLast=0;
+async function checkUpdate(){
+  if(Date.now()-updLast<60000)return;updLast=Date.now();
+  try{const r=await fetch(location.pathname+"?vcheck="+Date.now(),{cache:"no-store"});if(!r.ok)return;
+    const m=(await r.text()).match(/const APP_VERSION="([^"]+)"/);if(m&&m[1]!==APP_VERSION)$("updBar").hidden=false}catch(e){}
+}
+$("updBtn").onclick=()=>{if(dirty&&!confirm("You have an unsaved check-in. Refresh anyway?"))return;$("updBtn").textContent="Refreshing…";location.replace(spaceKey?linkFor(me)+"&r="+Date.now():location.pathname+"?r="+Date.now())};
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkUpdate()});
+setTimeout(checkUpdate,4000);setInterval(checkUpdate,10*60000);
 if("serviceWorker" in navigator)navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.open==="chat"&&spaceKey)setTab("chat")});
 (function boot(){
   const L=parseLink(location.href);
