@@ -231,6 +231,28 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .full a{font-weight:600;color:var(--accent);text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
 .orline{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.8rem}.orline::before,.orline::after{content:"";flex:1;height:1px;background:var(--line)}
 .yt{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ov{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.ov .panel{background:var(--bg);width:100%;max-width:520px;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px max(16px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+@media (min-width:600px){.ov{align-items:center}.ov .panel{border-radius:20px}}
+.ov .phead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.ov .x{border:0;background:var(--soft);color:var(--ink);width:32px;height:32px;border-radius:50%;flex:none;font-size:1.1rem;padding:0}
+.wn{display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.wn .em{grid-row:span 3;width:44px;height:44px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center;font-size:1.3rem}
+.wn b{font-weight:600}.wn p{margin:0;font-size:.88rem;color:var(--muted)}
+.wn .try{justify-self:start;margin-top:4px;border:0;background:none;color:var(--accent);font-weight:700;padding:0;font-size:.88rem}
+.rel h4{margin:6px 0 0;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.ndot{display:inline-block;margin-left:8px;vertical-align:middle;background:var(--accent);color:var(--accent-ink);font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 7px;line-height:1.4}
+.tabs .ndot{position:absolute;top:2px;right:6px;margin:0;width:8px;height:8px;padding:0;font-size:0;border-radius:50%}
+.tabs button{position:relative}
+.attach{position:relative}.attach .ndot{position:absolute;top:0;right:0;width:10px;height:10px;padding:0;font-size:0;margin:0;border-radius:50%}
+.pulse{animation:pulse 1.6s ease-out 2}@keyframes pulse{0%{box-shadow:0 0 0 0 var(--accent)}100%{box-shadow:0 0 0 14px transparent}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none;outline:2px solid var(--accent)}}
+.gs{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.gs .bar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}.gs .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.gs .gstep{display:flex;align-items:center;gap:10px;font-size:.92rem}
+.gs .ck{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);flex:none;display:grid;place-items:center;font-size:.75rem}
+.gs .gstep.isdone .ck{background:var(--ok);border-color:var(--ok);color:#fff}.gs .gstep.isdone span.t{color:var(--muted);text-decoration:line-through}
+.gs .gstep span.t{flex:1;min-width:0}.gs .go{border:0;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:5px 12px;font-weight:600;font-size:.8rem;flex:none}
 .aic{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .aic .eyebrow{color:var(--accent)}
 .aic .hl{font-weight:600;font-size:1rem;line-height:1.4}
@@ -366,6 +388,7 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div id="bannerBox"></div>
 
   <div id="pToday" class="stack" style="gap:22px">
+    <div id="gsBox"></div>
     <div class="pair"><div class="person" id="meCard"></div><div class="person" id="partnerCard"></div></div>
 
     <div class="stack">
@@ -511,6 +534,11 @@ details.pl summary{cursor:pointer;font-weight:600}
       <p class="small muted" id="notifMsg">Checking…</p>
       <div class="row"><button class="primary" id="notifOn" hidden>Turn on notifications</button><button class="secondary" id="notifTest" hidden>Send me a test</button></div>
     </div>
+    <div class="card stack" id="fbCard">
+      <h3>Help us improve</h3>
+      <p class="small muted">Found a bug or have an idea? Tell us. It goes straight to the person who built this app.</p>
+      <div class="row"><button class="primary" id="fbOpen">Send feedback</button><button class="secondary" id="wnOpen">What's new</button></div>
+    </div>
     <div class="card stack" id="aiCard">
       <h3>AI ideas ✨</h3>
       <p class="small muted" id="aiExplain"></p>
@@ -571,6 +599,24 @@ details.pl summary{cursor:pointer;font-weight:600}
 <div class="lightbox" id="lightbox" hidden></div>
 <div class="toast" id="toast" hidden></div>
 
+<div class="ov" id="wnSheet" hidden role="dialog" aria-modal="true" aria-labelledby="wnTitle">
+  <div class="panel">
+    <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow" id="wnEyebrow">Just updated</span><h2 id="wnTitle">What's new</h2></div><button class="x" id="wnX" aria-label="Close">×</button></div>
+    <div class="stack" id="wnList" style="gap:10px"></div>
+    <button class="primary" id="wnDone">Got it</button>
+  </div>
+</div>
+<div class="ov" id="fbSheet" hidden role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+  <div class="panel">
+    <div class="phead"><div class="stack" style="gap:2px"><h2 id="fbTitle">Send feedback</h2><p class="small muted" style="margin:0">What happened, or what would make the app better?</p></div><button class="x" id="fbX" aria-label="Close">×</button></div>
+    <div class="opts" id="fbKinds" role="group" aria-label="Type of feedback"></div>
+    <textarea id="fbText" rows="5" maxlength="2000" placeholder="Tell us here…" aria-label="Feedback"></textarea>
+    <input type="file" id="fbFile" accept="image/*" hidden>
+    <div id="fbShot"></div>
+    <div class="row"><button class="secondary" id="fbAttach">Add a screenshot</button><button class="primary" id="fbSend">Send</button></div>
+    <p class="small muted" id="fbMsg"></p>
+  </div>
+</div>
 <script>
 const $=id=>document.getElementById(id);
 function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
@@ -1810,7 +1856,7 @@ $("stepNext").onclick=async()=>{
     if(!signedIn())throw{code:"signed_out"};
     await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),onboarded:true,profile:clean});
     members[me]={...(members[me]||{}),onboarded:true,profile:clean};
-    $("sheet").hidden=true;toast(firstRun?"You're all set. Do your first check-in.":"Answers saved");
+    $("sheet").hidden=true;if(firstRun)markRelSeen();toast(firstRun?"You're all set. Do your first check-in.":"Answers saved");
     if(firstRun)setTab("today");renderAll();
   }catch(e){console.error(e);$("sheetErr").textContent=saveErr(e)}
   finally{btn.disabled=false;btn.textContent="Finish"}
@@ -2156,6 +2202,108 @@ async function setAiOk(v){
   catch(e){console.error(e);toast(saveErr(e))}
 }
 
+/* ================= What's new ================= */
+/* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
+const RELEASES=[
+  {id:"2026-10-17b",date:"Oct 17, 2026",items:[
+    {em:"✨",t:"AI ideas for your partner",b:"Turn on AI ideas in About me. When your partner checks in, you get 3 ideas written just for them, plus a weekly summary of your week together.",go:["me","aiCard"],dot:"ai"},
+    {em:"💬",t:"Chat, with photos and videos",b:"A private chat for the two of you. Tap ＋ to send a photo or a short video.",go:["chat","msgIn"],dot:"chat"},
+    {em:"🎵",t:"Search songs and play previews",b:"Find a song, hear 30 seconds right in the app, and open the full song in Apple Music, Spotify or YouTube.",go:["connect","songCard"],dot:"song"},
+    {em:"🎬",t:"Send short videos",b:"Send up to 2 videos a day, up to 15 seconds each, from Connect or Chat.",go:["connect","picCard"],dot:"video"},
+    {em:"🗑️",t:"Auto-delete photos and videos",b:"Choose to keep everything, or delete photos and videos after 15 or 30 days.",go:["me","adCard"]},
+    {em:"🙋",t:"Send feedback",b:"Found a bug or have an idea? Send it from About me.",go:["me","fbCard"]}
+  ]}
+];
+const relKey=()=>"ut_rel_"+spaceKey+me;
+function relSeen(){try{return localStorage.getItem(relKey())||""}catch(e){return""}}
+function markRelSeen(){try{localStorage.setItem(relKey(),RELEASES[0].id)}catch(e){}}
+function unseenReleases(){const s=relSeen();const i=RELEASES.findIndex(r=>r.id===s);return i<0?(s?RELEASES:RELEASES.slice(0,1)):RELEASES.slice(0,i)}
+function goTo(go){
+  const [t,id]=go;setTab(t);
+  setTimeout(()=>{const n=$(id);if(!n)return;n.scrollIntoView({behavior:"smooth",block:"center"});const card=n.closest(".card,.chat,.aic")||n;card.classList.remove("pulse");void card.offsetWidth;card.classList.add("pulse");setTimeout(()=>card.classList.remove("pulse"),3400);if(n.tagName==="INPUT"||n.tagName==="TEXTAREA")setTimeout(()=>n.focus(),400)},120);
+}
+function openWhatsNew(all){
+  const rels=all?RELEASES:unseenReleases();if(!rels.length)return;
+  $("wnEyebrow").textContent=all?"Updates":"Just updated";$("wnTitle").textContent=all?"What's new":"New in Us, Today";
+  const box=$("wnList");box.textContent="";
+  rels.forEach((r,ri)=>{
+    const sec=el("div","stack rel");sec.style.gap="10px";if(all||rels.length>1)sec.append(el("h4",null,r.date));
+    r.items.forEach(it=>{const c=el("div","wn");c.append(el("span","em",it.em),el("b",null,it.t),el("p",null,it.b));if(it.go){const b=el("button","try","Try it →");b.onclick=()=>{closeWhatsNew();if(it.dot)useDot(it.dot);goTo(it.go)};c.append(b)}sec.append(c)});
+    box.append(sec);
+  });
+  $("wnSheet").hidden=false;$("wnDone").focus();
+}
+function closeWhatsNew(){$("wnSheet").hidden=true;markRelSeen()}
+$("wnX").onclick=closeWhatsNew;$("wnDone").onclick=closeWhatsNew;
+$("wnSheet").addEventListener("click",e=>{if(e.target.id==="wnSheet")closeWhatsNew()});
+$("wnOpen").onclick=()=>openWhatsNew(true);
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("wnSheet").hidden)closeWhatsNew();if(!$("fbSheet").hidden)$("fbSheet").hidden=true});
+function maybeWhatsNew(){if(!spaceKey||!members[me]?.onboarded||!$("sheet").hidden||!$("wnSheet").hidden)return;if(unseenReleases().length)setTimeout(()=>{if($("sheet").hidden)openWhatsNew(false)},700)}
+
+/* ---- "New" dots: shown on a new feature until it's used ---- */
+const DOTS=[{k:"chat",id:"tabChat",tab:true},{k:"song",sel:"#songCard h2"},{k:"video",sel:"#picCard h2"},{k:"ai",sel:"#aiCard h3"},{k:"attach",id:"msgAttach",tab:true}];
+const dotKey=k=>"ut_dot_"+spaceKey+me+"_"+k;
+const dotUsed=k=>{try{return !!localStorage.getItem(dotKey(k))}catch(e){return true}};
+function useDot(k){try{localStorage.setItem(dotKey(k),"1")}catch(e){}renderDots()}
+function renderDots(){
+  if(!spaceKey)return;
+  DOTS.forEach(d=>{const n=d.id?$(d.id):document.querySelector(d.sel);if(!n)return;const ex=n.querySelector(":scope > .ndot");const show=!dotUsed(d.k);
+    if(show&&!ex){const s=el("span","ndot","New");s.setAttribute("aria-label","New");n.append(s)}else if(!show&&ex)ex.remove()});
+}
+$("tabChat").addEventListener("click",()=>useDot("chat"));
+$("msgAttach").addEventListener("click",()=>useDot("attach"));
+$("songQ").addEventListener("focus",()=>useDot("song"));
+$("picChoose").addEventListener("click",()=>useDot("video"));
+$("aiOpts").addEventListener("click",()=>useDot("ai"));
+
+/* ---- Getting-started checklist ---- */
+const gsHideKey=()=>"ut_gs_"+spaceKey+me;
+function gsSteps(){
+  const p=partnerId;
+  return[
+    {t:"Fill out About me",done:!!members[me]?.onboarded,go:()=>openSheet(false)},
+    {t:"Invite your partner",done:!!(p&&members[p]?.onboarded),go:()=>goTo(["me","inviteCard"])},
+    {t:"Do your first check-in",done:Object.keys(E(me)).length>0,go:()=>{setTab("today");setTimeout(()=>{const n=$("save");n&&n.scrollIntoView({behavior:"smooth",block:"center"})},100)}},
+    {t:"Turn on notifications",done:!!members[me]?.push,go:()=>goTo(["me","notifCard"])},
+    {t:"Send a hug or a photo",done:outgoing().length>0,go:()=>goTo(["connect","tray"])},
+    {t:"Send a chat message",done:(msgs[me]||[]).length>0,go:()=>goTo(["chat","msgIn"])},
+    {t:"Turn on AI ideas",done:!!members[me]?.aiOk,go:()=>goTo(["me","aiCard"])}
+  ];
+}
+function renderGs(){
+  const box=$("gsBox");if(!box)return;box.textContent="";
+  if(!spaceKey||!signedIn())return;
+  let hidden=false;try{hidden=!!localStorage.getItem(gsHideKey())}catch(e){}
+  const st=gsSteps(),n=st.filter(x=>x.done).length;
+  if(hidden||n===st.length)return;
+  const c=el("div","gs"),hd=el("div","row between");hd.append(el("h3",null,"Get started"),el("span","small muted",`${n} of ${st.length} done`));c.append(hd);
+  const bar=el("div","bar"),fill=el("i");fill.style.width=Math.round(n/st.length*100)+"%";bar.append(fill);c.append(bar);
+  st.forEach(x=>{const r=el("div","gstep"+(x.done?" isdone":""));r.append(el("span","ck",x.done?"✓":""),el("span","t",x.t));if(!x.done){const b=el("button","go","Go");b.setAttribute("aria-label",x.t);b.onclick=x.go;r.append(b)}c.append(r)});
+  const hide=el("button","link small","Hide this");hide.style.alignSelf="flex-start";hide.onclick=()=>{try{localStorage.setItem(gsHideKey(),"1")}catch(e){}renderGs()};c.append(hide);
+  box.append(c);
+}
+
+/* ---- Feedback ---- */
+const FB_KINDS=[["bug","🐞 Something's broken"],["idea","💡 Idea"],["love","❤️ I love this"],["other","Other"]];
+let fbKind="bug",fbShot="";
+function renderFbKinds(){const b=$("fbKinds");b.textContent="";FB_KINDS.forEach(([k,t])=>{const o=el("button","opt",t);o.setAttribute("aria-pressed",String(k===fbKind));o.onclick=()=>{fbKind=k;renderFbKinds()};b.append(o)})}
+$("fbOpen").onclick=()=>{fbShot="";$("fbShot").textContent="";$("fbMsg").textContent="";renderFbKinds();$("fbSheet").hidden=false;setTimeout(()=>$("fbText").focus(),100)};
+const closeFb=()=>{$("fbSheet").hidden=true};
+$("fbX").onclick=closeFb;$("fbSheet").addEventListener("click",e=>{if(e.target.id==="fbSheet")closeFb()});
+$("fbAttach").onclick=()=>$("fbFile").click();
+$("fbFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{fbShot=await shrink(f,1200,.7);const i=el("img","pic pic-preview");i.src=fbShot;i.alt="Screenshot";$("fbShot").textContent="";$("fbShot").append(i)}catch(x){toast("Couldn't read that image")}};
+$("fbSend").onclick=async()=>{
+  const text=$("fbText").value.trim();if(!text&&!fbShot){$("fbMsg").textContent="Write a note or add a screenshot first.";return}
+  if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
+  const doc={kind:fbKind,text:text.slice(0,2000),from:nm(me),who:me,space:spaceKey,version:APP_VERSION,device:navigator.userAgent.slice(0,200),createdAt:Date.now()};
+  if(fbShot&&fbShot.length<900000)doc.shot=fbShot;
+  $("fbSend").disabled=true;$("fbSend").textContent="Sending…";
+  try{try{await db.root("feedback").add(doc)}catch(e){await db.collection("feedback").add(doc)}
+    $("fbText").value="";fbShot="";closeFb();toast("Thanks! Feedback sent 🙏")}
+  catch(e){console.error(e);$("fbMsg").textContent="Couldn't send. Check your connection and try again."}
+  finally{$("fbSend").disabled=false;$("fbSend").textContent="Send"}
+};
+
 /* ================= Tabs ================= */
 function setTab(t){
   tab=t;
@@ -2167,7 +2315,7 @@ function setTab(t){
 }
 $("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>setTab("me");$("tabChat").onclick=()=>setTab("chat");
 
-function renderAll(){renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
+function renderAll(){renderGs();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
 
 /* ================= Live data ================= */
 const subs={},seenSnap={};
@@ -2208,7 +2356,7 @@ function switchTo(pid){
   syncUrl();
   loadSeen();selDate=todayKey();editOpen=false;loadDraft();setTab("today");renderAll();
   toast(`Switched to ${nm(pid)}`);
-  if(!members[me]?.onboarded)openSheet(true);
+  if(!members[me]?.onboarded)openSheet(true);else maybeWhatsNew();
 }
 $("whoA").onclick=()=>switchTo(A);$("whoB").onclick=()=>switchTo(B);
 
@@ -2235,7 +2383,7 @@ async function connectDb(root){
     onSnapshot:(n,e)=>fs.onSnapshot(fs.query(fs.collection(fdb,full(p)),...c),q=>n({docs:q.docs.map(snap),size:q.size,empty:q.empty}),e),
     doc:id=>doc(p+"/"+id),
     add:d=>fs.addDoc(fs.collection(fdb,full(p)),d)});
-  return{doc,collection:p=>coll(p)};
+  return{doc,collection:p=>coll(p),root:p=>({add:d=>fs.addDoc(fs.collection(fdb,p),d)})};
 }
 function newKey(){const b=new Uint8Array(18);crypto.getRandomValues(b);return btoa(String.fromCharCode(...b)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
 
@@ -2258,6 +2406,7 @@ async function startSpace(firstTime){
   loadSeen();renderAll();
   if(!members[me]?.onboarded)openSheet(true);
   else if(START_CHAT)setTab("chat");
+  else maybeWhatsNew();
   done();
   refreshPushSub();
   db.doc("settings/media").onSnapshot(s=>{mediaSettings=s.exists?(s.data()||{}):{autoDelete:0};if(tab==="me")renderAutoDel();maybeCleanup()},()=>{});
@@ -2288,7 +2437,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.8";
+const APP_VERSION="2026-10-17.9";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
