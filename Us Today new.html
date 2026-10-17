@@ -757,7 +757,7 @@ details.pl summary{cursor:pointer;font-weight:600}
         <b class="small">📅 Dates to remember</b>
         <p class="small muted" style="margin:0">You both get a reminder a week before and the day before, with the wish list one tap away.</p>
         <div class="dgrid">
-          <label for="dtBday" class="small">Your birthday</label><input type="date" id="dtBday">
+          <label for="dtBday" class="small" id="dtBdayLab">Your partner's birthday</label><input type="date" id="dtBday">
           <label for="dtMet" class="small">When you met</label><input type="date" id="dtMet">
           <label for="dtWed" class="small">Wedding anniversary</label><input type="date" id="dtWed">
         </div>
@@ -2679,7 +2679,7 @@ async function setAiOk(v){
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
   {id:"2026-10-17l",date:"Oct 17, 2026",items:[
-    {em:"📅",t:"Dates to remember",b:"Add your birthday, the day you met and your wedding anniversary in About me. You'll both get a reminder a week before and the day before.",go:["me","dtBday"]},
+    {em:"📅",t:"Dates to remember",b:"Add your partner's birthday, the day you met and your wedding anniversary in About me. You'll both get a reminder a week before and the day before.",go:["me","dtBday"]},
     {em:"🎁",t:"Gift reminders",b:"Two weeks before a birthday, anniversary, Valentine's Day or Christmas, a card on Home shows your partner's wish list and gift ideas from their favorites."},
     {em:"🗓️",t:"Add to calendar",b:"Accepted dates and your special days can go straight into Apple, Google or Outlook Calendar. You'll also get a nudge an hour before date night."}
   ]},
@@ -2778,7 +2778,7 @@ function gsSteps(){
     {t:"Add Us, Today to your Home Screen",done:isInstalled(),go:openInstall},
     {t:"Turn on notifications",done:!!members[me]?.push,go:()=>{if(isIOS&&!isStandalone())openInstall();else goTo(["me","notifCard"])}},
     {t:"Choose your check-in reminders",done:!!members[me]?.remind,go:()=>{if(!members[me]?.push)openInstall();else goTo(["me","remindBox"])}},
-    {t:"Add your birthday and anniversary",done:!!bdayOf(me),go:()=>goTo(["me","dtBday"])},
+    {t:"Add your partner's birthday and anniversary",done:!!bdayOf(other(me)),go:()=>goTo(["me","dtBday"])},
     {t:"Send a hug or a photo",done:outgoing().length>0,go:()=>goTo(["connect","tray"])},
     {t:"Send a chat message",done:(msgs[me]||[]).length>0,go:()=>goTo(["chat","msgIn"])},
     {t:"Turn on AI ideas",done:!!members[me]?.aiOk,go:()=>goTo(["me","aiCard"])}
@@ -3299,7 +3299,7 @@ $("homeAll").onclick=()=>{setTab("connect");setTimeout(()=>{const s4=$("secSent"
 /* ================= Dates, gifts & calendar ================= */
 const GIFT_DAYS=14;
 const isYmd=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
-const bdayOf=p=>{const b=p&&members[p]?.profile?.bday;return isYmd(b)?b:""};
+const bdayOf=p=>{if(!p)return"";const c=coupleSettings["bday_"+p];if(isYmd(c))return c;const b=members[p]?.profile?.bday;return isYmd(b)?b:""};
 const dayDiff=(a,b)=>Math.round((new Date(a).setHours(0,0,0,0)-new Date(b).setHours(0,0,0,0))/86400000);
 function nextOcc(m,d,from){const n=new Date(from);n.setHours(0,0,0,0);let x=new Date(n.getFullYear(),m,d);if(x<n)x=new Date(n.getFullYear()+1,m,d);return x}
 const HOLIDAYS=[["valentine","Valentine's Day","💘",1,14],["christmas","Christmas","🎄",11,25]];
@@ -3308,7 +3308,6 @@ function occasions(from){
   const add=o=>{o.until=dayDiff(o.date,from);o.n=o.n||o.t;out.push(o)};
   const yearly=(id,ymd,mk)=>{if(!isYmd(ymd))return;const s0=fromKey(ymd),d=nextOcc(s0.getMonth(),s0.getDate(),from);add({...mk(d.getFullYear()-s0.getFullYear()),id,date:d,src:ymd})};
   if(p)yearly("bday-"+p,bdayOf(p),()=>({ic:"🎂",t:`${pn}'s birthday`,short:`${pn}'s birthday`,gift:true}));
-  yearly("bday-"+me,bdayOf(me),()=>({ic:"🎂",t:"Your birthday",mine:true}));
   yearly("wed",coupleSettings.wed,y=>({ic:"💍",t:y>0?`Your ${y}-year wedding anniversary`:"Your wedding day",gift:!!p,years:y}));
   yearly("met",coupleSettings.since,y=>({ic:"💞",t:y>0?`${y} year${y>1?"s":""} since you met`:"The day you met",n:y>0?`The ${y}-year anniversary of the day you met`:"The day you met",gift:!!p,years:y}));
   if(p)HOLIDAYS.forEach(([id,t,ic,m,d])=>add({id,ic,t,date:nextOcc(m,d,from),gift:true,holiday:true}));
@@ -3330,7 +3329,8 @@ function renderGift(){
 }
 function renderDates(){
   if(!$("dtBday"))return;const k=todayKey();
-  [["dtBday",bdayOf(me)],["dtMet",isYmd(coupleSettings.since)?coupleSettings.since:""],["dtWed",isYmd(coupleSettings.wed)?coupleSettings.wed:""]].forEach(([id,v])=>{if(document.activeElement!==$(id))$(id).value=v});
+  const op=other(me);$("dtBdayLab").textContent=op&&members[op]?.profile?.name?`${nickOf(op)||nm(op)}'s birthday`:"Your partner's birthday";
+  [["dtBday",bdayOf(op)],["dtMet",isYmd(coupleSettings.since)?coupleSettings.since:""],["dtWed",isYmd(coupleSettings.wed)?coupleSettings.wed:""]].forEach(([id,v])=>{if(document.activeElement!==$(id))$(id).value=v});
   $("dtBday").max=k;$("dtMet").max=k;
   const cal=$("dtCal");cal.textContent="";
   const list=occasions().filter(o=>!o.holiday);if(!list.length)return;
@@ -3344,9 +3344,7 @@ $("dtSave").onclick=async()=>{
   if((b&&b>k)||(m&&m>k)){$("dtMsg").textContent="Birthday and met date can't be in the future";return}
   btn.disabled=true;$("dtMsg").textContent="Saving…";
   try{if(!signedIn())throw{code:"signed_out"};
-    if(b!==bdayOf(me)){const prof={...P(me)};if(b)prof.bday=b;else delete prof.bday;
-      await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),profile:prof});members[me]={...(members[me]||{}),profile:prof}}
-    const cs={};if(m!==(coupleSettings.since||""))cs.since=m;if(w!==(coupleSettings.wed||""))cs.wed=w;
+    const op=other(me),cs={};if(op&&b!==bdayOf(op))cs["bday_"+op]=b;if(m!==(coupleSettings.since||""))cs.since=m;if(w!==(coupleSettings.wed||""))cs.wed=w;
     if(Object.keys(cs).length){await db.doc("settings/couple").merge({...cs,sinceBy:me});coupleSettings={...coupleSettings,...cs}}
     $("dtMsg").textContent="Saved 📅";track({"n.dates":1});renderAll();renderDates();
   }catch(e){console.error(e);$("dtMsg").textContent=saveErr(e)}finally{btn.disabled=false}
@@ -3840,7 +3838,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.29";
+const APP_VERSION="2026-10-17.30";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
