@@ -290,6 +290,23 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .rbar .del{font-size:.8rem;width:auto;padding:0 10px;border-radius:999px;color:var(--warn);font-weight:600}
 .epick{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:4px}
 .epick button{border:0;background:var(--surface);border-radius:10px;font-size:1.45rem;height:44px;padding:0}
+.sec>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary .sh{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.sec>summary h2{margin:0;font-size:1.05rem}
+.sec>summary .ssum{font-size:.84rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sec>summary .chev{flex:none;width:28px;height:28px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-size:.8rem;transition:transform .2s}
+.sec[open]>summary .chev{transform:rotate(180deg)}
+.sec[open]>summary{border-color:transparent;background:none;padding:4px 2px 0}
+.sec>.secbody{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+.sec .private{flex:none}
+.midday{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.midday .row{gap:8px}
+.chg{font-size:.85rem;color:var(--muted);margin:0}.chg b{color:var(--ink);font-weight:600}
+.tog{display:flex;align-items:center;gap:12px;padding:6px 0}.tog .tl{flex:1;min-width:0;display:flex;flex-direction:column}.tog .tl span{font-size:.8rem;color:var(--muted)}
+.sw{position:relative;width:48px;height:28px;flex:none;border-radius:999px;border:0;background:var(--line);padding:0;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sw[aria-checked="true"]{background:var(--accent)}.sw[aria-checked="true"]::after{transform:translateX(20px)}
 .aic{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .aic .eyebrow{color:var(--accent)}
 .aic .hl{font-weight:600;font-size:1rem;line-height:1.4}
@@ -426,6 +443,7 @@ details.pl summary{cursor:pointer;font-weight:600}
 
   <div id="pToday" class="stack" style="gap:22px">
     <div id="gsBox"></div>
+    <div id="middayBox"></div>
     <div class="pair"><div class="person" id="meCard"></div><div class="person" id="partnerCard"></div></div>
 
     <div class="stack">
@@ -444,26 +462,36 @@ details.pl summary{cursor:pointer;font-weight:600}
       </div>
     </div>
 
-    <div class="stack" id="selfBox" hidden>
-      <div class="row between"><h2>For you today</h2><span class="private">Only you see this</span></div>
-      <div class="recs" id="selfRecs"></div>
+    <div id="selfBox" hidden>
+      <details class="sec" id="secSelf">
+        <summary><div class="sh"><h2>For you today</h2><span class="ssum" id="sumSelf"></span></div><span class="private">Only you</span><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody"><div class="recs" id="selfRecs"></div></div>
+      </details>
     </div>
 
-    <div class="stack" id="forBox">
-      <h2 id="forTitle">For your partner today</h2>
-      <div class="card readout" id="readout" hidden></div>
-      <div id="aiBox"></div>
-      <div class="recs" id="partnerRecs"></div>
+    <div id="forBox">
+      <details class="sec" id="secFor" open>
+        <summary><div class="sh"><h2 id="forTitle">For your partner today</h2><span class="ssum" id="sumFor"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody">
+          <div class="card readout" id="readout" hidden></div>
+          <div id="aiBox"></div>
+          <div class="recs" id="partnerRecs"></div>
+        </div>
+      </details>
     </div>
 
-    <div class="stack" id="weekBox" hidden>
-      <h2>Your week together</h2>
-      <div id="weekCard"></div>
+    <div id="weekBox" hidden>
+      <details class="sec" id="secWeek">
+        <summary><div class="sh"><h2>Your week together</h2><span class="ssum" id="sumWeek"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody"><div id="weekCard"></div></div>
+      </details>
     </div>
 
-    <div class="stack" id="readBox">
-      <div class="row between"><h2>Worth a read</h2><span class="small muted">Picked from your answers</span></div>
-      <div class="reads" id="reads"></div>
+    <div id="readBox">
+      <details class="sec" id="secRead">
+        <summary><div class="sh"><h2>Worth a read</h2><span class="ssum" id="sumRead"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody"><div class="reads" id="reads"></div></div>
+      </details>
     </div>
 
     <div class="stack">
@@ -570,6 +598,10 @@ details.pl summary{cursor:pointer;font-weight:600}
       <h3>Notifications</h3>
       <p class="small muted" id="notifMsg">Checking…</p>
       <div class="row"><button class="primary" id="notifOn" hidden>Turn on notifications</button><button class="secondary" id="notifTest" hidden>Send me a test</button></div>
+      <div id="remindBox" hidden>
+        <div class="tog"><div class="tl"><b>Morning reminder</b><span>Weekdays at 9:00 AM, only if you haven't checked in</span></div><button class="sw" id="remAm" role="switch" aria-checked="true" aria-label="Morning reminder"></button></div>
+        <div class="tog"><div class="tl"><b>Midday check</b><span>Weekdays at 12:30 PM: anything changed since this morning?</span></div><button class="sw" id="remMid" role="switch" aria-checked="true" aria-label="Midday check"></button></div>
+      </div>
     </div>
     <div class="card stack" id="fbCard">
       <h3>Help us improve</h3>
@@ -1111,11 +1143,16 @@ $("save").onclick=async()=>{
     if(!signedIn())throw{code:"signed_out"};
     const na=(draft.na||[]).filter(g=>!EMO.some(x=>x.g===g&&levels[x.k]));
     const doc={date:selDate,levels,na,note:draft.note.trim(),updatedAt:Date.now()};
-    const firstToday=selDate===todayKey()&&!E(me)[selDate];
+    const prev=E(me)[selDate],firstToday=selDate===todayKey()&&!prev;
+    if(prev){doc.firstAt=prev.firstAt||prev.updatedAt;if(prev.morning)doc.morning=prev.morning;if(prev.sameAt)doc.sameAt=prev.sameAt}else doc.firstAt=doc.updatedAt;
+    let middayUpdate=false;
+    if(selDate===todayKey()&&prev&&!prev.morning&&isMorning(prev.updatedAt)&&!isMorning(Date.now())){doc.morning={levels:prev.levels||{},note:prev.note||"",at:prev.updatedAt};middayUpdate=true}
     await db.doc(`${base(me)}/days/${selDate}`).set(doc);
+    if(middayUpdate&&partnerId){const ch=changeText(doc.morning.levels,levels,nm(me));notify(partnerId,nm(me),"Updated their check-in since this morning 🌤️"+(ch?" "+ch:""),"checkin")}
+    if(selDate===todayKey())syncReminder();
     if(firstToday)track({"n.checkin":1,["d."+selDate]:1});
     if(firstToday&&partnerId)notify(partnerId,nm(me),`Checked in for today. See how to show up for ${nm(me)}.`,"checkin");
-    entries[me]={...E(me),[selDate]:{levels,na,note:doc.note,updatedAt:doc.updatedAt}};
+    entries[me]={...E(me),[selDate]:{levels,na,note:doc.note,updatedAt:doc.updatedAt,firstAt:doc.firstAt,morning:doc.morning||null,sameAt:doc.sameAt||0}};
     burst();dirty=false;editOpen=false;$("savedMsg").textContent="Saved";renderAll();
     if(selDate===todayKey())setTimeout(()=>$("selfBox").scrollIntoView({behavior:"smooth",block:"start"}),150);
   }catch(e){console.error(e);$("savedMsg").textContent=saveErr(e)}
@@ -1231,13 +1268,16 @@ function renderRecList(box,list){
 function renderRecs(){
   const isToday=selDate===todayKey(),mine=E(me)[todayKey()];
   $("selfBox").hidden=!isToday||!mine;
-  if(isToday&&mine)renderRecList($("selfRecs"),selfRecs());
+  if(isToday&&mine){const sl=selfRecs();renderRecList($("selfRecs"),sl);setSum("sumSelf",sl.length?`${sl.length} idea${sl.length>1?"s":""} · Start with: ${sl[0].title}`:"Nothing for today")}
   const p=other(me);$("forBox").hidden=!isToday;
-  if(!p){$("forTitle").textContent="For your partner";const b=$("partnerRecs");b.textContent="";b.append(el("p","muted small","Once your partner joins and checks in, ideas for showing up for them appear here."));return}
+  if(!p){$("forTitle").textContent="For your partner";setSum("sumFor","Appears once your partner joins");const b=$("partnerRecs");b.textContent="";b.append(el("p","muted small","Once your partner joins and checks in, ideas for showing up for them appear here."));return}
   $("forTitle").textContent=`For ${nm(p)} today`;
   renderReadout(p);
   renderAiBox(p);
-  renderRecList($("partnerRecs"),partnerRecs(p));
+  const pl=partnerRecs(p);renderRecList($("partnerRecs"),pl);
+  {const e=E(p)[todayKey()];const feels=e?topList(e.levels,3).map(x=>word(x.k,x.v).toLowerCase()).join(", "):"";
+   const ai=aiOk(me)&&aiOk(p)&&e?" · ✨ AI ideas":"";
+   setSum("sumFor",e?`${cap1(feels||"No feelings marked")}${e.note?` · needs “${e.note.slice(0,40)}”`:""}${ai}`:`${nm(p)} hasn't checked in yet · ${pl.length} ideas`)}
   renderWeek();
 }
 function renderReadout(p){
@@ -1245,6 +1285,7 @@ function renderReadout(p){
   const n=nm(p),L=e.levels||{};
   const heads=["Between you","How they're doing","What's weighing on them"];
   box.append(el("span","eyebrow",`How ${n} feels today`));
+  {const st=checkinStatusLine(p,e);if(st)box.append(el("p","chg",st))}
   GROUPS.forEach((_,gi)=>{
     const list=EMO.filter(x=>x.g===gi&&L[x.k]).sort((a,b)=>L[b.k]-L[a.k]);
     let txt=list.length?cap1(joinAnd(list.map((x,i)=>i?word(x.k,L[x.k]).toLowerCase():word(x.k,L[x.k])))):"";
@@ -1308,7 +1349,8 @@ function pickReads(){
 function renderReads(){
   const box=$("reads");box.textContent="";
   $("readBox").hidden=selDate!==todayKey();
-  pickReads().forEach(c=>{
+  const rl=pickReads();setSum("sumRead",rl.length?`${rl.length} article${rl.length>1?"s":""} picked from your answers · ${ART[rl[0].id].t}`:"Nothing picked yet");
+  rl.forEach(c=>{
     const a=ART[c.id],l=el("a","article");l.href=a.u;l.target="_blank";l.rel="noopener";
     l.append(el("span","why",c.why),el("span","ttl",a.t),el("span","src",a.src));box.append(l);
   });
@@ -1337,7 +1379,7 @@ async function enableNotifs(){
     const reg=await getReg();
     const sub=(await reg.pushManager.getSubscription())||(await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID_PUBLIC)}));
     await savePushSub(sub);
-    toast("Notifications on");renderNotifCard();
+    toast("Notifications on");renderNotifCard();renderRemind();syncReminder();
   }catch(e){console.error(e);msg.textContent="Couldn't turn on notifications. Close the app fully, reopen it from the Home Screen icon, and try again."}
 }
 async function refreshPushSub(){
@@ -1957,6 +1999,7 @@ $("copyInv").onclick=async()=>{try{await navigator.clipboard.writeText(inviteLin
 async function copyText(t,msgEl,codeEl){try{await navigator.clipboard.writeText(t);$(msgEl).textContent="Copied"}catch(e){const rg=document.createRange();rg.selectNodeContents($(codeEl));const sl=getSelection();sl.removeAllRanges();sl.addRange(rg);$(msgEl).textContent="Selected. Copy it from here."}}
 $("copyMine").onclick=()=>copyText(linkFor(me),"copyMineMsg","myLink");
 function renderProfile(){
+  renderRemind();
   $("verTap").textContent="Version "+APP_VERSION;
   renderAutoDel();renderAiCard();
   renderNotifCard();
@@ -2228,7 +2271,7 @@ const checkinsLast7=()=>[me,partnerId].reduce((n,p)=>{for(let i=0;i<7;i++){const
 async function renderWeek(force){
   const wb=$("weekBox"),box=$("weekCard");if(!wb)return;
   if(!partnerId||!signedIn()||selDate!==todayKey()){wb.hidden=true;return}
-  wb.hidden=false;
+  wb.hidden=false;setSum("sumWeek",(!aiOk(me)||!aiOk(partnerId))?"Turn on AI ideas for a weekly summary":new Date().getDay()===0?"Your weekly summary":"Written on Sundays · tap to write it now");
   if(!aiOk(me)||!aiOk(partnerId)){box.textContent="";const c=el("div","aic soft");c.append(el("span","eyebrow","✨ Weekly summary"));c.append(el("p","small muted",aiOk(me)?`A short AI summary of your week together. Waiting for ${nm(partnerId)} to turn on AI ideas in About me.`:"A short AI summary of your week together, from both of your check-ins."));if(!aiOk(me)){const b=el("button","secondary","Turn on AI ideas");b.style.justifySelf="start";b.onclick=()=>setAiOk(true);c.append(b)}box.append(c);return}
   const path=`ai/week-${weekKey()}`,doc=force?null:await aiDoc(path);
   if(doc?.result&&!force){drawWeek(box,doc);return}
@@ -2242,7 +2285,7 @@ async function renderWeek(force){
   finally{delete aiBusy[path]}
 }
 function drawWeek(box,doc){
-  const r=doc.result||{},c=el("div","aic");box.textContent="";
+  const r=doc.result||{},c=el("div","aic");box.textContent="";setSum("sumWeek",(r.title?String(r.title)+" · ":"")+"✨ Written "+new Date(doc.createdAt).toLocaleDateString(undefined,{weekday:"short"}));
   c.append(el("span","eyebrow","✨ This week"));
   if(r.title)c.append(el("p","hl",String(r.title)));
   const list=(t,arr)=>{arr=(Array.isArray(arr)?arr:[]).filter(Boolean);if(!arr.length)return;c.append(el("h4",null,t));const u=el("ul");arr.slice(0,4).forEach(x=>u.append(el("li",null,String(x))));c.append(u)};
@@ -2269,6 +2312,11 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17d",date:"Oct 17, 2026",items:[
+    {em:"🌤️",t:"Midday check",b:"Checked in this morning? After 11 AM you'll get a quick “Anything changed?” with Update or Still the same. Your partner sees what changed.",go:["today","middayBox"]},
+    {em:"⏰",t:"Weekday reminders",b:"A reminder at 9:00 AM if you haven't checked in, and a midday check at 12:30 PM. Turn either off in About me → Notifications.",go:["me","notifCard"]},
+    {em:"📂",t:"Tidier Check-in page",b:"For you, For your partner, Your week and Worth a read now fold up, with a one-line summary on each.",go:["today","secFor"]}
+  ]},
   {id:"2026-10-17c",date:"Oct 17, 2026",items:[
     {em:"😍",t:"React to messages",b:"Tap any chat message to add a ❤️, 👍, 😂 or any emoji. Tap ＋ for the full set.",go:["chat","msgIn"]}
   ]},
@@ -2519,6 +2567,79 @@ function reactBar(m,mine){
   return bar;
 }
 
+/* ================= Morning & midday ================= */
+const MIDDAY_HOUR=11;
+const isMorning=t=>new Date(t).getHours()<MIDDAY_HOUR;
+const minOfDay=t=>{const d=new Date(t);return d.getHours()*60+d.getMinutes()};
+function changeText(before,after,name){
+  const ups=[],downs=[];
+  EMO.forEach(e=>{const a=+(before||{})[e.k]||0,b=+(after||{})[e.k]||0;if(b>a)ups.push(e.n.toLowerCase());else if(b<a)downs.push(e.n.toLowerCase())});
+  const parts=[];if(ups.length)parts.push("more "+joinAnd(ups.slice(0,3)));if(downs.length)parts.push("less "+joinAnd(downs.slice(0,3)));
+  return parts.length?`Now ${parts.join(", ")}.`:"";
+}
+function middayDue(){
+  const e=E(me)[todayKey()];if(!e||!signedIn())return false;
+  const now=new Date();if(now.getHours()<MIDDAY_HOUR)return false;
+  if(!isMorning(e.updatedAt))return false;               // already updated after the morning
+  if(e.sameAt&&!isMorning(e.sameAt))return false;        // said "still the same"
+  let skip="";try{skip=localStorage.getItem("ut_mid_"+spaceKey+me)||""}catch(x){}
+  return skip!==todayKey();
+}
+function renderMidday(){
+  const box=$("middayBox");if(!box)return;box.textContent="";
+  if(tab!=="today"||selDate!==todayKey()||!middayDue())return;
+  const e=E(me)[todayKey()],c=el("div","midday");c.id="middayCard";
+  c.append(el("span","eyebrow","🌤️ Midday check"),el("h3",null,"Anything changed since this morning?"),el("p","small muted",`You checked in at ${hm(e.updatedAt)}. ${partnerId?nm(partnerId)+" sees":"Your partner sees"} your latest check-in, so a quick update helps them show up for you this afternoon.`));
+  const r=el("div","row");
+  const up=el("button","primary","Update my check-in");up.onclick=()=>{editOpen=true;openGroups=new Set([0,1,2]);renderDials();setTimeout(()=>{const n=$("dialBox")||$("save");n&&n.scrollIntoView({behavior:"smooth",block:"start"})},80)};
+  const same=el("button","secondary","Still the same");same.onclick=markSame;
+  r.append(up,same);c.append(r);
+  const later=el("button","link small","Not now");later.style.alignSelf="flex-start";later.onclick=()=>{try{localStorage.setItem("ut_mid_"+spaceKey+me,todayKey())}catch(x){}renderMidday()};c.append(later);
+  box.append(c);
+}
+async function markSame(){
+  if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
+  const k=todayKey(),e=E(me)[k];if(!e)return;const t=Date.now();
+  try{await db.doc(`${base(me)}/days/${k}`).update({sameAt:t});entries[me]={...E(me),[k]:{...e,sameAt:t}};toast("Got it. Still the same 👍");syncReminder({same:true});renderAll()}
+  catch(x){console.error(x);toast(saveErr(x))}
+}
+function checkinStatusLine(p,e){
+  if(!e)return"";
+  if(e.morning&&e.morning.at){const ch=changeText(e.morning.levels,e.levels,nm(p));return`Updated ${hm(e.updatedAt)} · checked in ${hm(e.morning.at)}${ch?" · "+ch:""}`}
+  if(e.sameAt&&!isMorning(e.sameAt)&&isMorning(e.updatedAt))return`Checked in ${hm(e.updatedAt)} · still the same at ${hm(e.sameAt)} ✓`;
+  return`Checked in ${hm(e.updatedAt)}`;
+}
+
+/* ---- Reminders (weekday 9:00 AM and 12:30 PM, sent by the server) ---- */
+const remPrefs=()=>{const r=members[me]?.remind||{};return{am:r.am!==false,mid:r.mid!==false}};
+let remLast="";
+async function syncReminder(extra){
+  if(!WORKER_URL||!signedIn()||!spaceHash)return;
+  const sub=members[me]?.push;const pr=remPrefs();
+  const e=E(me)[todayKey()];
+  const state=e?{date:todayKey(),first:minOfDay(e.firstAt||e.updatedAt),last:minOfDay(e.updatedAt),same:!!(e.sameAt&&!isMorning(e.sameAt))}:{date:""};
+  if(extra&&extra.same)state.same=true;
+  const body={id:spaceHash+"-"+me,sub:sub||null,tz:(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone}catch(x){return""}})(),am:!!sub&&pr.am,mid:!!sub&&pr.mid,url:linkFor(me),partner:partnerId?nm(partnerId):"",state};
+  const sig=JSON.stringify(body);if(sig===remLast)return;remLast=sig;
+  try{await fetch(WORKER_URL+"remind",{method:"POST",headers:{"Content-Type":"application/json"},body:sig})}catch(x){remLast=""}
+}
+function renderRemind(){
+  const box=$("remindBox");if(!box)return;const on=!!members[me]?.push&&typeof Notification!=="undefined"&&Notification.permission==="granted";box.hidden=!on;if(!on)return;
+  const pr=remPrefs();$("remAm").setAttribute("aria-checked",String(pr.am));$("remMid").setAttribute("aria-checked",String(pr.mid));
+}
+async function setRemind(k){
+  if(!signedIn())return;const pr=remPrefs();pr[k]=!pr[k];
+  try{await db.doc(base(me)).update({remind:pr});members[me]={...(members[me]||{}),remind:pr};renderRemind();syncReminder();toast(pr[k]?"Reminder on":"Reminder off")}
+  catch(x){console.error(x);toast(saveErr(x))}
+}
+$("remAm").onclick=()=>setRemind("am");$("remMid").onclick=()=>setRemind("mid");
+
+/* ---- Collapsible sections ---- */
+const SECS=["secSelf","secFor","secWeek","secRead"];
+function initSecs(){SECS.forEach(id=>{const d=$(id);if(!d)return;let v=null;try{v=localStorage.getItem("ut_sec_"+id)}catch(x){}if(v!=null)d.open=v==="1";d.addEventListener("toggle",()=>{try{localStorage.setItem("ut_sec_"+id,d.open?"1":"0")}catch(x){}})})}
+initSecs();
+function setSum(id,t){const n=$(id);if(n)n.textContent=t||""}
+
 /* ================= Tabs ================= */
 function setTab(t){
   tab=t;
@@ -2530,7 +2651,7 @@ function setTab(t){
 }
 $("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>setTab("me");$("tabChat").onclick=()=>setTab("chat");
 
-function renderAll(){renderGs();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
+function renderAll(){renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
 
 /* ================= Live data ================= */
 const subs={},seenSnap={};
@@ -2538,7 +2659,7 @@ function watch(id){
   if(subs[id])return;subs[id]=1;
   const since=new Date();since.setDate(since.getDate()-40);
   db.collection(`${base(id)}/days`).where("date",">=",key(since)).onSnapshot(snap=>{
-    const m={};snap.docs.forEach(d=>{const v=d.data();if(v)m[d.id]={levels:v.levels||{},na:Array.isArray(v.na)?v.na.filter(x=>x===0||x===1||x===2):[],note:v.note||"",updatedAt:+v.updatedAt||0}});
+    const m={};snap.docs.forEach(d=>{const v=d.data();if(v)m[d.id]={levels:v.levels||{},na:Array.isArray(v.na)?v.na.filter(x=>x===0||x===1||x===2):[],note:v.note||"",updatedAt:+v.updatedAt||0,firstAt:+v.firstAt||+v.updatedAt||0,morning:v.morning&&typeof v.morning==="object"?{levels:v.morning.levels||{},note:String(v.morning.note||""),at:+v.morning.at||0}:null,sameAt:+v.sameAt||0}});
     const tk=todayKey(),prevAt=entries[id]?.[tk]?.updatedAt||0,nowAt=m[tk]?.updatedAt||0;
     if(id!==me&&id===partnerId&&seenSnap[id]&&nowAt>prevAt&&nowAt>ciSeen)toast(prevAt?`${nm(id)} updated their check-in 💞`:`${nm(id)} just checked in 💞`);
     seenSnap[id]=true;
@@ -2572,6 +2693,7 @@ function switchTo(pid){
   loadSeen();selDate=todayKey();editOpen=false;loadDraft();setTab("today");renderAll();
   toast(`Switched to ${nm(pid)}`);
   if(!members[me]?.onboarded)openSheet(true);else maybeWhatsNew();
+  syncReminder();
 }
 $("whoA").onclick=()=>switchTo(A);$("whoB").onclick=()=>switchTo(B);
 
@@ -2629,10 +2751,11 @@ async function startSpace(firstTime){
   loadSeen();renderAll();
   if(!members[me]?.onboarded)openSheet(true);
   else if(START_CHAT)setTab("chat");
+  else if(START_MIDDAY){setTab("today");try{localStorage.removeItem("ut_mid_"+spaceKey+me)}catch(x){}setTimeout(()=>{const c=$("middayCard");if(c){c.scrollIntoView({behavior:"smooth",block:"center"});c.classList.add("pulse")}},400)}
   else if(!OWNER_LINK)maybeWhatsNew();
   done();
   initOwner();
-  hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen()});
+  hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen();setTimeout(syncReminder,1500)});
   refreshPushSub();
   db.doc("settings/media").onSnapshot(s=>{mediaSettings=s.exists?(s.data()||{}):{autoDelete:0};if(tab==="me")renderAutoDel();maybeCleanup()},()=>{});
   [A,B].forEach(p=>{watch(p);db.doc(base(p)).onSnapshot(s=>{members[p]=s.exists?(s.data()||{}):{};renderAll()},()=>{})});
@@ -2660,9 +2783,9 @@ $("joinBtn").onclick=()=>{
   useLink(L);$("welcome").hidden=true;$("loading").hidden=false;startSpace(false);
 };
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
-const START_CHAT=/#chat\b/.test(location.hash);
+const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.14";
+const APP_VERSION="2026-10-17.15";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();

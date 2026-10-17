@@ -48,6 +48,67 @@ function cors(origin) {
 }
 const reply = (obj, status, origin) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", ...cors(origin) } });
 
+async function sendPush(env, sub, msg) {
+  const payload = JSON.stringify({ title: String(msg.title || "Us, Today").slice(0, 80), body: String(msg.body || "").slice(0, 240), url: String(msg.url || "").slice(0, 400), tag: String(msg.tag || "").slice(0, 40) });
+  const body = await encrypt(sub, payload);
+  const res = await fetch(sub.endpoint, { method: "POST", headers: { "Content-Encoding": "aes128gcm", "Content-Type": "application/octet-stream", TTL: "86400", Urgency: "normal", Authorization: await vapidAuth(sub.endpoint, env.VAPID_D) }, body });
+  return { ok: res.ok, status: res.status, gone: res.status === 404 || res.status === 410 };
+}
+const validSub = (sub) => { if (!sub || typeof sub.endpoint !== "string" || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) return false; try { return PUSH_HOSTS.some((r) => r.test(new URL(sub.endpoint).hostname)); } catch (_) { return false; } };
+
+// Check-in reminders. Each person is one KV key: value holds the push subscription; metadata holds
+// the small state the schedule needs (time zone, choices, today's check-in times, what was sent).
+const REMIND_ID = /^[0-9a-f]{16}-[ab]$/;
+function localParts(tz) {
+  let f;
+  try { f = new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", weekday: "short", hourCycle: "h23" }); }
+  catch (_) { f = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", weekday: "short", hourCycle: "h23" }); }
+  const o = {}; for (const p of f.formatToParts(new Date())) o[p.type] = p.value;
+  return { date: `${o.year}-${o.month}-${o.day}`, min: (+o.hour % 24) * 60 + +o.minute, weekday: o.weekday };
+}
+async function saveReminder(env, d) {
+  if (!REMIND_ID.test(d.id || "")) return { error: "bad id" };
+  const am = !!d.am, mid = !!d.mid;
+  if ((!am && !mid) || !validSub(d.sub)) { await env.REMIND.delete(d.id); return { ok: true, off: true }; }
+  const old = (await env.REMIND.getWithMetadata(d.id)).metadata || {};
+  const st = d.state || {};
+  const meta = { tz: String(d.tz || "America/New_York").slice(0, 40), am, mid, d: String(st.date || old.d || "").slice(0, 10),
+    f: Number.isFinite(+st.first) ? +st.first : (old.f ?? -1), l: Number.isFinite(+st.last) ? +st.last : (old.l ?? -1), s: st.same != null ? !!st.same : !!old.s,
+    sa: old.sa || "", sm: old.sm || "" };
+  if (st.date && st.date !== old.d && st.same == null) meta.s = false;
+  await env.REMIND.put(d.id, JSON.stringify({ sub: d.sub, url: String(d.url || "").slice(0, 400), partner: String(d.partner || "").slice(0, 40) }), { metadata: meta });
+  return { ok: true };
+}
+async function runReminders(env) {
+  if (!env.REMIND || !env.VAPID_D) return;
+  let cursor;
+  do {
+    const page = await env.REMIND.list({ cursor });
+    for (const k of page.keys) {
+      const m = k.metadata || {}; const t = localParts(m.tz);
+      if (["Sat", "Sun"].includes(t.weekday)) continue;
+      let msg = null, mark = null;
+      const checkedToday = m.d === t.date;
+      if (m.am && t.min >= 540 && t.min < 570 && !checkedToday && m.sa !== t.date) {
+        msg = { title: "Good morning ☀️", body: "How are you feeling today? Take 30 seconds to check in.", tag: "remind-am" }; mark = "sa";
+      } else if (m.mid && t.min >= 750 && t.min < 780 && m.sm !== t.date) {
+        if (checkedToday && m.f >= 0 && m.f < 660 && !(m.l >= 660) && !m.s) { msg = { title: "Midday check 🌤️", body: "Anything changed since this morning? Update your check-in or keep it the same.", tag: "remind-mid", hash: "#midday" }; }
+        else if (!checkedToday) { msg = { title: "Still time to check in 💞", body: "Let your partner know how your day is going.", tag: "remind-mid" }; }
+        mark = "sm";
+      }
+      if (!mark) continue;
+      const rec = await env.REMIND.get(k.name, "json");
+      if (!rec || !rec.sub) continue;
+      if (msg) {
+        const r = await sendPush(env, rec.sub, { ...msg, url: (rec.url || "") + (msg.hash || "") }).catch(() => ({ ok: false }));
+        if (r.gone) { await env.REMIND.delete(k.name); continue; }
+      }
+      await env.REMIND.put(k.name, JSON.stringify(rec), { metadata: { ...m, [mark]: t.date } });
+    }
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+}
+
 // AI ideas. The app sends a plain-text summary of check-ins and About me answers; the prompts live here.
 const AI_MODEL = "claude-sonnet-5-5";
 const AI_PROMPTS = {
@@ -130,7 +191,13 @@ export default {
       const results = await searchSongs(new URL(req.url).searchParams.get("term") || "");
       return new Response(JSON.stringify({ results }), { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600", ...cors(origin) } });
     }
-    if (req.method === "GET") return reply({ ok: true, service: "us-today-push", ready: !!env.VAPID_D, ai: !!env.ANTHROPIC_API_KEY }, 200, origin);
+    if (req.method === "GET") return reply({ ok: true, service: "us-today-push", ready: !!env.VAPID_D, ai: !!env.ANTHROPIC_API_KEY, reminders: !!env.REMIND }, 200, origin);
+    if (req.method === "POST" && path === "/remind") {
+      if (!ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
+      if (!env.REMIND) return reply({ error: "reminders off" }, 503, origin);
+      let d; try { d = await req.json(); } catch { return reply({ error: "bad json" }, 400, origin); }
+      try { const out = await saveReminder(env, d || {}); return reply(out, out.error ? 400 : 200, origin); } catch (_) { return reply({ error: "failed" }, 500, origin); }
+    }
     if (req.method === "POST" && path === "/ai") {
       if (!ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
       if (!env.ANTHROPIC_API_KEY) return reply({ error: "ai off" }, 503, origin);
@@ -147,9 +214,9 @@ export default {
     if (!sub || typeof sub.endpoint !== "string" || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) return reply({ error: "bad subscription" }, 400, origin);
     let host; try { host = new URL(sub.endpoint).hostname; } catch { return reply({ error: "bad endpoint" }, 400, origin); }
     if (!PUSH_HOSTS.some((r) => r.test(host))) return reply({ error: "endpoint not allowed" }, 400, origin);
-    const payload = JSON.stringify({ title: String(data.title || "Us, Today").slice(0, 80), body: String(data.body || "").slice(0, 240), url: String(data.url || "").slice(0, 400), tag: String(data.tag || "").slice(0, 40) });
-    const body = await encrypt(sub, payload);
-    const res = await fetch(sub.endpoint, { method: "POST", headers: { "Content-Encoding": "aes128gcm", "Content-Type": "application/octet-stream", TTL: "86400", Urgency: "normal", Authorization: await vapidAuth(sub.endpoint, env.VAPID_D) }, body });
-    return reply({ ok: res.ok, status: res.status, gone: res.status === 404 || res.status === 410 }, 200, origin);
+    return reply(await sendPush(env, sub, data), 200, origin);
+  },
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runReminders(env));
   },
 };
