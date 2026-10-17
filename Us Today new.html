@@ -2306,9 +2306,9 @@ function renderGs(){
 
 /* ---- Feedback ---- */
 const FB_KINDS=[["bug","🐞 Something's broken"],["idea","💡 Idea"],["love","❤️ I love this"],["other","Other"]];
-let fbKind="bug",fbShot="";
-function renderFbKinds(){const b=$("fbKinds");b.textContent="";FB_KINDS.forEach(([k,t])=>{const o=el("button","opt",t);o.setAttribute("aria-pressed",String(k===fbKind));o.onclick=()=>{fbKind=k;renderFbKinds()};b.append(o)})}
-$("fbOpen").onclick=()=>{fbShot="";$("fbShot").textContent="";$("fbMsg").textContent="";renderFbKinds();$("fbSheet").hidden=false;setTimeout(()=>$("fbText").focus(),100)};
+let fbKind="",fbShot="";
+function renderFbKinds(){const b=$("fbKinds");b.textContent="";FB_KINDS.forEach(([k,t])=>{const o=el("button","opt",t);o.setAttribute("aria-pressed",String(k===fbKind));o.onclick=()=>{fbKind=fbKind===k?"":k;renderFbKinds()};b.append(o)})}
+$("fbOpen").onclick=()=>{fbKind="";fbShot="";$("fbShot").textContent="";$("fbMsg").textContent="";renderFbKinds();$("fbSheet").hidden=false;setTimeout(()=>$("fbText").focus(),100)};
 const closeFb=()=>{$("fbSheet").hidden=true};
 $("fbX").onclick=closeFb;$("fbSheet").addEventListener("click",e=>{if(e.target.id==="fbSheet")closeFb()});
 $("fbAttach").onclick=()=>$("fbFile").click();
@@ -2316,7 +2316,7 @@ $("fbFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{fbShot
 $("fbSend").onclick=async()=>{
   const text=$("fbText").value.trim();if(!text&&!fbShot){$("fbMsg").textContent="Write a note or add a screenshot first.";return}
   if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
-  const doc={kind:fbKind,text:text.slice(0,2000),from:nm(me),who:me,space:spaceKey,version:APP_VERSION,device:navigator.userAgent.slice(0,200),createdAt:Date.now()};
+  const doc={kind:fbKind||"other",text:text.slice(0,2000),from:nm(me),who:me,space:spaceKey,version:APP_VERSION,device:navigator.userAgent.slice(0,200),createdAt:Date.now()};
   if(fbShot&&fbShot.length<900000)doc.shot=fbShot;
   $("fbSend").disabled=true;$("fbSend").textContent="Sending…";
   try{try{await db.top.collection("feedback").add(doc)}catch(e){await db.collection("feedback").add(doc)}
@@ -2527,7 +2527,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.12";
+const APP_VERSION="2026-10-17.13";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
