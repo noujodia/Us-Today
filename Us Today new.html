@@ -2351,10 +2351,10 @@ function watchInbox(){
     isOwner=true;try{localStorage.setItem("ut_owner","1")}catch(e){}
     fbItems=q.docs.map(d=>({id:d.id,...(d.data()||{})}));
     $("inboxOpen").hidden=false;const n=fbItems.filter(x=>!x.done).length;$("inboxBadge").hidden=!n;$("inboxBadge").textContent=n;
-    if(!$("inboxSheet").hidden)renderInbox();
-  },()=>{isOwner=false;fbUnsub=null;$("inboxOpen").hidden=true;if(!$("inboxSheet").hidden)renderInbox()})}catch(e){fbUnsub=null}
+    if(!$("inboxSheet").hidden)renderFbInbox();
+  },()=>{isOwner=false;fbUnsub=null;$("inboxOpen").hidden=true;if(!$("inboxSheet").hidden)renderFbInbox()})}catch(e){fbUnsub=null}
 }
-function renderInbox(){
+function renderFbInbox(){
   const box=$("inboxBody");box.textContent="";
   if(!isOwner){
     const uid=db?.uid||"";
@@ -2363,11 +2363,11 @@ function renderInbox(){
     const pre=el("pre","code",ownerRules(uid));box.append(pre);
     const r=el("div","row");const c=el("button","primary","Copy rules");c.onclick=async()=>{try{await navigator.clipboard.writeText(ownerRules(uid));toast("Rules copied")}catch(e){toast("Couldn't copy. Select the text instead.")}};
     const l=el("a","secondary","Open Firebase rules");l.href="https://console.firebase.google.com/project/us-today-e354e/firestore/rules";l.target="_blank";l.rel="noopener";l.style.cssText="text-decoration:none;display:inline-flex;align-items:center;border-radius:12px;padding:12px 16px;font-weight:600";
-    const t=el("button","link small","I published it, check again");t.onclick=()=>{fbUnsub=null;watchInbox();setTimeout(renderInbox,1500)};
+    const t=el("button","link small","I published it, check again");t.onclick=()=>{fbUnsub=null;watchInbox();setTimeout(renderFbInbox,1500)};
     r.append(c,l);box.append(r,t);return;
   }
   const counts={new:fbItems.filter(x=>!x.done).length,all:fbItems.length,bug:fbItems.filter(x=>x.kind==="bug").length,idea:fbItems.filter(x=>x.kind==="idea").length,love:fbItems.filter(x=>x.kind==="love").length};
-  const ch=el("div","opts");[["new","New"],["all","All"],["bug","Bugs"],["idea","Ideas"],["love","Love"]].forEach(([k,t])=>{const b=el("button","opt",`${t} (${counts[k]})`);b.setAttribute("aria-pressed",String(fbFilter===k));b.onclick=()=>{fbFilter=k;renderInbox()};ch.append(b)});box.append(ch);
+  const ch=el("div","opts");[["new","New"],["all","All"],["bug","Bugs"],["idea","Ideas"],["love","Love"]].forEach(([k,t])=>{const b=el("button","opt",`${t} (${counts[k]})`);b.setAttribute("aria-pressed",String(fbFilter===k));b.onclick=()=>{fbFilter=k;renderFbInbox()};ch.append(b)});box.append(ch);
   const list=fbItems.filter(x=>fbFilter==="all"?true:fbFilter==="new"?!x.done:x.kind===fbFilter);
   if(!list.length){box.append(el("p","muted small",fbFilter==="new"?"You're all caught up 🎉":"Nothing here yet."));return}
   list.forEach(f=>{
@@ -2382,7 +2382,7 @@ function renderInbox(){
     a.append(d,x);c.append(a);box.append(c);
   });
 }
-function openInbox(){renderInbox();$("inboxSheet").hidden=false}
+function openInbox(){renderFbInbox();$("inboxSheet").hidden=false}
 let verTaps=0,verTimer=0;
 $("verTap").addEventListener("click",()=>{verTaps++;clearTimeout(verTimer);verTimer=setTimeout(()=>verTaps=0,1500);if(verTaps>=5){verTaps=0;try{localStorage.setItem("ut_owner","1")}catch(e){}watchInbox();openInbox()}});
 $("inboxOpen").onclick=openInbox;$("inboxX").onclick=()=>{$("inboxSheet").hidden=true};
@@ -2527,7 +2527,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.10";
+const APP_VERSION="2026-10-17.11";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
