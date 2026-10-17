@@ -69,14 +69,18 @@ function localParts(tz) {
 async function saveReminder(env, d) {
   if (!REMIND_ID.test(d.id || "")) return { error: "bad id" };
   const am = !!d.am, mid = !!d.mid;
-  if ((!am && !mid) || !validSub(d.sub)) { await env.REMIND.delete(d.id); return { ok: true, off: true }; }
+  // Dated reminders (birthdays, anniversaries, date night). The app works out the send times.
+  const now = Date.now();
+  const ev = (Array.isArray(d.ev) ? d.ev : []).filter((e) => e && Number.isFinite(+e.at) && +e.at > now && +e.at < now + 50 * 86400000)
+    .slice(0, 16).map((e) => ({ at: +e.at, t: String(e.t || "").slice(0, 80), b: String(e.b || "").slice(0, 140), g: String(e.g || "").slice(0, 40) }));
+  if ((!am && !mid && !ev.length) || !validSub(d.sub)) { await env.REMIND.delete(d.id); return { ok: true, off: true }; }
   const old = (await env.REMIND.getWithMetadata(d.id)).metadata || {};
   const st = d.state || {};
   const meta = { tz: String(d.tz || "America/New_York").slice(0, 40), am, mid, d: String(st.date || old.d || "").slice(0, 10),
     f: Number.isFinite(+st.first) ? +st.first : (old.f ?? -1), l: Number.isFinite(+st.last) ? +st.last : (old.l ?? -1), s: st.same != null ? !!st.same : !!old.s,
-    sa: old.sa || "", sm: old.sm || "" };
+    sa: old.sa || "", sm: old.sm || "", nx: ev.length ? Math.min(...ev.map((e) => e.at)) : 0 };
   if (st.date && st.date !== old.d && st.same == null) meta.s = false;
-  await env.REMIND.put(d.id, JSON.stringify({ sub: d.sub, url: String(d.url || "").slice(0, 400), partner: String(d.partner || "").slice(0, 40) }), { metadata: meta });
+  await env.REMIND.put(d.id, JSON.stringify({ sub: d.sub, url: String(d.url || "").slice(0, 400), partner: String(d.partner || "").slice(0, 40), ev }), { metadata: meta });
   return { ok: true };
 }
 async function runReminders(env) {
@@ -85,7 +89,23 @@ async function runReminders(env) {
   do {
     const page = await env.REMIND.list({ cursor });
     for (const k of page.keys) {
-      const m = k.metadata || {}; const t = localParts(m.tz);
+      let m = k.metadata || {}; const t = localParts(m.tz);
+      if (m.nx && Date.now() >= m.nx) {
+        const rec = await env.REMIND.get(k.name, "json");
+        if (rec && rec.sub) {
+          const now = Date.now(), due = (rec.ev || []).filter((e) => e.at <= now), rest = (rec.ev || []).filter((e) => e.at > now);
+          let gone = false;
+          for (const e of due) {
+            if (e.at < now - 6 * 3600000) continue; // too late to be useful
+            const r = await sendPush(env, rec.sub, { title: e.t, body: e.b, tag: e.g || "occ", url: rec.url || "" }).catch(() => ({ ok: false }));
+            if (r.gone) { gone = true; break; }
+          }
+          if (gone) { await env.REMIND.delete(k.name); continue; }
+          rec.ev = rest; m = { ...m, nx: rest.length ? Math.min(...rest.map((e) => e.at)) : 0 };
+          if (!m.am && !m.mid && !rest.length) { await env.REMIND.delete(k.name); continue; }
+          await env.REMIND.put(k.name, JSON.stringify(rec), { metadata: m });
+        }
+      }
       if (["Sat", "Sun"].includes(t.weekday)) continue;
       let msg = null, mark = null;
       const checkedToday = m.d === t.date;

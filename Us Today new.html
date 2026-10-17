@@ -432,6 +432,19 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wishbtn{background:#3a2a14;color:#f3c27a}}
 .hside .hwish{font-size:.78rem;font-weight:700;color:#8a4b00;text-decoration:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hside .hwish{color:#f3c27a}}
+.datesbox{display:flex;flex-direction:column;gap:8px;text-align:left;align-self:stretch;width:100%;box-sizing:border-box;margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
+.dgrid{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center}
+.dgrid input{min-width:0;width:100%;box-sizing:border-box}
+.calrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.88rem}
+.calrow .ct{flex:1 1 100%;font-weight:600}
+.chip.cal{background:none;border:1px solid var(--line);color:var(--accent);font-weight:600;text-decoration:none;font-size:.8rem;padding:4px 10px}
+.gift{display:flex;flex-direction:column;gap:10px;border-radius:18px;padding:14px;background:linear-gradient(135deg,#fff1e0,#ffe3ec);color:#3b2a20}
+.gift .gh{display:flex;gap:12px;align-items:center}.gift .gh div{display:flex;flex-direction:column}
+.gift .gic{font-size:2rem;line-height:1}.gift .muted{color:#7a5a48}
+.gift .row{flex-wrap:wrap;gap:8px}.gift .chip.shop{background:#fff8;color:#8a4b00;border-color:#e8c9a8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .gift{background:linear-gradient(135deg,#3a2a14,#3a1d29);color:#f6e6da}:root:not([data-theme="light"]) .gift .muted{color:#d6b8a6}:root:not([data-theme="light"]) .gift .chip.shop{background:#0003;color:#f3c27a;border-color:#6a4a2a}}
+:root[data-theme="dark"] .gift{background:linear-gradient(135deg,#3a2a14,#3a1d29);color:#f6e6da}
+.pbday{font-size:.85rem;color:var(--muted)}
 .chip.shop{background:none;border:1px solid var(--line);color:var(--accent);font-weight:600;text-decoration:none}
 .aic{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .aic .eyebrow{color:var(--accent)}
@@ -574,6 +587,7 @@ details.pl summary{cursor:pointer;font-weight:600}
     <div id="homeHead"></div>
     <div id="gsBox"></div>
     <div class="stack" style="gap:10px"><h2>Today at a glance</h2><div class="glance" id="homeGlance"></div></div>
+    <div id="homeGift"></div>
     <div class="qa" id="homeActions"></div>
     <div id="homeQ"></div>
     <div class="stack" style="gap:10px" id="homeNextBox"><h2>Next up</h2><div id="homeNext"></div></div>
@@ -739,6 +753,17 @@ details.pl summary{cursor:pointer;font-weight:600}
       <label for="avWish" class="small" style="font-weight:600">🎁 Your wish list</label>
       <div class="cmt"><input type="text" id="avWish" inputmode="url" maxlength="400" placeholder="Paste your Amazon wish list link"><button class="secondary" id="avWishSave">Save</button></div>
       <p class="small muted" style="margin:0">In Amazon: Account → Your Lists → pick a list → Share → Copy link. Any store's list works.</p>
+      <div class="datesbox" id="datesBox">
+        <b class="small">📅 Dates to remember</b>
+        <p class="small muted" style="margin:0">You both get a reminder a week before and the day before, with the wish list one tap away.</p>
+        <div class="dgrid">
+          <label for="dtBday" class="small">Your birthday</label><input type="date" id="dtBday">
+          <label for="dtMet" class="small">When you met</label><input type="date" id="dtMet">
+          <label for="dtWed" class="small">Wedding anniversary</label><input type="date" id="dtWed">
+        </div>
+        <div class="row"><button class="secondary" id="dtSave">Save dates</button><span class="small muted" id="dtMsg" role="status"></span></div>
+        <div id="dtCal"></div>
+      </div>
     </div>
     <div class="phero" id="partnerHero" hidden></div>
     <details class="sec" id="secAnswers">
@@ -1855,6 +1880,7 @@ function renderInbox(){
     }
     if(it.kind==="media"){row.append(mediaFor(it));const a=el("div","row");if(rep?.status==="loved")a.append(el("span","pill ok","Loved it"));else{const b=el("button","secondary","♥ Loved it");b.onclick=()=>reply(it.id,{status:"loved"}).then(ok=>ok&&toast("They'll see you loved it"));a.append(b)}row.append(a)}
     if(it.kind==="invite"&&it.place)row.append(placeEl(it));
+    if(it.kind==="invite"&&rep?.status==="yes"){const cr=inviteCal(it,"in");if(cr)row.append(cr)}
     if(it.kind==="invite"){
       const a=el("div","row");
       if(rep?.status){const s=statusPill(it,rep);a.append(el("span","pill "+s[1],s[0]))}
@@ -1898,6 +1924,7 @@ function renderSent(){
     if(isPicLike(it)){const im=itemMedia(it);if(it.kind==="photo")im.style.maxHeight="160px";row.append(im);if(it.caption)row.append(el("p","small muted",it.caption));if(rep?.reaction){const rr=el("div","reacted",`${nm(partnerId)} reacted`);rr.append(el("b",null,rep.reaction));row.append(rr)}if(rep?.comment)row.append(el("p","reply-cap",`${nm(partnerId)}: ${rep.comment}`))}
     if(it.kind==="media"){if(it.note)row.append(el("p","need","“"+it.note+"”"));row.append(mediaFor(it))}
     if(it.kind==="invite"&&it.place)row.append(placeEl(it));
+    if(it.kind==="invite"&&rep?.status==="yes"){const cr=inviteCal(it,"out");if(cr)row.append(cr)}
     box.append(row);
   });
 }
@@ -2230,6 +2257,7 @@ function renderPhotoBox(){
   if(document.activeElement!==$("avNick"))$("avNick").value=nk;
   if(document.activeElement!==$("avWish"))$("avWish").value=wishOf(me);
   if(document.activeElement!==$("avCap"))$("avCap").value=capOf(me);
+  renderDates();
   const has=!!P(me).photo;$("avChange").textContent=has?"Change photo":"Upload photo";$("avRemove").hidden=!has;
 }
 async function setPhoto(id){
@@ -2318,6 +2346,7 @@ function renderProfileView(){
   $("photoBox").hidden=isP;$("settingsBox").hidden=isP;$("editProfile").hidden=isP;
   const ph=$("partnerHero");ph.hidden=!isP;ph.textContent="";
   if(isP){ph.append(storyRing(p,avatar(p,"av-l"),true));const nk=nickOf(p);ph.append(el("span","pname",nk||pn));if(nk)ph.append(el("span","pnick",pn));const c=capOf(p);if(c)ph.append(el("span","pcap","“"+c+"”"));
+    if(bdayOf(p))ph.append(el("span","pbday","🎂 Birthday · "+fromKey(bdayOf(p)).toLocaleDateString(undefined,{month:"long",day:"numeric"})));
     if(wishOf(p))ph.append(wishBtn(p));else{const a=el("button","link small",`🎁 Ask ${nk||pn} to add a wish list`);a.onclick=askWish;ph.append(a)}}
   $("answersTitle").textContent=isP?`About ${pn}`:"About you";
   $("meIntro").textContent=isP?`What helps ${pn} feel loved and supported, in their own words.`:`${p?pn:"Your partner"} sees these answers. They shape the ideas you both get.`;
@@ -2649,6 +2678,11 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17l",date:"Oct 17, 2026",items:[
+    {em:"📅",t:"Dates to remember",b:"Add your birthday, the day you met and your wedding anniversary in About me. You'll both get a reminder a week before and the day before.",go:["me","dtBday"]},
+    {em:"🎁",t:"Gift reminders",b:"Two weeks before a birthday, anniversary, Valentine's Day or Christmas, a card on Home shows your partner's wish list and gift ideas from their favorites."},
+    {em:"🗓️",t:"Add to calendar",b:"Accepted dates and your special days can go straight into Apple, Google or Outlook Calendar. You'll also get a nudge an hour before date night."}
+  ]},
   {id:"2026-10-17k",date:"Oct 17, 2026",items:[
     {em:"🎁",t:"Wish lists",b:"Paste your Amazon (or any store's) wish list in About me. Your partner sees a wish list button on your profile and on Home, so gifts are never a guess.",go:["me","avWish"]}
   ]},
@@ -2744,6 +2778,7 @@ function gsSteps(){
     {t:"Add Us, Today to your Home Screen",done:isInstalled(),go:openInstall},
     {t:"Turn on notifications",done:!!members[me]?.push,go:()=>{if(isIOS&&!isStandalone())openInstall();else goTo(["me","notifCard"])}},
     {t:"Choose your check-in reminders",done:!!members[me]?.remind,go:()=>{if(!members[me]?.push)openInstall();else goTo(["me","remindBox"])}},
+    {t:"Add your birthday and anniversary",done:!!bdayOf(me),go:()=>goTo(["me","dtBday"])},
     {t:"Send a hug or a photo",done:outgoing().length>0,go:()=>goTo(["connect","tray"])},
     {t:"Send a chat message",done:(msgs[me]||[]).length>0,go:()=>goTo(["chat","msgIn"])},
     {t:"Turn on AI ideas",done:!!members[me]?.aiOk,go:()=>goTo(["me","aiCard"])}
@@ -3008,7 +3043,7 @@ async function syncReminder(extra){
   const e=E(me)[todayKey()];
   const state=e?{date:todayKey(),first:minOfDay(e.firstAt||e.updatedAt),last:minOfDay(e.updatedAt),same:!!(e.sameAt&&!isMorning(e.sameAt))}:{date:""};
   if(extra&&extra.same)state.same=true;
-  const body={id:spaceHash+"-"+me,sub:sub||null,tz:(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone}catch(x){return""}})(),am:!!sub&&pr.am,mid:!!sub&&pr.mid,url:linkFor(me),partner:partnerId?nm(partnerId):"",state};
+  const body={id:spaceHash+"-"+me,sub:sub||null,tz:(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone}catch(x){return""}})(),am:!!sub&&pr.am,mid:!!sub&&pr.mid,url:linkFor(me),partner:partnerId?nm(partnerId):"",state,ev:sub?remEvents():[]};
   const sig=JSON.stringify(body);if(sig===remLast)return;remLast=sig;
   try{await fetch(WORKER_URL+"remind",{method:"POST",headers:{"Content-Type":"application/json"},body:sig})}catch(x){remLast=""}
 }
@@ -3166,7 +3201,8 @@ function nextItems(){
     const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id],c=rep?.count||0,t=it.target||1;if(c>=t)return;
     out.push({ic:"🏁",t:it.text,sub:it.dir==="in"?`From ${pn}`:`You challenged ${pn}`,prog:c/t,rt:`${c} of ${t}`,go:()=>setTab("connect"),sort:it.createdAt});
   });
-  const si=sinceInfo();if(si&&si.until<=60)out.push({ic:"🎉",t:si.until===0?`Happy ${si.years}-year anniversary!`:"Your anniversary",sub:si.next.toLocaleDateString(undefined,{month:"long",day:"numeric"})+` · ${si.years} years`+(partnerId&&wishOf(partnerId)?` · 🎁 tap for ${nickOf(partnerId)||nm(partnerId)}'s wish list`:""),rt:si.until===0?"Today":si.until+" days",sort:si.next.getTime(),go:partnerId&&wishOf(partnerId)?()=>window.open(wishOf(partnerId),"_blank","noopener"):null});
+  occasions().filter(o=>o.until<=(o.holiday?GIFT_DAYS:45)).slice(0,2).forEach(o=>{const w=o.gift&&partnerId&&wishOf(partnerId);
+    out.push({ic:o.ic,t:o.until===0?(o.mine?"Happy birthday to you! 🎉":`${o.t} is today`):o.t,sub:o.date.toLocaleDateString(undefined,{weekday:"short",month:"long",day:"numeric"})+(w?` · 🎁 tap for ${nickOf(partnerId)||nm(partnerId)}'s wish list`:""),rt:o.until===0?"Today":o.until===1?"Tomorrow":o.until+" days",sort:o.date.getTime()+1,go:w?()=>window.open(w,"_blank","noopener"):null})});
   return out.sort((a,b)=>a.sort-b.sort).slice(0,4);
 }
 function renderHome(){
@@ -3207,6 +3243,7 @@ function renderHome(){
       const b=el("button","act","See how to help");b.onclick=()=>{markCiSeen();setTab("today");setTimeout(()=>$("forBox").scrollIntoView({behavior:"smooth",block:"start"}),80)};card.append(b)}
     else{card.append(el("span","who",pn),el("span","feel","Hasn't checked in yet"));const b=el("button","act","Send a hug");b.onclick=()=>sendItem({kind:"touch",type:"hug"},"Hug sent 🤗");card.append(b)}
     g.append(card)}
+  renderGift();
   // quick actions
   const qa=$("homeActions");qa.textContent="";
   [["check","Check in",()=>{setTab("today");setTimeout(()=>$("dialBox")?.scrollIntoView({behavior:"smooth",block:"start"}),80)}],
@@ -3258,6 +3295,117 @@ function renderHome(){
   });
 }
 $("homeAll").onclick=()=>{setTab("connect");setTimeout(()=>{const s4=$("secSent");if(s4){s4.open=true;s4.scrollIntoView({behavior:"smooth",block:"start"})}},80)};
+
+/* ================= Dates, gifts & calendar ================= */
+const GIFT_DAYS=14;
+const isYmd=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v);
+const bdayOf=p=>{const b=p&&members[p]?.profile?.bday;return isYmd(b)?b:""};
+const dayDiff=(a,b)=>Math.round((new Date(a).setHours(0,0,0,0)-new Date(b).setHours(0,0,0,0))/86400000);
+function nextOcc(m,d,from){const n=new Date(from);n.setHours(0,0,0,0);let x=new Date(n.getFullYear(),m,d);if(x<n)x=new Date(n.getFullYear()+1,m,d);return x}
+const HOLIDAYS=[["valentine","Valentine's Day","💘",1,14],["christmas","Christmas","🎄",11,25]];
+function occasions(from){
+  from=from||new Date();const out=[],p=partnerId,pn=p?(nickOf(p)||nm(p)):"";
+  const add=o=>{o.until=dayDiff(o.date,from);o.n=o.n||o.t;out.push(o)};
+  const yearly=(id,ymd,mk)=>{if(!isYmd(ymd))return;const s0=fromKey(ymd),d=nextOcc(s0.getMonth(),s0.getDate(),from);add({...mk(d.getFullYear()-s0.getFullYear()),id,date:d,src:ymd})};
+  if(p)yearly("bday-"+p,bdayOf(p),()=>({ic:"🎂",t:`${pn}'s birthday`,short:`${pn}'s birthday`,gift:true}));
+  yearly("bday-"+me,bdayOf(me),()=>({ic:"🎂",t:"Your birthday",mine:true}));
+  yearly("wed",coupleSettings.wed,y=>({ic:"💍",t:y>0?`Your ${y}-year wedding anniversary`:"Your wedding day",gift:!!p,years:y}));
+  yearly("met",coupleSettings.since,y=>({ic:"💞",t:y>0?`${y} year${y>1?"s":""} since you met`:"The day you met",n:y>0?`The ${y}-year anniversary of the day you met`:"The day you met",gift:!!p,years:y}));
+  if(p)HOLIDAYS.forEach(([id,t,ic,m,d])=>add({id,ic,t,date:nextOcc(m,d,from),gift:true,holiday:true}));
+  return out.sort((a,b)=>a.date-b.date||(a.holiday?1:0)-(b.holiday?1:0));
+}
+function renderGift(){
+  const box=$("homeGift");if(!box)return;box.textContent="";
+  const p=partnerId;if(!p||!signedIn())return;
+  const o=occasions().find(x=>x.gift&&x.until<=GIFT_DAYS);if(!o)return;
+  const pn=nickOf(p)||nm(p),c=el("div","gift"),h=el("div","gh"),tx=el("div");
+  h.append(el("span","gic",o.ic));
+  tx.append(el("b",null,o.until===0?`${o.n} is today!`:o.until===1?`${o.n} is tomorrow`:`${o.n} is in ${o.until} days`),el("span","small muted",o.date.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})+" · a little something for "+pn+"?"));
+  h.append(tx);c.append(h);
+  const r=el("div","row");
+  if(wishOf(p))r.append(wishBtn(p));else{const a=el("button","secondary",`🎁 Ask ${pn} for a wish list`);a.onclick=askWish;r.append(a)}
+  const pr=P(p);[["flowers","💐"],["treat","🍫"]].forEach(([q,em])=>{const v=chipsFor(pr,q)[0];if(v){const a=el("a","chip shop",`${em} ${v}`);a.href=amazonQ(v);a.target="_blank";a.rel="noopener";a.setAttribute("aria-label",`Shop ${v} on Amazon`);r.append(a)}});
+  const pl=el("button","secondary","💌 Plan a date");pl.onclick=()=>{setTab("connect");setTimeout(()=>{const s3=$("secInv");if(s3){s3.open=true;s3.scrollIntoView({behavior:"smooth",block:"start"})}},80)};r.append(pl);
+  c.append(r);box.append(c);
+}
+function renderDates(){
+  if(!$("dtBday"))return;const k=todayKey();
+  [["dtBday",bdayOf(me)],["dtMet",isYmd(coupleSettings.since)?coupleSettings.since:""],["dtWed",isYmd(coupleSettings.wed)?coupleSettings.wed:""]].forEach(([id,v])=>{if(document.activeElement!==$(id))$(id).value=v});
+  $("dtBday").max=k;$("dtMet").max=k;
+  const cal=$("dtCal");cal.textContent="";
+  const list=occasions().filter(o=>!o.holiday);if(!list.length)return;
+  cal.append(el("span","small muted","Add to your calendar (repeats every year):"));
+  list.forEach(o=>{const ev={uid:o.id,title:o.mine?`${nm(me)}'s birthday`:o.id==="wed"?"Our wedding anniversary":o.id==="met"?"The day we met":o.t,start:fromKey(o.src),allDay:true,yearly:true,desc:"From Us, Today"};
+    const r=el("div","calrow");r.append(el("span","ct",`${o.ic} ${ev.title} · ${o.date.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`),icsLink([ev],"Apple / Outlook"),gcalLink(ev));cal.append(r)});
+}
+$("dtSave").onclick=async()=>{
+  const b=$("dtBday").value,m=$("dtMet").value,w=$("dtWed").value,k=todayKey(),btn=$("dtSave");
+  for(const v of [b,m,w])if(v&&!isYmd(v)){$("dtMsg").textContent="Pick a full date";return}
+  if((b&&b>k)||(m&&m>k)){$("dtMsg").textContent="Birthday and met date can't be in the future";return}
+  btn.disabled=true;$("dtMsg").textContent="Saving…";
+  try{if(!signedIn())throw{code:"signed_out"};
+    if(b!==bdayOf(me)){const prof={...P(me)};if(b)prof.bday=b;else delete prof.bday;
+      await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),profile:prof});members[me]={...(members[me]||{}),profile:prof}}
+    const cs={};if(m!==(coupleSettings.since||""))cs.since=m;if(w!==(coupleSettings.wed||""))cs.wed=w;
+    if(Object.keys(cs).length){await db.doc("settings/couple").merge({...cs,sinceBy:me});coupleSettings={...coupleSettings,...cs}}
+    $("dtMsg").textContent="Saved 📅";track({"n.dates":1});renderAll();renderDates();
+  }catch(e){console.error(e);$("dtMsg").textContent=saveErr(e)}finally{btn.disabled=false}
+};
+// Calendar files (.ics) and Google Calendar links. No accounts or emails needed.
+const pad2=n=>String(n).padStart(2,"0");
+const icsDate=d=>`${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}`;
+const icsDT=d=>icsDate(d)+`T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
+const icsEsc=t=>String(t||"").replace(/[\\;,]/g,x=>"\\"+x).replace(/\r?\n/g,"\\n");
+function icsFile(evs){
+  const now=new Date(),st=`${now.getUTCFullYear()}${pad2(now.getUTCMonth()+1)}${pad2(now.getUTCDate())}T${pad2(now.getUTCHours())}${pad2(now.getUTCMinutes())}00Z`;
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Us Today//EN","CALSCALE:GREGORIAN"];
+  evs.forEach(e=>{L.push("BEGIN:VEVENT",`UID:${e.uid}-${spaceHash||"us"}@us-today`,"DTSTAMP:"+st);
+    if(e.allDay){const n=new Date(e.start.getFullYear(),e.start.getMonth(),e.start.getDate()+1);L.push("DTSTART;VALUE=DATE:"+icsDate(e.start),"DTEND;VALUE=DATE:"+icsDate(n))}
+    else L.push("DTSTART:"+icsDT(e.start),"DTEND:"+icsDT(e.end||new Date(+e.start+2*3600000)));
+    if(e.yearly)L.push("RRULE:FREQ=YEARLY");
+    L.push("SUMMARY:"+icsEsc(e.title));if(e.desc)L.push("DESCRIPTION:"+icsEsc(e.desc));if(e.loc)L.push("LOCATION:"+icsEsc(e.loc));
+    L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsEsc(e.title),"TRIGGER:"+(e.allDay?"-P6DT15H":"-PT1H"),"END:VALARM","END:VEVENT")});
+  L.push("END:VCALENDAR");return L.join("\r\n");
+}
+function icsLink(evs,label){const a=el("a","chip cal","📅 "+(label||"Apple / Outlook"));a.href="data:text/calendar;charset=utf-8,"+encodeURIComponent(icsFile(evs));if(!isIOS)a.download="us-today.ics";a.onclick=()=>track({"n.calAdd":1});return a}
+function gcalLink(e){
+  const end=e.allDay?new Date(e.start.getFullYear(),e.start.getMonth(),e.start.getDate()+1):(e.end||new Date(+e.start+2*3600000));
+  let u="https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(e.title)+"&dates="+(e.allDay?icsDate(e.start)+"/"+icsDate(end):icsDT(e.start)+"/"+icsDT(end));
+  if(e.desc)u+="&details="+encodeURIComponent(e.desc);if(e.loc)u+="&location="+encodeURIComponent(e.loc);if(e.yearly)u+="&recur="+encodeURIComponent("RRULE:FREQ=YEARLY");
+  const a=el("a","chip cal","Google");a.href=u;a.target="_blank";a.rel="noopener";a.setAttribute("aria-label","Add to Google Calendar");a.onclick=()=>track({"n.calAdd":1});return a;
+}
+// When a date invite happens. "Tonight" and "Tomorrow night" become 7 PM on that day.
+function inviteAt(it){
+  if(it.at)return +it.at;
+  const d=new Date(it.createdAt||Date.now());
+  if(it.when==="Tonight")return new Date(d.getFullYear(),d.getMonth(),d.getDate(),19,0).getTime();
+  if(it.when==="Tomorrow night")return new Date(d.getFullYear(),d.getMonth(),d.getDate()+1,19,0).getTime();
+  return 0;
+}
+function inviteTitle(it,dir){const what=it.type==="date"&&it.dateKind?"Date night":(pick(INV_TYPES,it.type)?.[1]||"Date");return `${what} with ${partnerId?(nickOf(partnerId)||nm(partnerId)):"you"}`}
+function inviteCal(it,dir){
+  const at=inviteAt(it);if(!at||at<Date.now()-3600000)return null;
+  const ev={uid:"inv-"+it.id,title:inviteTitle(it,dir),start:new Date(at),end:new Date(at+2*3600000),loc:it.place||"",desc:[it.note,"From Us, Today"].filter(Boolean).join("\n")};
+  const r=el("div","calrow");r.append(el("span","small muted","Add to calendar:"),icsLink([ev],"Apple / Outlook"),gcalLink(ev));return r;
+}
+// Reminders the server sends on its own schedule (times are worked out here, in your time zone).
+function remEvents(){
+  const now=Date.now(),ev=[],at9=(d,back)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()-back,9,0).getTime();
+  const pn=partnerId?(nickOf(partnerId)||nm(partnerId)):"";
+  occasions().filter(o=>!o.mine&&o.until<=40).forEach(o=>{
+    const gift=o.gift&&pn?(wishOf(partnerId)?` Peek at ${pn}'s wish list in Us, Today.`:" Plan something in Us, Today."):"";
+    ev.push({at:at9(o.date,7),t:`${o.ic} ${o.n} is in a week`,b:("A week to plan."+gift).trim(),g:"occ-"+o.id});
+    ev.push({at:at9(o.date,1),t:`${o.ic} ${o.n} is tomorrow`,b:"Last call for a card, flowers or a plan 💐",g:"occ-"+o.id});
+    if(!o.holiday)ev.push({at:at9(o.date,0),t:o.id.startsWith("bday")?`🎂 It's ${pn}'s birthday!`:`${o.ic} Happy anniversary!`,b:`Send ${pn||"them"} some love today.`,g:"occ-"+o.id});
+  });
+  const all=[...incoming().map(x=>({...x,dir:"in"})),...outgoing().map(x=>({...x,dir:"out"}))];
+  all.filter(x=>x.kind==="invite").forEach(it=>{
+    const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id];if(rep?.status!=="yes")return;
+    const at=inviteAt(it);if(!at)return;
+    ev.push({at:at-3600000,t:"💌 "+inviteTitle(it,it.dir)+" in 1 hour",b:it.place?`At ${it.place}. Have fun!`:"Have fun!",g:"inv-"+it.id});
+  });
+  return ev.filter(e=>e.at>now).sort((a,b)=>a.at-b.at).slice(0,16);
+}
 
 /* ================= Nicknames ================= */
 const wishOf=p=>{const w=p&&members[p]?.profile?.wish;return typeof w==="string"&&/^https?:\/\//.test(w)?w:""};
@@ -3544,7 +3692,8 @@ function setTab(t){
 }
 $("tabHome").onclick=()=>setTab("home");$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>setTab("me");$("tabChat").onclick=()=>setTab("chat");
 
-function renderAll(){if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
+let remT=0;function remSoon(){clearTimeout(remT);remT=setTimeout(()=>syncReminder(),1500)}
+function renderAll(){remSoon();if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
 
 /* ================= Live data ================= */
 const subs={},seenSnap={};
@@ -3658,7 +3807,7 @@ async function startSpace(firstTime){
   initOwner();
   hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen();setTimeout(syncReminder,1500)});
   refreshPushSub();
-  db.doc("settings/couple").onSnapshot(s=>{coupleSettings=s.exists?(s.data()||{}):{};if(tab==="home")renderHome()},()=>{});
+  db.doc("settings/couple").onSnapshot(s=>{coupleSettings=s.exists?(s.data()||{}):{};if(tab==="home")renderHome();if(tab==="me")renderDates();remSoon()},()=>{});
   watchQuestion();
   watchStories();
   watchLock();
@@ -3691,7 +3840,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.27";
+const APP_VERSION="2026-10-17.28";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
