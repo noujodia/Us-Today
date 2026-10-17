@@ -857,6 +857,7 @@ details.pl summary{cursor:pointer;font-weight:600}
     <button class="primary" id="lockGo">Unlock</button>
     <p class="small" id="lockErr" style="color:var(--warn);text-align:center;min-height:1.2em"></p>
     <p class="small muted" style="text-align:center">Forgot it? Your partner can change it in About me → Privacy lock.</p>
+    <button class="secondary" id="lockRetry">No passcode set? Try again</button>
   </div>
 </div>
 <div class="lightbox" id="lightbox" hidden></div>
@@ -3428,6 +3429,16 @@ $("lockGo").onclick=async()=>{
   finally{btn.disabled=false;btn.textContent="Unlock"}
 };
 $("lockIn").addEventListener("keydown",e=>{if(e.key==="Enter")$("lockGo").click()});
+/* A brief rules switch-over (or a missing beta record) can look like a lock. Retry the whole open, re-checking beta access. */
+$("lockRetry").onclick=async()=>{
+  const b=$("lockRetry");b.disabled=true;b.textContent="Checking…";$("lockErr").textContent="";
+  try{
+    if(db&&spaceKey){try{const a=await db.top.doc("betaAccess/"+spaceKey).get();if(!a.exists)await db.top.doc("betaAccess/"+spaceKey).set({code:"legacy",at:Date.now()})}catch(e){}}
+    await db.doc(base(A)).get();
+    $("lockScreen").hidden=true;const f=lockRetry;lockRetry=null;if(f)f();else location.reload();
+  }catch(e){$("lockErr").textContent=isDenied(e)?"Still locked. If you and your partner never set a passcode, wait a minute and try again, or close and reopen the app.":"Couldn't connect. Check your internet and try again."}
+  finally{b.disabled=false;b.textContent="No passcode set? Try again"}
+};
 function watchLock(){
   if(lockWatching||!signedIn())return;lockWatching=true;
   db.doc("lock/main").onSnapshot(s=>{lockDoc=s.exists?(s.data()||{}):null;if(lockDoc&&db.uid)db.doc(`devices/${db.uid}`).update({at:Date.now()}).catch(()=>{});if(tab==="me")renderLockCard()},()=>{});
@@ -3643,7 +3654,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.23";
+const APP_VERSION="2026-10-17.24";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
