@@ -391,6 +391,35 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .chip.none{background:none;border:1px dashed var(--line);color:var(--muted)}
 .setgrid{display:flex;flex-direction:column;gap:10px}
 .setgrid .sec>.secbody>.card>h3:first-child{display:none}
+.pnick{font-size:.9rem;color:var(--muted);margin-top:-6px}
+.hside .hnick{font-weight:700;font-size:.92rem;line-height:1.2}
+.sring{position:relative;border-radius:50%;padding:4px;flex:none;border:0;background:none;cursor:pointer}
+.sring.has{background:conic-gradient(from 210deg,#f2a04c,#d6517d,#8f4fd0,#f2a04c)}
+.sring.seen{background:var(--line)}
+.sring>.hring{background-clip:padding-box}
+.sring .sadd{position:absolute;right:2px;bottom:2px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);border:3px solid var(--surface);display:grid;place-items:center;font-size:1rem;font-weight:800;line-height:1;padding:0;box-sizing:border-box}
+.mebtn.has{border:0;background:conic-gradient(from 210deg,#f2a04c,#d6517d,#8f4fd0,#f2a04c);padding:3px}
+.mebtn.has .avatar{border:2px solid var(--bg);box-sizing:border-box}
+.story{position:fixed;inset:0;z-index:45;background:#000;color:#fff;display:flex;flex-direction:column}
+.story .sbars{display:flex;gap:4px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 6px}
+.story .sbars i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.35);overflow:hidden;display:block}
+.story .sbars i b{display:block;height:100%;width:0;background:#fff}
+.story .shead{display:flex;align-items:center;gap:10px;padding:6px 12px}
+.story .shead .t{flex:1;min-width:0;display:flex;flex-direction:column;font-size:.85rem}
+.story .shead .t span{opacity:.75;font-size:.78rem}
+.story .sx{border:0;background:rgba(255,255,255,.15);color:#fff;width:40px;height:40px;border-radius:50%;font-size:1.2rem;padding:0}
+.story .sbody{flex:1;position:relative;display:grid;place-items:center;overflow:hidden}
+.story .sbody img,.story .sbody video{max-width:100%;max-height:100%;object-fit:contain}
+.story .stap{position:absolute;top:0;bottom:0;width:35%;border:0;background:none;padding:0}
+.story .stap.l{left:0}.story .stap.r{right:0}
+.story .scap{position:absolute;left:16px;right:16px;bottom:18px;text-align:center;font-size:1.15rem;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.7);overflow-wrap:anywhere}
+.story .sfoot{display:flex;gap:6px;align-items:center;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.story .sfoot input{flex:1;min-width:0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;padding:10px 14px}
+.story .sfoot input::placeholder{color:rgba(255,255,255,.7)}
+.story .sfoot .re{border:0;background:none;font-size:1.5rem;width:40px;height:40px;padding:0;flex:none}
+.story .sfoot .snd{border:0;background:#fff;color:#000;border-radius:999px;padding:0 14px;height:40px;font-weight:700;flex:none}
+.story .sseen{font-size:.85rem;opacity:.85;flex:1}
+.story .sdel{border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:999px;padding:0 14px;height:40px;font-weight:600}
 .aic{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .aic .eyebrow{color:var(--accent)}
 .aic .hl{font-weight:600;font-size:1rem;line-height:1.4}
@@ -686,9 +715,12 @@ details.pl summary{cursor:pointer;font-weight:600}
     <div class="phero" id="photoBox">
       <span id="meAvatar"></span>
       <span class="pname" id="meName"></span>
+      <span class="pnick" id="meReal" hidden></span>
       <input type="file" id="avFile" accept="image/*" hidden>
       <div class="row"><button class="secondary" id="avChange">Upload photo</button><button class="link small" id="avRemove" hidden>Remove</button></div>
       <p class="small muted" id="avMsg"></p>
+      <label for="avNick" class="small" style="font-weight:600">Your nickname</label>
+      <div class="cmt"><input type="text" id="avNick" maxlength="24" placeholder="Babe, Hun, Papi…"><button class="secondary" id="avNickSave">Save</button></div>
       <label for="avCap" class="small" style="font-weight:600">Caption under your photo</label>
       <div class="cmt"><input type="text" id="avCap" maxlength="80" placeholder="Missing you already · Gym then home · Date night soon?"><button class="secondary" id="avCapSave">Save</button></div>
     </div>
@@ -833,6 +865,13 @@ details.pl summary{cursor:pointer;font-weight:600}
     <div id="installBody" class="stack" style="gap:12px"></div>
   </div>
 </div>
+<div class="story" id="storyView" hidden role="dialog" aria-modal="true" aria-label="Story">
+  <div class="sbars" id="stBars"></div>
+  <div class="shead"><span id="stAv"></span><div class="t"><b id="stName"></b><span id="stTime"></span></div><button class="sx" id="stX" aria-label="Close story">×</button></div>
+  <div class="sbody" id="stBody"></div>
+  <div class="sfoot" id="stFoot"></div>
+</div>
+<input type="file" id="storyFile" accept="image/*,video/*" hidden>
 <div class="ov" id="fbSheet" hidden role="dialog" aria-modal="true" aria-labelledby="fbTitle">
   <div class="panel">
     <div class="phead"><div class="stack" style="gap:2px"><h2 id="fbTitle">Send feedback</h2><p class="small muted" style="margin:0">What happened, or what would make the app better?</p></div><button class="x" id="fbX" aria-label="Close">×</button></div>
@@ -881,7 +920,8 @@ const col=k=>`var(--e-${k})`;
 const DAYS=[["mon","M"],["tue","T"],["wed","W"],["thu","T"],["fri","F"],["sat","S"],["sun","S"]];
 const DAYNAMES={mon:"Mon",tue:"Tue",wed:"Wed",thu:"Thu",fri:"Fri",sat:"Sat",sun:"Sun"};
 const Q={
-  name:{type:"text",q:"What should your partner call you?",ph:"First name or nickname"},
+  name:{type:"text",q:"Your first name",ph:"First name"},
+  nick:{type:"text",q:"Your nickname",ph:"Babe, Hun, Papi…",hint:"What your partner calls you. It shows on your profile, and the two of you can't use the same one."},
   lang:{type:"pick2",q:"I feel most loved when you…",opts:[["words","Tell me what you appreciate"],["time","Give me focused time"],["service","Take something off my plate"],["gifts","Surprise me with something"],["touch","Hug me, hold me, stay close"]]},
   upset:{type:"one",q:"When I'm upset, I need…",opts:[["space","Space first, then talk"],["talk","To talk it through right away"],["distract","A distraction to reset"]]},
   avoid:{type:"pick2",q:"Please don't…",opts:[["joke","Joke it off"],["calm","Tell me to calm down"],["fix","Jump to fixing it"],["past","Bring up old stuff"],["silent","Go silent on me"],["phone","Stay on your phone"]]},
@@ -904,7 +944,7 @@ const Q={
   area:{type:"text",q:"Your town or ZIP",ph:"Framingham, MA",hint:"Used to find places near you"}
 };
 const STEPS=[
-  {t:"Let's set you up",s:"Ten quick steps. Your partner sees your answers, and they shape the ideas you both get.",q:["name"]},
+  {t:"Let's set you up",s:"Ten quick steps. Your partner sees your answers, and they shape the ideas you both get.",q:["name","nick"]},
   {t:"How you feel loved",s:"Pick up to 2.",q:["lang"]},
   {t:"When things are hard",s:"So your partner knows what helps and what doesn't.",q:["upset","avoid"]},
   {t:"When you're stressed",s:"Pick up to 2.",q:["stress"]},
@@ -1149,7 +1189,7 @@ function renderTop(){
   $("dateLabel").textContent=d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
   const n=nm(me);$("hello").textContent=n!=="You"?`Hi ${n}. How are we feeling?`:"How are we feeling?";
   $("todayBtn").hidden=isToday;
-  $("tabMe").replaceChildren(avatar(me,"av-m"));
+  $("tabMe").replaceChildren(avatar(me,"av-m"));$("tabMe").classList.toggle("has",activeStories(me).length>0);
   if(A){$("whoA").replaceChildren(avatar(A,"av-s"),P(A).name||acctNames[A]||"Me");$("whoB").replaceChildren(avatar(B,"av-s"),P(B).name||"Partner");$("whoA").setAttribute("aria-pressed",String(me===A));$("whoB").setAttribute("aria-pressed",String(me===B))}
   $("dialTitle").textContent=isToday?"Your check-in":"Your check-in for "+d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
   renderCard($("meCard"),"You",draft,isToday?"Check in below":"No check-in that day",isToday?schedLine(me):"",me==="__local"?null:me);
@@ -2108,6 +2148,7 @@ $("stepBack").onclick=()=>{if(step>0){step--;renderStep();$("sheet").scrollTop=0
 $("sheetClose").onclick=()=>{$("sheet").hidden=true};
 $("stepNext").onclick=async()=>{
   if(step===0&&!(pd.name||"").trim()){$("sheetErr").textContent="Add a name so your partner knows it's you.";return}
+  if(step===0){const clash=nickClash((pd.nick||"").trim());if(clash){$("sheetErr").textContent=clash;return}}
   if(step<STEPS.length-1){
     if(STEPS[step+1].special==="notify"){const ok=await saveProfile(true);if(!ok)return}
     step++;renderStep();$("sheet").scrollTop=0;return}
@@ -2136,7 +2177,8 @@ async function saveProfile(quiet){
 }
 $("editProfile").onclick=()=>openSheet(false);
 function renderPhotoBox(){
-  $("meAvatar").replaceChildren(avatar(me,"av-l"));$("meName").textContent=nm(me);
+  $("meAvatar").replaceChildren(storyRing(me,avatar(me,"av-l"),true));const nk=nickOf(me);$("meName").textContent=nk||nm(me);$("meReal").hidden=!nk;$("meReal").textContent=nm(me);
+  if(document.activeElement!==$("avNick"))$("avNick").value=nk;
   if(document.activeElement!==$("avCap"))$("avCap").value=capOf(me);
   const has=!!P(me).photo;$("avChange").textContent=has?"Change photo":"Upload photo";$("avRemove").hidden=!has;
 }
@@ -2147,6 +2189,14 @@ async function setPhoto(id){
   members[me]={...(members[me]||{}),profile:prof};renderAll();renderPhotoBox();
 }
 $("avChange").onclick=()=>$("avFile").click();
+$("avNickSave").onclick=async()=>{
+  const v=$("avNick").value.trim().slice(0,24),btn=$("avNickSave");const clash=nickClash(v);if(clash){$("avMsg").textContent=clash;return}
+  btn.disabled=true;$("avMsg").textContent="Saving…";
+  try{if(!signedIn())throw{code:"signed_out"};const prof={...P(me)};if(v)prof.nick=v;else delete prof.nick;
+    await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),profile:prof});
+    members[me]={...(members[me]||{}),profile:prof};$("avMsg").textContent=v?"Nickname saved":"Nickname removed";renderAll()}
+  catch(e){console.error(e);$("avMsg").textContent=saveErr(e)}finally{btn.disabled=false}
+};
 $("avCapSave").onclick=async()=>{
   const v=$("avCap").value.trim(),btn=$("avCapSave");btn.disabled=true;$("avMsg").textContent="Saving…";
   try{
@@ -2203,10 +2253,10 @@ function chipsFor(pr,qid){
 }
 function renderProfileView(){
   const p=other(me),isP=profView==="partner"&&!!p,who=isP?p:me,pr=P(who),pn=p?nm(p):"Partner";
-  $("profView").hidden=!p;$("pvPartner").textContent=pn;$("pvMe").setAttribute("aria-pressed",String(!isP));$("pvPartner").setAttribute("aria-pressed",String(isP));
+  $("profView").hidden=!p;$("pvPartner").textContent=nickOf(p)||pn;$("pvMe").setAttribute("aria-pressed",String(!isP));$("pvPartner").setAttribute("aria-pressed",String(isP));
   $("photoBox").hidden=isP;$("settingsBox").hidden=isP;$("editProfile").hidden=isP;
   const ph=$("partnerHero");ph.hidden=!isP;ph.textContent="";
-  if(isP){ph.append(avatar(p,"av-l"),el("span","pname",pn));const c=capOf(p);if(c)ph.append(el("span","pcap","“"+c+"”"));}
+  if(isP){ph.append(storyRing(p,avatar(p,"av-l"),true));const nk=nickOf(p);ph.append(el("span","pname",nk||pn));if(nk)ph.append(el("span","pnick",pn));const c=capOf(p);if(c)ph.append(el("span","pcap","“"+c+"”"));}
   $("answersTitle").textContent=isP?`About ${pn}`:"About you";
   $("meIntro").textContent=isP?`What helps ${pn} feel loved and supported, in their own words.`:`${p?pn:"Your partner"} sees these answers. They shape the ideas you both get.`;
   const box=$("profileSummary");box.textContent="";
@@ -2533,6 +2583,10 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17i",date:"Oct 17, 2026",items:[
+    {em:"📸",t:"Stories",b:"Share a photo or short video that disappears after 24 hours. Tap the + on your photo on Home. When your partner posts one, a colorful ring appears around their photo. Tap it to watch, react or reply.",go:["home","homeHead"]},
+    {em:"🏷️",t:"Nicknames",b:"Add a nickname in About me. It shows on your profile and Home. You two can't pick the same one.",go:["me","avNick"]}
+  ]},
   {id:"2026-10-17h",date:"Oct 17, 2026",items:[
     {em:"👤",t:"A new About me",b:"Your profile now reads like a profile: your photo, caption and answers in easy cards. Tap your partner's name at the top to see what helps them feel loved. Settings fold up underneath.",go:["me","profileSummary"]},
     {em:"💬",t:"Captions on Home",b:"Your captions now show under your photos on the Home page.",go:["home","homeHead"]}
@@ -3024,7 +3078,7 @@ function renderHome(){
   // header
   const hh=$("homeHead");hh.textContent="";const c=el("div","hcard");
   const pair=el("div","hpair");const ht=el("div","hheart");ht.append(svgI("heart",16,true));
-  const side=who=>{const sd=el("div","hside");sd.append(ringFor(who));const cp=who?capOf(who):"";
+  const side=who=>{const sd=el("div","hside");sd.append(storyRing(who,ringFor(who),false));const nk=who?nickOf(who):"";if(nk)sd.append(el("span","hnick",nk));const cp=who?capOf(who):"";
     if(cp)sd.append(el("span","hcap","“"+cp+"”"));
     else if(who===me&&signedIn()){const b=el("button","hcap add","Add a caption");b.onclick=()=>goTo(["me","avCap"]);sd.append(b)}
     return sd};
@@ -3106,6 +3160,125 @@ function renderHome(){
   });
 }
 $("homeAll").onclick=()=>{setTab("connect");setTimeout(()=>{const s4=$("secSent");if(s4){s4.open=true;s4.scrollIntoView({behavior:"smooth",block:"start"})}},80)};
+
+/* ================= Nicknames ================= */
+const nickOf=p=>{const n=p&&members[p]?.profile?.nick;return typeof n==="string"?n.trim().slice(0,24):""};
+const normNick=x=>String(x||"").trim().toLowerCase().replace(/\s+/g," ");
+function nickClash(v){
+  const o=other(me);if(!v||!o)return"";
+  const theirs=normNick(nickOf(o));
+  if(theirs&&normNick(v)===theirs)return `${nm(o)} already uses “${nickOf(o)}”. Pick something a little different, like “${cap1(v.length>3?v.slice(0,-1)+"e":v+"y")}”.`;
+  return"";
+}
+
+/* ================= Stories (disappear after 24 hours) ================= */
+const STORY_TTL=24*3600000,STORY_DAILY=5;
+let stories=[];
+function watchStories(){
+  db.collection("stories").where("createdAt",">=",Date.now()-STORY_TTL).onSnapshot(q=>{
+    stories=q.docs.map(d=>({id:d.id,...(d.data()||{})})).filter(x=>(x.by===A||x.by===B)&&(x.kind==="photo"||x.kind==="clip")&&x.asset).sort((a,b)=>a.createdAt-b.createdAt);
+    renderAll();
+  },()=>{});
+  setTimeout(cleanStories,4000);
+}
+const activeStories=p=>stories.filter(x=>x.by===p&&x.createdAt>Date.now()-STORY_TTL);
+const storySeenKey=()=>"ut_story_"+spaceKey+me;
+function storySeenAt(){try{return +localStorage.getItem(storySeenKey())||0}catch(e){return 0}}
+function markStorySeen(t){if(t>storySeenAt()){try{localStorage.setItem(storySeenKey(),String(t))}catch(e){}}}
+const unseenStories=p=>activeStories(p).filter(x=>x.createdAt>storySeenAt());
+function storyRing(p,inner,big){
+  const list=p?activeStories(p):[],mine=p===me;
+  const w=el("div","sring"+(list.length?(mine||unseenStories(p).length?" has":" seen"):""));
+  w.append(inner);
+  if(list.length){w.setAttribute("role","button");w.tabIndex=0;w.setAttribute("aria-label",(mine?"Your story":`${nm(p)}'s story`)+", "+list.length+" item"+(list.length>1?"s":""));
+    const open=()=>openStory(p);w.onclick=e=>{if(e.target.closest(".sadd"))return;open()};w.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}}}
+  if(mine&&signedIn()&&!big){const b=el("button","sadd","+");b.type="button";b.setAttribute("aria-label","Add to your story");b.onclick=e=>{e.stopPropagation();pickStory()};w.append(b)}
+  else if(mine&&signedIn()&&big){const b=el("button","sadd","+");b.type="button";b.setAttribute("aria-label","Add to your story");b.onclick=e=>{e.stopPropagation();pickStory()};w.append(b)}
+  return w;
+}
+let storyProc=null;
+function pickStory(){
+  const today=activeStories(me).filter(x=>key(new Date(x.createdAt))===todayKey()).length;
+  if(today>=STORY_DAILY){toast(`You've posted ${STORY_DAILY} stories today`);return}
+  $("storyFile").value="";$("storyFile").click();
+}
+$("storyFile").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const isV=isVideoFile(f);
+  const ov=$("storyView");stopStoryTimer();ov.hidden=false;
+  $("stBars").textContent="";$("stAv").replaceChildren(avatar(me,"av-m"));$("stName").textContent="New story";$("stTime").textContent="Disappears after 24 hours";
+  const body=$("stBody");body.textContent="";const u=URL.createObjectURL(f);
+  if(isV){const v=el("video");v.src=u;v.muted=true;v.autoplay=true;v.loop=true;v.playsInline=true;v.setAttribute("playsinline","");body.append(v);storyProc=makeProcVid(u)}else{const i=el("img");i.src=u;i.alt="Your story";body.append(i);storyProc=null}
+  const foot=$("stFoot");foot.textContent="";
+  const cap=el("input");cap.type="text";cap.maxLength=100;cap.placeholder="Add a caption (optional)";cap.setAttribute("aria-label","Story caption");
+  const go=el("button","snd","Share");go.type="button";
+  go.onclick=()=>{
+    let job=null;if(isV){job=startClipJob(f,storyProc,x=>{go.textContent=Math.round(x*100)+"%"});if(!job)return}
+    go.disabled=true;go.textContent=isV?"Preparing…":"Sharing…";
+    (async()=>{try{
+      let asset,kind,dur=0;
+      if(isV){const r=await job;go.textContent="Sharing…";asset=await uploadClip(r);kind="clip";dur=Math.round((r.dur||0)*10)/10}
+      else{asset=await uploadPhoto(f,1600);kind="photo"}
+      await db.collection("stories").add({by:me,kind,asset,dur,caption:cap.value.trim().slice(0,100),createdAt:Date.now()});
+      track({"n.story":1});if(partnerId)notify(partnerId,nm(me),"Added to their story 📸","story");
+      closeStory();toast("Added to your story")}
+    catch(x){console.error(x);go.disabled=false;go.textContent="Share";toast(isV?clipErr(x):photoErr(x))}})();
+  };
+  foot.append(cap,go);
+};
+let stList=[],stIdx=0,stTimer=0,stStart=0,stDur=5000,stOwner=null;
+function stopStoryTimer(){cancelAnimationFrame(stTimer);stTimer=0}
+function openStory(p){stOwner=p;stList=activeStories(p);if(!stList.length)return;const firstUnseen=p===me?0:Math.max(0,stList.findIndex(x=>x.createdAt>storySeenAt()));stIdx=firstUnseen<0?0:firstUnseen;$("storyView").hidden=false;showStory()}
+function closeStory(){stopStoryTimer();$("storyView").hidden=true;$("stBody").textContent="";if(storyProc){storyProc.remove();storyProc=null}renderAll()}
+function showStory(){
+  stopStoryTimer();const it=stList[stIdx];if(!it){closeStory();return}
+  const p=stOwner,mine=p===me;
+  const bars=$("stBars");bars.textContent="";stList.forEach((_,i)=>{const b=el("i");const f=el("b");f.style.width=i<stIdx?"100%":"0";b.append(f);bars.append(b)});
+  $("stAv").replaceChildren(avatar(p,"av-m"));$("stName").textContent=mine?"Your story":(nickOf(p)||nm(p));$("stTime").textContent=timeAgo(it.createdAt);
+  const body=$("stBody");body.textContent="";
+  const startTimer=d=>{stDur=d;stStart=performance.now();const fill=bars.children[stIdx]?.firstChild;const tick=t=>{const x=Math.min(1,(t-stStart)/stDur);if(fill)fill.style.width=(x*100)+"%";if(x>=1){nextStory();return}stTimer=requestAnimationFrame(tick)};stTimer=requestAnimationFrame(tick)};
+  if(it.kind==="clip"){
+    const holder=el("div");holder.style.cssText="color:#fff;opacity:.8";holder.textContent="Loading…";body.append(holder);
+    loadClipSrc(it.asset).then(src=>{if(stList[stIdx]!==it)return;if(!src){holder.textContent="This video has expired";startTimer(2500);return}
+      const v=el("video");v.src=src;v.playsInline=true;v.setAttribute("playsinline","");v.autoplay=true;v.muted=false;holder.replaceWith(v);
+      v.onloadedmetadata=()=>startTimer(Math.max(3000,(isFinite(v.duration)?v.duration:it.dur||8)*1000));v.play().catch(()=>{v.muted=true;v.play().catch(()=>{})})});
+  }else{const i=el("img");i.alt=it.caption||"Story";loadPhoto(i,it.asset);body.append(i);startTimer(5000)}
+  if(it.caption)body.append(el("div","scap",it.caption));
+  const l=el("button","stap l");l.setAttribute("aria-label","Previous");l.onclick=prevStory;const r=el("button","stap r");r.setAttribute("aria-label","Next");r.onclick=nextStory;body.append(l,r);
+  const foot=$("stFoot");foot.textContent="";
+  if(mine){const seen=it.seenAt?`Seen by ${nickOf(partnerId)||nm(partnerId)} · ${timeAgo(it.seenAt)}`:"Not seen yet";foot.append(el("span","sseen",seen));
+    const d=el("button","sdel","Delete");d.onclick=()=>{if(confirm("Delete this story?"))deleteStory(it)};foot.append(d)}
+  else{
+    if(!it.seenAt)db.doc(`stories/${it.id}`).update({seenAt:Date.now()}).catch(()=>{});
+    markStorySeen(it.createdAt);
+    ["❤️","😍","😂","🔥"].forEach(em=>{const b=el("button","re",em);b.setAttribute("aria-label","React "+em);b.onclick=()=>replyStory(it,em,true);foot.append(b)});
+    const inp=el("input");inp.type="text";inp.maxLength=300;inp.placeholder="Reply…";inp.setAttribute("aria-label","Reply");
+    inp.onfocus=()=>stopStoryTimer();inp.onkeydown=e=>{if(e.key==="Enter"&&inp.value.trim())replyStory(it,inp.value.trim(),false)};
+    const s2=el("button","snd","Send");s2.onclick=()=>{if(inp.value.trim())replyStory(it,inp.value.trim(),false)};foot.append(inp,s2);
+  }
+}
+function nextStory(){if(stIdx<stList.length-1){stIdx++;showStory()}else closeStory()}
+function prevStory(){if(stIdx>0){stIdx--;showStory()}else showStory()}
+async function replyStory(it,text,isEmoji){
+  try{const doc={text:(isEmoji?text:`Replied to your story: ${text}`),createdAt:Date.now()};if(it.kind==="photo"||it.kind==="clip"){doc.kind=it.kind;doc.asset=it.asset;if(it.dur)doc.dur=it.dur}
+    if(isEmoji)doc.text=`Reacted ${text} to your story`;
+    await db.collection(`${base(me)}/messages`).add(doc);track({"n.chat":1});
+    notify(partnerId,nm(me),isEmoji?`Reacted ${text} to your story`:`Replied to your story: ${text.slice(0,100)}`,"chat");
+    toast(isEmoji?`Sent ${text}`:"Reply sent");if(!isEmoji)closeStory()}
+  catch(e){console.error(e);toast(saveErr(e))}
+}
+async function deleteStory(it){
+  try{await db.doc(`stories/${it.id}`).delete();stList=stList.filter(x=>x!==it);toast("Story deleted");if(!stList.length)closeStory();else{stIdx=Math.min(stIdx,stList.length-1);showStory()}}
+  catch(e){console.error(e);toast(saveErr(e))}
+}
+/* The person who posted removes expired stories (the media is kept only if the story was replied to in chat). */
+async function cleanStories(){
+  if(!signedIn())return;
+  try{const q=await db.collection("stories").where("createdAt","<",Date.now()-STORY_TTL).get();
+    const used=new Set([...(msgs[A]||[]),...(msgs[B]||[])].map(m=>m.asset).filter(Boolean));
+    for(const d of q.docs){const v=d.data()||{};if(v.by!==me)continue;if(v.asset&&!used.has(v.asset))await delAsset(v.kind==="clip"?"clip":"photo",v.asset).catch(()=>{});await db.doc(`stories/${d.id}`).delete().catch(()=>{})}}catch(e){}
+}
+$("stX").onclick=closeStory;
+document.addEventListener("keydown",e=>{if($("storyView").hidden)return;if(e.key==="Escape")closeStory();else if(e.key==="ArrowRight")nextStory();else if(e.key==="ArrowLeft")prevStory()});
 
 /* ================= Tabs ================= */
 function setTab(t){
@@ -3229,6 +3402,7 @@ async function startSpace(firstTime){
   refreshPushSub();
   db.doc("settings/couple").onSnapshot(s=>{coupleSettings=s.exists?(s.data()||{}):{};if(tab==="home")renderHome()},()=>{});
   watchQuestion();
+  watchStories();
   db.doc("settings/media").onSnapshot(s=>{mediaSettings=s.exists?(s.data()||{}):{autoDelete:0};if(tab==="me")renderAutoDel();maybeCleanup()},()=>{});
   [A,B].forEach(p=>{watch(p);db.doc(base(p)).onSnapshot(s=>{members[p]=s.exists?(s.data()||{}):{};renderAll()},()=>{})});
 }
@@ -3257,7 +3431,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.19";
+const APP_VERSION="2026-10-17.20";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
