@@ -368,6 +368,29 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .otd{background:#fff8ef;border:1px dashed #e3b77a;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px}
 .otd .eyebrow{color:#8a4b00}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .otd{background:#2c2216;border-color:#6b5432}:root:not([data-theme="light"]) .otd .eyebrow{color:#f3c27a}}
+.hpair{align-items:flex-start}
+.hside{display:flex;flex-direction:column;align-items:center;gap:6px;width:118px}
+.hside .hcap{font-size:.82rem;color:var(--muted);font-style:italic;line-height:1.3;max-width:118px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hside .hcap.add{font-style:normal;color:var(--accent);font-weight:600;background:none;border:0;padding:0;font-size:.82rem}
+.hpair .hheart{margin:29px -12px 0}
+.pview{align-self:center}
+.phero{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px 16px 18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.phero .avatar.av-l{width:112px;height:112px;font-size:2.4rem}
+.phero .pname{font-family:"Bricolage Grotesque",var(--f);font-weight:800;font-size:1.5rem;line-height:1.15}
+.phero .pcap{font-style:italic;color:var(--muted);max-width:300px}
+.phero .cmt{width:100%;max-width:360px}
+.phero .row{justify-content:center}
+.acard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.acard .ah{display:flex;align-items:center;gap:10px}
+.acard .ah .em{width:38px;height:38px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center;font-size:1.15rem;flex:none}
+.acard .ah h3{flex:1;margin:0;font-size:1rem}
+.acard .arow{display:flex;flex-direction:column;gap:6px}
+.acard .alab{font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--soft);border-radius:999px;padding:5px 11px;font-size:.88rem;line-height:1.3}
+.chip.none{background:none;border:1px dashed var(--line);color:var(--muted)}
+.setgrid{display:flex;flex-direction:column;gap:10px}
+.setgrid .sec>.secbody>.card>h3:first-child{display:none}
 .aic{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .aic .eyebrow{color:var(--accent)}
 .aic .hl{font-weight:600;font-size:1rem;line-height:1.4}
@@ -659,21 +682,27 @@ details.pl summary{cursor:pointer;font-weight:600}
   </div>
 
   <div id="pMe" class="stack" hidden style="gap:16px">
-    <div class="stack" style="gap:4px"><h2>About me</h2><p class="muted" id="meIntro">Your answers shape the ideas you and your partner get.</p></div>
-    <div class="card photo-row" id="photoBox">
+    <div class="switch pview" id="profView" role="group" aria-label="Whose profile"><button id="pvMe" aria-pressed="true">You</button><button id="pvPartner" aria-pressed="false">Partner</button></div>
+    <div class="phero" id="photoBox">
       <span id="meAvatar"></span>
-      <div class="stack" style="gap:8px;flex:1;min-width:0">
-        <h3>Profile photo</h3>
-        <input type="file" id="avFile" accept="image/*" hidden>
-        <div class="row"><button class="secondary" id="avChange">Upload photo</button><button class="link small" id="avRemove" hidden>Remove</button></div>
-        <p class="small muted" id="avMsg"></p>
-      </div>
-      <div class="stack" style="gap:6px;width:100%">
-        <label for="avCap" style="font-weight:600">Caption under your photo</label>
-        <div class="cmt"><input type="text" id="avCap" maxlength="80" placeholder="Missing you already · Gym then home · Date night soon?"><button class="secondary" id="avCapSave">Save</button></div>
-        <p class="small muted">Shows next to your picture on Connect. Change it anytime.</p>
-      </div>
+      <span class="pname" id="meName"></span>
+      <input type="file" id="avFile" accept="image/*" hidden>
+      <div class="row"><button class="secondary" id="avChange">Upload photo</button><button class="link small" id="avRemove" hidden>Remove</button></div>
+      <p class="small muted" id="avMsg"></p>
+      <label for="avCap" class="small" style="font-weight:600">Caption under your photo</label>
+      <div class="cmt"><input type="text" id="avCap" maxlength="80" placeholder="Missing you already · Gym then home · Date night soon?"><button class="secondary" id="avCapSave">Save</button></div>
     </div>
+    <div class="phero" id="partnerHero" hidden></div>
+    <div class="stack" style="gap:10px">
+      <div class="row between"><h2 id="answersTitle">About you</h2><button class="link small" id="editProfile">Edit answers</button></div>
+      <p class="muted small" id="meIntro">Your answers shape the ideas you and your partner get.</p>
+      <div class="stack" style="gap:10px" id="profileSummary"></div>
+    </div>
+    <div class="stack setgrid" id="settingsBox">
+      <h2>Settings</h2>
+      <details class="sec" id="secNotif">
+        <summary><div class="sh"><h2>Notifications &amp; reminders</h2><span class="ssum" id="sum_secNotif"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody">
     <div class="card stack" id="notifCard">
       <h3>Notifications</h3>
       <p class="small muted" id="notifMsg">Checking…</p>
@@ -684,25 +713,33 @@ details.pl summary{cursor:pointer;font-weight:600}
         <div class="tog"><div class="tl"><b>Midday check</b><span>Weekdays at 12:30 PM: anything changed since this morning?</span></div><button class="sw" id="remMid" role="switch" aria-checked="true" aria-label="Midday check"></button></div>
       </div>
     </div>
-    <div class="card stack" id="fbCard">
-      <h3>Help us improve</h3>
-      <p class="small muted">Found a bug or have an idea? Tell us. It goes straight to the person who built this app.</p>
-      <div class="row"><button class="primary" id="fbOpen">Send feedback</button><button class="secondary" id="wnOpen">What's new</button></div>
-      <div class="row"><button class="secondary" id="inboxOpen" hidden>📥 Feedback inbox<span class="badge" id="inboxBadge" hidden></span></button><button class="secondary" id="statsOpen" hidden>📊 Usage</button></div>
-      <span class="small muted" id="verTap" style="user-select:none;-webkit-user-select:none"></span>
-    </div>
+        </div>
+      </details>
+      <details class="sec" id="secAi">
+        <summary><div class="sh"><h2>AI ideas ✨</h2><span class="ssum" id="sum_secAi"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody">
     <div class="card stack" id="aiCard">
       <h3>AI ideas ✨</h3>
       <p class="small muted" id="aiExplain"></p>
       <div class="opts" id="aiOpts" role="group" aria-label="AI ideas"></div>
       <p class="small muted" id="aiState"></p>
     </div>
+        </div>
+      </details>
+      <details class="sec" id="secAd">
+        <summary><div class="sh"><h2>Photos &amp; videos</h2><span class="ssum" id="sum_secAd"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody">
     <div class="card stack" id="adCard">
       <h3>Auto-delete photos and videos</h3>
       <p class="small muted">Photos and videos you both send, in Connect and Chat, are deleted after this long. Check-ins, messages, songs and profile pictures stay.</p>
       <div class="opts" id="adOpts" role="group" aria-label="Auto-delete after"></div>
       <p class="small muted" id="adMsg"></p>
     </div>
+        </div>
+      </details>
+      <details class="sec" id="secLinks">
+        <summary><div class="sh"><h2>Invite &amp; your link</h2><span class="ssum" id="sum_secLinks"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody">
     <div class="card stack" id="inviteCard">
       <h3>Invite your partner</h3>
       <p class="small muted">Send this link to your partner and have them open it on their phone. Anyone with the link can open your space, so only share it with each other.</p>
@@ -715,8 +752,21 @@ details.pl summary{cursor:pointer;font-weight:600}
       <code id="myLink" style="display:block;word-break:break-all;background:var(--soft);border-radius:10px;padding:10px 12px;font-size:.78rem"></code>
       <div class="row"><button class="secondary" id="copyMine">Copy my link</button><span class="small muted" id="copyMineMsg"></span></div>
     </div>
-    <div class="card" style="padding-block:6px" id="profileSummary"></div>
-    <button class="primary" id="editProfile" style="align-self:flex-start">Edit my answers</button>
+        </div>
+      </details>
+      <details class="sec" id="secHelp">
+        <summary><div class="sh"><h2>Help &amp; feedback</h2><span class="ssum" id="sum_secHelp"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody">
+    <div class="card stack" id="fbCard">
+      <h3>Help us improve</h3>
+      <p class="small muted">Found a bug or have an idea? Tell us. It goes straight to the person who built this app.</p>
+      <div class="row"><button class="primary" id="fbOpen">Send feedback</button><button class="secondary" id="wnOpen">What's new</button></div>
+      <div class="row"><button class="secondary" id="inboxOpen" hidden>📥 Feedback inbox<span class="badge" id="inboxBadge" hidden></span></button><button class="secondary" id="statsOpen" hidden>📊 Usage</button></div>
+      <span class="small muted" id="verTap" style="user-select:none;-webkit-user-select:none"></span>
+    </div>
+        </div>
+      </details>
+    </div>
   </div>
 </div>
 
@@ -2086,7 +2136,7 @@ async function saveProfile(quiet){
 }
 $("editProfile").onclick=()=>openSheet(false);
 function renderPhotoBox(){
-  $("meAvatar").replaceChildren(avatar(me,"av-l"));
+  $("meAvatar").replaceChildren(avatar(me,"av-l"));$("meName").textContent=nm(me);
   if(document.activeElement!==$("avCap"))$("avCap").value=capOf(me);
   const has=!!P(me).photo;$("avChange").textContent=has?"Change photo":"Upload photo";$("avRemove").hidden=!has;
 }
@@ -2127,10 +2177,59 @@ function renderProfile(){
   renderNotifCard();
   $("invLink").textContent=spaceKey?inviteLink():"";$("myLink").textContent=spaceKey?linkFor(me):"";
   renderPhotoBox();
-  const pr=P(me),box=$("profileSummary");box.textContent="";
-  const p=other(me);$("meIntro").textContent=`${p?nm(p):"Your partner"} sees these answers. They shape the ideas you both get.`;
-  profileFacts(me).forEach(([k,v])=>{const r=el("div","summary-row");r.append(el("span","muted small",k),el("span",null,v||"—"));box.append(r)});
+  renderProfileView();
 }
+let profView="me";
+const ACARDS=[
+  ["💗","How I feel loved",1,[["I feel loved when you","lang"]]],
+  ["🌧️","When things are hard",2,[["When I'm upset I need","upset"],["Please don't","avoid"]]],
+  ["😮‍💨","When I'm stressed",3,[["What helps","stress"]]],
+  ["💼","My work week",4,[["Work days","workdays"],["Hours","workhours"],["Home by","homeby"]]],
+  ["👨‍👩‍👧","Family life",5,[["With the kids","kids"],["Busy kid nights","kidnights"]]],
+  ["💞","Time for us",6,[["Best time to connect","connect"],["Intimacy","intimacy"]]],
+  ["🎨","Hobbies and dates",7,[["Hobbies","hobbies"],["My kind of date","datestyle"],["Eating out","cuisines"],["Area","area"]]],
+  ["🌸","A few favorites",8,[["Flowers","flowers"],["Treat","treat"],["Comfort meal","food"],["Makes me smile","smile"]]]
+];
+function chipsFor(pr,qid){
+  const q=Q[qid],v=pr[qid];let out=[];
+  if(q&&v&&!(Array.isArray(v)&&!v.length)){
+    if(q.type==="text")out=[String(v)];
+    else if(q.type==="days")out=v.map(d=>d==="na"?q.na:DAYNAMES[d]);
+    else if(Array.isArray(v))out=v.map(x=>cap1(label(qid,x)));
+    else out=[cap1(label(qid,v))];
+  }
+  if(qid==="hobbies"&&pr.hobbyother)out.push(String(pr.hobbyother));
+  return out.filter(Boolean);
+}
+function renderProfileView(){
+  const p=other(me),isP=profView==="partner"&&!!p,who=isP?p:me,pr=P(who),pn=p?nm(p):"Partner";
+  $("profView").hidden=!p;$("pvPartner").textContent=pn;$("pvMe").setAttribute("aria-pressed",String(!isP));$("pvPartner").setAttribute("aria-pressed",String(isP));
+  $("photoBox").hidden=isP;$("settingsBox").hidden=isP;$("editProfile").hidden=isP;
+  const ph=$("partnerHero");ph.hidden=!isP;ph.textContent="";
+  if(isP){ph.append(avatar(p,"av-l"),el("span","pname",pn));const c=capOf(p);if(c)ph.append(el("span","pcap","“"+c+"”"));}
+  $("answersTitle").textContent=isP?`About ${pn}`:"About you";
+  $("meIntro").textContent=isP?`What helps ${pn} feel loved and supported, in their own words.`:`${p?pn:"Your partner"} sees these answers. They shape the ideas you both get.`;
+  const box=$("profileSummary");box.textContent="";
+  ACARDS.forEach(([em,title,stepIdx,rows])=>{
+    const c=el("div","acard"),h=el("div","ah");h.append(el("span","em",em),el("h3",null,title));
+    if(!isP){const e=el("button","link small","Edit");e.setAttribute("aria-label","Edit "+title);e.onclick=()=>{openSheet(false);step=stepIdx;renderStep();$("sheet").scrollTop=0};h.append(e)}
+    c.append(h);
+    rows.forEach(([lab,qid])=>{const vals=chipsFor(pr,qid),r=el("div","arow");r.append(el("span","alab",lab));const ch=el("div","chips");
+      if(vals.length)vals.forEach(v=>ch.append(el("span","chip",v)));else ch.append(el("span","chip none",isP?"Not answered yet":"Add an answer"));
+      r.append(ch);c.append(r)});
+    box.append(c);
+  });
+  renderSettingsSums();
+}
+function renderSettingsSums(){
+  const p=other(me),pn=p?nm(p):"your partner",pr=remPrefs();
+  setSum("sum_secNotif",notifsOn()?`On · reminders ${pr.am&&pr.mid?"9:00 AM and 12:30 PM":pr.am?"9:00 AM":pr.mid?"12:30 PM":"off"}`:"Off · tap to turn on");
+  setSum("sum_secAi",aiOk(me)&&p&&aiOk(p)?"On for both of you":aiOk(me)?`On for you · waiting for ${pn}`:"Off");
+  const d=+mediaSettings.autoDelete||0;setSum("sum_secAd",d?`Delete after ${d} days`:"Keep everything");
+  setSum("sum_secLinks",p&&members[p]?.onboarded?`${nm(p)} has joined · your personal link`:"Invite your partner");
+  setSum("sum_secHelp",`Send feedback · What's new · Version ${APP_VERSION}`);
+}
+$("pvMe").onclick=()=>{profView="me";renderProfileView()};$("pvPartner").onclick=()=>{profView="partner";renderProfileView()};
 function profileFacts(who){
   const pr=P(who);
   const days=(a,q)=>(a||[]).map(d=>d==="na"?Q[q].na:DAYNAMES[d]).join(", ");
@@ -2434,6 +2533,10 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17h",date:"Oct 17, 2026",items:[
+    {em:"👤",t:"A new About me",b:"Your profile now reads like a profile: your photo, caption and answers in easy cards. Tap your partner's name at the top to see what helps them feel loved. Settings fold up underneath.",go:["me","profileSummary"]},
+    {em:"💬",t:"Captions on Home",b:"Your captions now show under your photos on the Home page.",go:["home","homeHead"]}
+  ]},
   {id:"2026-10-17g",date:"Oct 17, 2026",items:[
     {em:"🏠",t:"A new Home page",b:"See both of you at a glance: mood rings, your streak, today's question, what's next and your latest moments. Add the date you got together for a countdown to your anniversary.",go:["home","homeHead"]},
     {em:"💬",t:"Today's question",b:"One question a day for the two of you. Your partner's answer stays hidden until you answer too.",go:["home","homeQ"]},
@@ -2468,7 +2571,7 @@ function markRelSeen(){try{localStorage.setItem(relKey(),RELEASES[0].id)}catch(e
 function unseenReleases(){const s=relSeen();const i=RELEASES.findIndex(r=>r.id===s);return i<0?RELEASES:RELEASES.slice(0,i)}
 function goTo(go){
   const [t,id]=go;setTab(t);
-  setTimeout(()=>{const n=$(id);if(!n)return;n.scrollIntoView({behavior:"smooth",block:"center"});const card=n.closest(".card,.chat,.aic")||n;card.classList.remove("pulse");void card.offsetWidth;card.classList.add("pulse");setTimeout(()=>card.classList.remove("pulse"),3400);if(n.tagName==="INPUT"||n.tagName==="TEXTAREA")setTimeout(()=>n.focus(),400)},120);
+  setTimeout(()=>{const n=$(id);if(!n)return;let d=n.parentElement;while(d){if(d.tagName==="DETAILS")d.open=true;d=d.parentElement}if(n.tagName==="DETAILS")n.open=true;n.scrollIntoView({behavior:"smooth",block:"center"});const card=n.closest(".card,.chat,.aic")||n;card.classList.remove("pulse");void card.offsetWidth;card.classList.add("pulse");setTimeout(()=>card.classList.remove("pulse"),3400);if(n.tagName==="INPUT"||n.tagName==="TEXTAREA")setTimeout(()=>n.focus(),400)},120);
 }
 function openWhatsNew(all){
   const rels=all?RELEASES:unseenReleases();if(!rels.length)return;
@@ -2770,7 +2873,7 @@ async function setRemind(k){
 $("remAm").onclick=()=>setRemind("am");$("remMid").onclick=()=>setRemind("mid");
 
 /* ---- Collapsible sections ---- */
-const SECS=["secSelf","secFor","secWeek","secRead","secInv","secCh","secSent"];
+const SECS=["secSelf","secFor","secWeek","secRead","secInv","secCh","secSent","secNotif","secAi","secAd","secLinks","secHelp"];
 function initSecs(){SECS.forEach(id=>{const d=$(id);if(!d)return;let v=null;try{v=localStorage.getItem("ut_sec_"+id)}catch(x){}if(v!=null)d.open=v==="1";d.addEventListener("toggle",()=>{try{localStorage.setItem("ut_sec_"+id,d.open?"1":"0")}catch(x){}})})}
 initSecs();
 function setSum(id,t){const n=$(id);if(n)n.textContent=t||""}
@@ -2920,7 +3023,12 @@ function renderHome(){
   const p=partnerId,pn=p?nm(p):"Your partner",k=todayKey();
   // header
   const hh=$("homeHead");hh.textContent="";const c=el("div","hcard");
-  const pair=el("div","hpair");const ht=el("div","hheart");ht.append(svgI("heart",16,true));pair.append(ringFor(me),ht,ringFor(p));c.append(pair);
+  const pair=el("div","hpair");const ht=el("div","hheart");ht.append(svgI("heart",16,true));
+  const side=who=>{const sd=el("div","hside");sd.append(ringFor(who));const cp=who?capOf(who):"";
+    if(cp)sd.append(el("span","hcap","“"+cp+"”"));
+    else if(who===me&&signedIn()){const b=el("button","hcap add","Add a caption");b.onclick=()=>goTo(["me","avCap"]);sd.append(b)}
+    return sd};
+  pair.append(side(me),ht,side(p));c.append(pair);
   c.append(el("span","hnames",p?`${nm(me)} & ${pn}`:nm(me)));
   const si=sinceInfo();
   if(si)c.append(el("span","small muted",`Together since ${si.d.toLocaleDateString(undefined,{month:"long",year:"numeric"})} · ${si.days.toLocaleString()} days`));
@@ -3051,7 +3159,7 @@ function switchTo(pid){
   switchArmed=false;me=pid;partnerId=pid===A?B:A;
   try{localStorage.setItem("ut_who",pid)}catch(e){}
   syncUrl();
-  loadSeen();selDate=todayKey();editOpen=false;loadDraft();setTab("home");renderAll();
+  loadSeen();selDate=todayKey();editOpen=false;loadDraft();profView="me";setTab("home");renderAll();
   toast(`Switched to ${nm(pid)}`);
   if(!members[me]?.onboarded)openSheet(true);else maybeWhatsNew();
   syncReminder();
@@ -3149,7 +3257,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.18";
+const APP_VERSION="2026-10-17.19";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
