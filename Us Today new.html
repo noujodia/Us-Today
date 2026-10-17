@@ -552,25 +552,32 @@ details.pl summary{cursor:pointer;font-weight:600}
       <h2 id="inboxTitle">From your partner</h2>
       <div class="card" style="padding-block:4px" id="inbox"></div>
     </div>
-    <div class="card stack">
-      <h2>Plan a date or invite</h2>
+    <details class="sec" id="secInv">
+      <summary><div class="sh"><h2>Plan a date or invite</h2><span class="ssum" id="sumInv"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody"><div class="card stack">
       <div class="opts" id="invTypes"></div>
       <div class="stack" id="datePlan" style="gap:12px"></div>
       <div class="opts" id="invWhen"></div>
       <input type="datetime-local" id="invAt" hidden aria-label="Pick a date and time">
       <input type="text" id="invNote" maxlength="120" placeholder="Add a note (optional)" aria-label="Note">
       <div class="row"><button class="primary" id="sendInv">Send invite</button></div>
-    </div>
-    <div class="card stack">
-      <h2>Challenge them</h2>
+      </div></div>
+    </details>
+    <details class="sec" id="secCh">
+      <summary><div class="sh"><h2>Challenge them</h2><span class="ssum" id="sumCh"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody"><div class="card stack">
       <div class="opts" id="chTypes"></div>
       <input type="text" id="chText" maxlength="80" placeholder="Your challenge, e.g. Kiss me at every red light" aria-label="Your challenge" hidden>
       <div class="row"><button class="primary" id="sendCh">Send challenge</button></div>
-    </div>
-    <div class="stack">
-      <h2>You sent</h2>
-      <div class="card" style="padding-block:4px" id="sentList"></div>
-    </div>
+      </div></div>
+    </details>
+    <details class="sec" id="secSent">
+      <summary><div class="sh"><h2>Everything you sent</h2><span class="ssum" id="sumSent"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody">
+        <div class="opts" id="sentFilters" role="group" aria-label="Filter what you sent"></div>
+        <div class="card" style="padding-block:4px" id="sentList"></div>
+      </div>
+    </details>
   </div>
 
   <div id="pChat" class="stack" hidden style="gap:12px">
@@ -1662,9 +1669,25 @@ function renderInbox(){
     box.append(row);
   });
 }
+const SENT_GROUPS=[["all","All",()=>true],["media","Photos & videos",x=>x.kind==="photo"||x.kind==="clip"],["touch","Hugs & emojis",x=>x.kind==="touch"],["song","Songs & links",x=>x.kind==="media"],["invite","Invites",x=>x.kind==="invite"],["challenge","Challenges",x=>x.kind==="challenge"]];
+let sentFilter="all";
+function renderConnectSums(){
+  const out=outgoing(),wk=Date.now()-7*86400000,recent=out.filter(x=>x.createdAt>wk);
+  const cnt=g=>recent.filter(SENT_GROUPS.find(x=>x[0]===g)[2]).length;
+  const parts=[["media","photo/video","photos & videos"],["touch","hug or emoji","hugs & emojis"],["song","song","songs"],["invite","invite","invites"],["challenge","challenge","challenges"]].map(([g,one,many])=>{const n=cnt(g);return n?`${n} ${n===1?one:many}`:""}).filter(Boolean);
+  setSum("sumSent",out.length?(recent.length?`${recent.length} this week · ${parts.join(", ")}`:`${out.length} total · nothing this week`):"Nothing sent yet");
+  const pn=partnerId?nm(partnerId):"your partner";
+  const statusOf=it=>{const rep=partnerId?(replies[partnerId]||{})[it.id]:null,s=statusPill(it,rep);return s?s[0]:""};
+  const li=out.find(x=>x.kind==="invite");setSum("sumInv",li?`Last: ${itemTitle(li,"out").title.replace(/^You invited: /,"")}${statusOf(li)?" · "+statusOf(li):""}`:`Invite ${pn} to a date night, cuddle time and more`);
+  const lc=out.find(x=>x.kind==="challenge");setSum("sumCh",lc?`Last: ${lc.text}${statusOf(lc)?" · "+statusOf(lc):""}`:`Send ${pn} a fun challenge, like 5 kisses today`);
+}
 function renderSent(){
-  const box=$("sentList");box.textContent="";const list=outgoing().slice(0,25);
-  if(!list.length){box.append(el("p","muted small empty-msg","Things you send show up here with their status."));return}
+  renderConnectSums();
+  const fb=$("sentFilters");fb.textContent="";const out=outgoing();
+  SENT_GROUPS.forEach(([k,t,f])=>{const n=out.filter(f).length;if(k!=="all"&&!n)return;const b=el("button","opt",`${t} (${n})`);b.setAttribute("aria-pressed",String(sentFilter===k));b.onclick=()=>{sentFilter=k;renderSent()};fb.append(b)});
+  fb.hidden=!out.length;
+  const box=$("sentList");box.textContent="";const g=SENT_GROUPS.find(x=>x[0]===sentFilter)||SENT_GROUPS[0];const list=out.filter(g[2]).slice(0,40);
+  if(!list.length){box.append(el("p","muted small empty-msg",out.length?"Nothing here yet.":"Things you send show up here with their status."));return}
   list.forEach(it=>{
     const rep=partnerId?(replies[partnerId]||{})[it.id]:null,s=statusPill(it,rep),row=el("div","item");
     row.append(itemHead(it,"out",s?el("span","pill "+s[1],s[0]):null));
@@ -2346,6 +2369,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17f",date:"Oct 17, 2026",items:[
+    {em:"🗂️",t:"Tidier Connect page",b:"Plan a date, Challenges and Everything you sent now fold up with a summary. Filter what you sent by photos and videos, hugs and emojis, songs, invites or challenges.",go:["connect","secSent"]}
+  ]},
   {id:"2026-10-17e",date:"Oct 17, 2026",items:[
     {em:"📲",t:"Get notifications on your phone",b:"Step-by-step help for adding Us, Today to your Home Screen on iPhone and Android, so notifications and reminders reach you.",go:["me","notifCard"]}
   ]},
@@ -2674,7 +2700,7 @@ async function setRemind(k){
 $("remAm").onclick=()=>setRemind("am");$("remMid").onclick=()=>setRemind("mid");
 
 /* ---- Collapsible sections ---- */
-const SECS=["secSelf","secFor","secWeek","secRead"];
+const SECS=["secSelf","secFor","secWeek","secRead","secInv","secCh","secSent"];
 function initSecs(){SECS.forEach(id=>{const d=$(id);if(!d)return;let v=null;try{v=localStorage.getItem("ut_sec_"+id)}catch(x){}if(v!=null)d.open=v==="1";d.addEventListener("toggle",()=>{try{localStorage.setItem("ut_sec_"+id,d.open?"1":"0")}catch(x){}})})}
 initSecs();
 function setSum(id,t){const n=$(id);if(n)n.textContent=t||""}
@@ -2896,7 +2922,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.16";
+const APP_VERSION="2026-10-17.17";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
