@@ -172,6 +172,16 @@ textarea{min-height:64px;resize:vertical}
 .mmeta{font-size:.7rem;color:var(--muted);padding:2px 4px 6px 34px;display:flex;gap:10px;align-items:center}
 .mmeta.mine{justify-content:flex-end;padding-left:4px}
 .mmeta .link{font-size:.72rem}
+.mmedia{max-width:72%;border-radius:16px;overflow:hidden;position:relative}
+.mmedia .pic{max-height:280px;border-radius:16px}
+.mmedia .clip{border-radius:16px}
+.mopt{border:0;background:none;color:var(--muted);font-size:1.1rem;padding:4px 6px;align-self:center}
+.attach{border:0;background:var(--soft);color:var(--ink);width:42px;height:42px;border-radius:50%;flex:none;font-size:1.3rem;display:grid;place-items:center;padding:0}
+.attach:disabled{opacity:.4}
+.att{display:flex;gap:10px;align-items:center;padding:10px 10px 0}
+.att .thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;background:#000;flex:none}
+.att .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
+.att .x{border:0;background:var(--soft);color:var(--ink);width:28px;height:28px;border-radius:50%;padding:0;flex:none}
 .composer{display:flex;gap:8px;align-items:flex-end;border-top:1px solid var(--line);padding:10px}
 .composer textarea{flex:1;resize:none;min-height:42px;max-height:140px;border-radius:21px;padding:10px 14px;line-height:1.35}
 .composer .primary{width:42px;height:42px;padding:0;border-radius:50%;flex:none;display:grid;place-items:center;font-size:1.1rem}
@@ -424,10 +434,13 @@ details.pl summary{cursor:pointer;font-weight:600}
   </div>
 
   <div id="pChat" class="stack" hidden style="gap:12px">
-    <div class="stack" style="gap:4px"><h2 id="chatTitle">Messages</h2><p class="muted small">Just the two of you. Tap one of your messages to delete it.</p></div>
+    <div class="stack" style="gap:4px"><h2 id="chatTitle">Messages</h2><p class="muted small">Just the two of you. Tap one of your messages to delete it. Photos and videos here count toward your 2 a day.</p></div>
     <div class="chat">
       <div class="msgs" id="msgs" aria-live="polite"></div>
+      <div class="att" id="att" hidden></div>
+      <input type="file" id="msgFile" accept="image/*,video/*" hidden>
       <form class="composer" id="composer">
+        <button type="button" class="attach" id="msgAttach" aria-label="Add a photo or video">＋</button>
         <textarea id="msgIn" rows="1" maxlength="1000" placeholder="Message" aria-label="Message"></textarea>
         <button class="primary" id="msgSend" type="submit" aria-label="Send" disabled>↑</button>
       </form>
@@ -1441,7 +1454,7 @@ const PIC_LIMIT=2;
 const REACTIONS=["❤️","😍","😂","🔥","😘","👍","😮"];
 const CLIP_LIMIT=2;
 let picFileSel=null,picBusy=false,picKind="photo",procVid=null;
-const sentToday=k=>outgoing().filter(x=>x.kind===k&&key(new Date(x.createdAt))===todayKey()).length;
+const sentToday=k=>[...outgoing(),...(msgs[me]||[])].filter(x=>x.kind===k&&key(new Date(x.createdAt))===todayKey()).length;
 const picsToday=()=>sentToday("photo"),clipsToday=()=>sentToday("clip");
 const isVideoFile=f=>/^video\//.test(f.type||"")||/\.(mov|mp4|m4v|webm|3gp)$/i.test(f.name||"");
 function renderPicCard(){
@@ -1483,19 +1496,25 @@ $("picSend").onclick=()=>{
   }catch(e){console.error(e);toast(photoErr(e))}
   finally{picBusy=false;renderPicCard()}})();
 };
+/* Must be called inside the tap. Returns a promise for the shrunk clip, or null if this video can't be sent. */
+function startClipJob(f,v,onProg){
+  const dur=v&&isFinite(v.duration)?v.duration:0,small=f.size<=3000000&&(!dur||dur<=CLIP_MAX_SEC+.5);
+  let job;
+  if(v&&canReencode()&&v.readyState>=1)job=encodeClip(v,onProg);
+  else if(small)job=Promise.resolve({blob:f,poster:v?grabPoster(v):"",dur,mime:f.type||"video/mp4"});
+  else{toast(clipErr({code:canReencode()?"bad_video":"unsupported"}));return null}
+  return job.then(r=>{if(r.blob.size>3500000&&small){r.blob=f;r.mime=f.type||"video/mp4"}if(!r.dur)r.dur=dur;return r});
+}
+function makeProcVid(u){const v=document.createElement("video");v.playsInline=true;v.setAttribute("playsinline","");v.preload="auto";v.src=u;v.style.cssText="position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0";document.body.append(v);try{v.load()}catch(x){}return v}
 function sendClip(){
   if(clipsToday()>=CLIP_LIMIT){toast("You've sent today's 2 videos");return}
   const f=picFileSel,v=procVid,bar=$("clipProg"),fill=bar.firstElementChild;
   const setP=x=>{fill.style.width=Math.round(x*100)+"%"};
-  let job;
+  const job=startClipJob(f,v,x=>setP(x*.85));if(!job)return;
   const dur=v&&isFinite(v.duration)?v.duration:0;
-  if(v&&canReencode()&&v.readyState>=1)job=encodeClip(v,x=>setP(x*.85));
-  else if(f.size<=3000000&&(!dur||dur<=CLIP_MAX_SEC+.5))job=Promise.resolve({blob:f,poster:v?grabPoster(v):"",dur,mime:f.type||"video/mp4"});
-  else{toast(clipErr({code:canReencode()?"bad_video":"unsupported"}));return}
   picBusy=true;bar.hidden=false;setP(.02);$("picSend").textContent="Preparing…";renderPicCard();
   (async()=>{try{
     const r=await job;
-    if(r.blob.size>3500000&&f.size<=3000000&&(!dur||dur<=CLIP_MAX_SEC+.5)){r.blob=f;r.mime=f.type||"video/mp4"}
     $("picSend").textContent="Sending…";setP(.9);
     const id=await uploadClip(r);setP(1);
     if(await sendItem({kind:"clip",asset:id,caption:$("picCap").value.trim(),dur:Math.round((r.dur||dur||0)*10)/10},"Video sent"))resetPic();
@@ -1700,9 +1719,17 @@ function renderChat(toBottom){
     const mine=m.from===me,nx=list[i+1],endGroup=!nx||nx.from!==m.from||nx.createdAt-m.createdAt>5*60000||key(new Date(nx.createdAt))!==dk;
     const row=el("div","mrow "+(mine?"mine":"theirs"));
     if(!mine)row.append(endGroup?avatar(m.from,"av-s"):el("span","avsp"));
-    const b=el(mine?"button":"div","bub"+(isEmojiOnly(m.text)?" bigemo":""),m.text);
-    if(mine){b.type="button";b.setAttribute("aria-label","Your message: "+m.text+". Tap for options");b.onclick=()=>{chatSel=chatSel===m.id?null:m.id;renderChat()}}
-    row.append(b);box.append(row);
+    const toggle=()=>{chatSel=chatSel===m.id?null:m.id;renderChat()};
+    if(m.kind&&m.asset){
+      const md=el("div","mmedia");md.append(m.kind==="clip"?clipEl(m.asset,m.text,m.dur):picEl(m.asset,m.text));
+      if(mine){const o=el("button","mopt","⋯");o.type="button";o.setAttribute("aria-label","Options for this "+(m.kind==="clip"?"video":"photo"));o.onclick=toggle;row.append(o)}
+      row.append(md);box.append(row);
+      if(m.text){const r2=el("div","mrow "+(mine?"mine":"theirs"));if(!mine){const av=row.firstChild;row.replaceChild(el("span","avsp"),av);r2.append(av)}r2.append(el("div","bub",m.text));box.append(r2)}
+    }else{
+      const b=el(mine?"button":"div","bub"+(isEmojiOnly(m.text)?" bigemo":""),m.text);
+      if(mine){b.type="button";b.setAttribute("aria-label","Your message: "+m.text+". Tap for options");b.onclick=toggle}
+      row.append(b);box.append(row);
+    }
     if(endGroup||chatSel===m.id){
       const meta=el("div","mmeta"+(mine?" mine":""));meta.append(el("span",null,hm(m.createdAt)));
       if(mine&&m===lastMine&&seenBy>=m.createdAt)meta.append(el("span",null,"Seen"));
@@ -1713,18 +1740,63 @@ function renderChat(toBottom){
   if(toBottom||near)box.scrollTop=box.scrollHeight;else box.scrollTop=keep;
 }
 async function deleteMsg(id){
-  try{await db.doc(`${base(me)}/messages/${id}`).delete();chatSel=null;toast("Message deleted")}catch(e){console.error(e);toast(saveErr(e))}
+  const m=(msgs[me]||[]).find(x=>x.id===id);
+  try{await db.doc(`${base(me)}/messages/${id}`).delete();chatSel=null;toast("Message deleted");
+    if(m?.kind==="photo"&&m.asset)db.doc(`photos/${m.asset}`).delete().catch(()=>{});
+    if(m?.kind==="clip"&&m.asset){loadClipMeta(m.asset).then(x=>{for(let i=0;i<(x?.parts||0);i++)db.doc(`videos/${m.asset}/parts/${i}`).delete().catch(()=>{});db.doc(`videos/${m.asset}`).delete().catch(()=>{})}).catch(()=>{})}}catch(e){console.error(e);toast(saveErr(e))}
 }
-async function sendMsg(){
-  const inp=$("msgIn"),text=inp.value.trim().slice(0,1000);if(!text)return;
+let chatAtt=null,chatBusy=false;
+function canSendMsg(){return !chatBusy&&(!!$("msgIn").value.trim()||!!chatAtt)}
+function updSend(){$("msgSend").disabled=!canSendMsg();$("msgAttach").disabled=chatBusy}
+function clearAtt(){if(chatAtt?.v)chatAtt.v.remove();chatAtt=null;$("att").hidden=true;$("att").textContent="";$("msgFile").value="";updSend()}
+function renderAtt(note){
+  const a=$("att");a.textContent="";if(!chatAtt){a.hidden=true;return}a.hidden=false;
+  let th;if(chatAtt.kind==="clip"){th=el("video","thumb");th.muted=true;th.playsInline=true;th.setAttribute("playsinline","");th.src=chatAtt.url}else{th=el("img","thumb");th.alt="";th.src=chatAtt.url}
+  const info=el("div","info");info.append(el("span",null,note||(chatAtt.kind==="clip"?`Video${chatAtt.v&&isFinite(chatAtt.v.duration)&&chatAtt.v.duration>CLIP_MAX_SEC+.5?` (first ${CLIP_MAX_SEC} sec will be sent)`:""}`:"Photo")));
+  if(chatBusy){const pr=el("div","prog");pr.append(el("i"));pr.id="attProg";info.append(pr)}
+  const x=el("button","x","×");x.type="button";x.setAttribute("aria-label","Remove");x.disabled=chatBusy;x.onclick=clearAtt;
+  a.append(th,info,x);
+}
+$("msgAttach").onclick=()=>{
+  const pl=PIC_LIMIT-picsToday(),cl=CLIP_LIMIT-clipsToday();
+  if(pl<=0&&cl<=0){toast("You've sent today's photos and videos");return}
+  $("msgFile").click();
+};
+$("msgFile").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;if(chatAtt?.v)chatAtt.v.remove();
+  const kind=isVideoFile(f)?"clip":"photo",u=URL.createObjectURL(f);
+  if(kind==="clip"&&clipsToday()>=CLIP_LIMIT){toast("You've sent today's 2 videos");$("msgFile").value="";return}
+  if(kind==="photo"&&picsToday()>=PIC_LIMIT){toast("You've sent today's 2 photos");$("msgFile").value="";return}
+  chatAtt={f,kind,url:u,v:kind==="clip"?makeProcVid(u):null};
+  if(chatAtt.v)chatAtt.v.onloadedmetadata=()=>renderAtt();
+  renderAtt();updSend();
+};
+function sendMsg(){
+  const inp=$("msgIn"),text=inp.value.trim().slice(0,1000);if(!canSendMsg())return;
   if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
-  inp.value="";autoGrow();$("msgSend").disabled=true;chatSel=null;
-  try{await db.collection(`${base(me)}/messages`).add({text,createdAt:Date.now()});
-    notify(partnerId,nm(me),text.length>140?text.slice(0,140)+"…":text,"chat");renderChat(true)}
-  catch(e){console.error(e);inp.value=text;autoGrow();$("msgSend").disabled=false;toast(saveErr(e))}
+  const att=chatAtt;let job=null;
+  if(att?.kind==="clip"){
+    if(clipsToday()>=CLIP_LIMIT){toast("You've sent today's 2 videos");return}
+    job=startClipJob(att.f,att.v,x=>{const b=document.querySelector("#attProg i");if(b)b.style.width=Math.round(x*85)+"%"});if(!job)return;
+  }else if(att&&picsToday()>=PIC_LIMIT){toast("You've sent today's 2 photos");return}
+  chatBusy=!!att;chatSel=null;
+  if(att)renderAtt(att.kind==="clip"?"Getting your video ready… keep the app open.":"Sending photo…");
+  inp.value="";autoGrow();updSend();
+  (async()=>{try{
+    const doc={text,createdAt:Date.now()};
+    if(att){
+      if(att.kind==="clip"){const r=await job;const b=document.querySelector("#attProg i");if(b)b.style.width="90%";doc.asset=await uploadClip(r);doc.kind="clip";doc.dur=Math.round((r.dur||0)*10)/10}
+      else{doc.asset=await uploadPhoto(att.f,1600);doc.kind="photo"}
+      doc.createdAt=Date.now();
+    }
+    await db.collection(`${base(me)}/messages`).add(doc);
+    const body=text?(text.length>140?text.slice(0,140)+"…":text):doc.kind==="clip"?"Sent you a video 🎬":"Sent you a photo 📷";
+    notify(partnerId,nm(me),(doc.kind&&text?(doc.kind==="clip"?"🎬 ":"📷 "):"")+body,"chat");
+    chatBusy=false;if(att)clearAtt();renderChat(true);renderPicCard&&renderPicCard();
+  }catch(e){console.error(e);chatBusy=false;if(!inp.value)inp.value=text;autoGrow();if(att)renderAtt();updSend();toast(att?.kind==="clip"?clipErr(e):att?photoErr(e):saveErr(e))}})();
 }
 function autoGrow(){const t=$("msgIn");t.style.height="auto";t.style.height=Math.min(t.scrollHeight+2,140)+"px"}
-$("msgIn").addEventListener("input",()=>{autoGrow();$("msgSend").disabled=!$("msgIn").value.trim()});
+$("msgIn").addEventListener("input",()=>{autoGrow();updSend()});
 $("msgIn").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&!matchMedia("(pointer:coarse)").matches){e.preventDefault();sendMsg()}});
 $("composer").onsubmit=e=>{e.preventDefault();sendMsg()};
 $("msgIn").addEventListener("focus",()=>setTimeout(()=>{const b=$("msgs");b.scrollTop=b.scrollHeight},250));
@@ -1763,8 +1835,8 @@ function watch(id){
   let msgFirst=true;
   db.collection(`${base(id)}/messages`).orderBy("createdAt","desc").limit(200).onSnapshot(snap=>{
     const prevMax=Math.max(0,...(msgs[id]||[]).map(x=>x.createdAt||0));
-    msgs[id]=snap.docs.map(d=>{const v=d.data()||{};return{id:d.id,from:id,text:String(v.text||""),createdAt:+v.createdAt||0}});
-    if(!msgFirst&&id===partnerId&&tab!=="chat"){const n=msgs[id].find(x=>x.createdAt>prevMax);if(n)toast(`${nm(id)}: ${n.text.length>60?n.text.slice(0,60)+"…":n.text}`)}
+    msgs[id]=snap.docs.map(d=>{const v=d.data()||{};const k=v.kind==="photo"||v.kind==="clip"?v.kind:null;return{id:d.id,from:id,text:String(v.text||""),createdAt:+v.createdAt||0,kind:k,asset:k?String(v.asset||""):"",dur:+v.dur||0}});
+    if(!msgFirst&&id===partnerId&&tab!=="chat"){const n=msgs[id].find(x=>x.createdAt>prevMax);if(n)toast(`${nm(id)}: ${n.text?(n.text.length>60?n.text.slice(0,60)+"…":n.text):n.kind==="clip"?"sent a video 🎬":"sent a photo 📷"}`)}
     msgFirst=false;renderAll();
   },()=>{});
 }
@@ -1860,7 +1932,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.3";
+const APP_VERSION="2026-10-17.4";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
