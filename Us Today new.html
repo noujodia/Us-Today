@@ -1580,9 +1580,13 @@ const okHttps=(u,host)=>{try{const x=new URL(u);return x.protocol==="https:"&&ho
 function cleanTrack(r){
   if(!r||!r.trackName)return null;
   return{id:String(r.trackId||""),name:String(r.trackName).slice(0,120),artist:String(r.artistName||"").slice(0,120),album:String(r.collectionName||"").slice(0,120),
-    art:okHttps(String(r.artworkUrl100||"").replace(/100x100bb/,"300x300bb"),/(^|\.)mzstatic\.com$/),
-    preview:okHttps(r.previewUrl||"",/(^|\.)(apple\.com|mzstatic\.com|itunes\.apple\.com)$/),
+    art:okHttps(String(r.artworkUrl100||"").replace(/100x100bb/,"300x300bb"),/(^|\.)(mzstatic\.com|dzcdn\.net)$/),
+    preview:okHttps(r.previewUrl||"",/(^|\.)(apple\.com|mzstatic\.com|dzcdn\.net)$/),
     apple:okHttps(r.trackViewUrl||"",/(^|\.)apple\.com$/)};
+}
+async function songSearch(term){
+  try{const r=await fetch(WORKER_URL+"search?term="+encodeURIComponent(term));if(r.ok){const d=await r.json();const l=(d.results||[]).map(cleanTrack).filter(Boolean);if(l.length||Array.isArray(d.results))return l}}catch(e){}
+  return itunesSearch(term);
 }
 function itunesSearch(term){
   return new Promise((res,rej)=>{
@@ -1663,7 +1667,7 @@ function doSongSearch(){
   const q=$("songQ").value.trim(),seq=++songSeq;
   if(q.length<2){renderSongResults([]);return}
   renderSongResults([],"Searching…");
-  itunesSearch(q).then(list=>{if(seq!==songSeq)return;renderSongResults(list,list.length?"":"No songs found. Try different words.")})
+  songSearch(q).then(list=>{if(seq!==songSeq)return;renderSongResults(list,list.length?"":"No songs found. Try different words.")})
     .catch(()=>{if(seq===songSeq)renderSongResults([],"Couldn't search right now. You can still paste a link.")});
 }
 $("songQ").addEventListener("input",()=>{clearTimeout(songTimer);songTimer=setTimeout(doSongSearch,400)});
@@ -2106,7 +2110,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash);
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.5";
+const APP_VERSION="2026-10-17.6";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();

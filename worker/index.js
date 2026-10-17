@@ -44,14 +44,42 @@ async function encrypt(sub, payload) {
 }
 
 function cors(origin) {
-  return { "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0], "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Vary": "Origin" };
+  return { "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0], "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Vary": "Origin" };
 }
 const reply = (obj, status, origin) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", ...cors(origin) } });
+
+// Song search for the app. Apple's catalog first; Deezer as a backup. Results come back in Apple's field names.
+async function searchSongs(term) {
+  const t = term.trim().slice(0, 80);
+  if (t.length < 2) return [];
+  try {
+    const r = await fetch("https://itunes.apple.com/search?media=music&entity=song&limit=8&country=US&term=" + encodeURIComponent(t), { headers: { "User-Agent": "UsToday/1.0", Accept: "application/json" }, cf: { cacheTtl: 86400, cacheEverything: true } });
+    if (r.ok) {
+      const d = await r.json();
+      const out = (d.results || []).filter((x) => x.trackName).map((x) => ({ trackId: x.trackId, trackName: x.trackName, artistName: x.artistName, collectionName: x.collectionName, artworkUrl100: x.artworkUrl100, previewUrl: x.previewUrl, trackViewUrl: x.trackViewUrl }));
+      if (out.length) return out;
+    }
+  } catch (_) {}
+  try {
+    const r = await fetch("https://api.deezer.com/search?limit=8&q=" + encodeURIComponent(t));
+    if (r.ok) {
+      const d = await r.json();
+      return (d.data || []).map((x) => ({ trackId: "dz" + x.id, trackName: x.title, artistName: x.artist && x.artist.name, collectionName: x.album && x.album.title, artworkUrl100: x.album && (x.album.cover_medium || x.album.cover), previewUrl: x.preview, trackViewUrl: "" }));
+    }
+  } catch (_) {}
+  return [];
+}
 
 export default {
   async fetch(req, env) {
     const origin = req.headers.get("Origin") || "";
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
+    const path = new URL(req.url).pathname;
+    if (req.method === "GET" && path === "/search") {
+      if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
+      const results = await searchSongs(new URL(req.url).searchParams.get("term") || "");
+      return new Response(JSON.stringify({ results }), { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600", ...cors(origin) } });
+    }
     if (req.method === "GET") return reply({ ok: true, service: "us-today-push", ready: !!env.VAPID_D }, 200, origin);
     if (req.method !== "POST") return reply({ error: "method" }, 405, origin);
     if (!ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
