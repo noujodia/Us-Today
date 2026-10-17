@@ -48,6 +48,48 @@ function cors(origin) {
 }
 const reply = (obj, status, origin) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", ...cors(origin) } });
 
+// AI ideas. The app sends a plain-text summary of check-ins and About me answers; the prompts live here.
+const AI_MODEL = "claude-sonnet-5-5";
+const AI_PROMPTS = {
+  suggest: {
+    max: 700,
+    system: `You help one partner in a couple show up for the other today. You will get the partner's check-in for today, their recent days, their About me answers, and the user's own schedule.
+Write warm, specific, practical ideas for today, grounded only in the details given. Use the partner's name. Plain everyday words. No therapy jargon, no diagnosing, no generic advice that would fit anyone.
+Fit the ideas to the user's schedule and today's day of the week. If an idea uses a favorite (flowers, treat, food, place), name it.
+If anything suggests danger, abuse or a crisis, make the first step gently encouraging reaching out to a trusted person or a professional.
+Respond with JSON only, no other text:
+{"headline": "one sentence, at most 22 words, on how they seem today and what would help most",
+ "steps": [{"title": "imperative, under 10 words", "detail": "1 or 2 sentences: how, and why it fits them"}],
+ "avoid": "one short sentence on what not to do today, or an empty string"}
+Give exactly 3 steps.`,
+  },
+  summary: {
+    max: 900,
+    system: `Write a short weekly reflection for a couple from both partners' daily check-ins over the last 7 days, plus their About me answers and schedules.
+Be warm, honest and specific: name who, which days, and what the check-ins showed. Notice links with schedules (work days, kid nights) when the data supports it. Do not diagnose, assign blame or invent details. If there are few check-ins, say so briefly and keep it short.
+If anything suggests danger, abuse or a crisis, gently encourage reaching out to a trusted person or a professional.
+Respond with JSON only, no other text:
+{"title": "short title for the week, at most 8 words",
+ "patterns": ["2 or 3 short observations, one or two sentences each"],
+ "win": "one sentence on something that went well between them",
+ "try": ["2 concrete ideas for the coming week that fit their schedules"]}`,
+  },
+};
+async function runAi(env, mode, facts) {
+  const p = AI_PROMPTS[mode];
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+    body: JSON.stringify({ model: AI_MODEL, max_tokens: p.max, system: p.system, messages: [{ role: "user", content: String(facts).slice(0, 9000) }] }),
+  });
+  if (!r.ok) return { error: "ai " + r.status };
+  const d = await r.json();
+  const text = (d.content || []).filter((c) => c.type === "text").map((c) => c.text).join("");
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) return { error: "no json" };
+  try { return { result: JSON.parse(m[0]) }; } catch (_) { return { error: "bad json" }; }
+}
+
 // Song search for the app. Apple's catalog first; Deezer as a backup. Results come back in Apple's field names.
 async function searchSongs(term) {
   const t = term.trim().slice(0, 80);
@@ -88,7 +130,15 @@ export default {
       const results = await searchSongs(new URL(req.url).searchParams.get("term") || "");
       return new Response(JSON.stringify({ results }), { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600", ...cors(origin) } });
     }
-    if (req.method === "GET") return reply({ ok: true, service: "us-today-push", ready: !!env.VAPID_D }, 200, origin);
+    if (req.method === "GET") return reply({ ok: true, service: "us-today-push", ready: !!env.VAPID_D, ai: !!env.ANTHROPIC_API_KEY }, 200, origin);
+    if (req.method === "POST" && path === "/ai") {
+      if (!ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
+      if (!env.ANTHROPIC_API_KEY) return reply({ error: "ai off" }, 503, origin);
+      let d; try { d = await req.json(); } catch { return reply({ error: "bad json" }, 400, origin); }
+      if (!d || !AI_PROMPTS[d.mode] || typeof d.facts !== "string" || d.facts.length < 20) return reply({ error: "bad request" }, 400, origin);
+      try { const out = await runAi(env, d.mode, d.facts); return reply(out, out.error ? 502 : 200, origin); }
+      catch (_) { return reply({ error: "ai failed" }, 502, origin); }
+    }
     if (req.method !== "POST") return reply({ error: "method" }, 405, origin);
     if (!ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
     if (!env.VAPID_D) return reply({ error: "missing VAPID_D secret" }, 500, origin);
