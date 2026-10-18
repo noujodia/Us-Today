@@ -133,7 +133,7 @@ async function runReminders(env) {
 const AI_MODEL = "claude-sonnet-5-5";
 const AI_PROMPTS = {
   suggest: {
-    max: 700,
+    max: 1200,
     system: `You help one partner in a couple show up for the other today. You will get the partner's check-in for today, their recent days, their About me answers, and the user's own schedule.
 Write warm, specific, practical ideas for today, grounded only in the details given. Use the partner's name. Plain everyday words. No therapy jargon, no diagnosing, no generic advice that would fit anyone.
 Fit the ideas to the user's schedule and today's day of the week. If an idea uses a favorite (flowers, treat, food, place), name it.
@@ -145,7 +145,7 @@ Respond with JSON only, no other text:
 Give exactly 3 steps.`,
   },
   summary: {
-    max: 900,
+    max: 1600,
     system: `Write a short weekly reflection for a couple from both partners' daily check-ins over the last 7 days, plus their About me answers and schedules.
 Be warm, honest and specific: name who, which days, and what the check-ins showed. Notice links with schedules (work days, kid nights) when the data supports it. Do not diagnose, assign blame or invent details. If there are few check-ins, say so briefly and keep it short.
 If anything suggests danger, abuse or a crisis, gently encourage reaching out to a trusted person or a professional.
@@ -156,19 +156,33 @@ Respond with JSON only, no other text:
  "try": ["2 concrete ideas for the coming week that fit their schedules"]}`,
   },
 };
+// Pull the JSON object out of a reply, tolerating code fences or a sentence before/after it.
+function parseAiJson(text) {
+  const t = String(text || "").replace(/```(?:json)?/gi, "");
+  const i = t.indexOf("{"), j = t.lastIndexOf("}");
+  if (i < 0 || j <= i) return null;
+  try { return JSON.parse(t.slice(i, j + 1)); } catch (_) {}
+  try { return JSON.parse(t.slice(i, j + 1).replace(/,\s*([}\]])/g, "$1")); } catch (_) {}
+  return null;
+}
 async function runAi(env, mode, facts) {
   const p = AI_PROMPTS[mode];
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model: AI_MODEL, max_tokens: p.max, system: p.system, messages: [{ role: "user", content: String(facts).slice(0, 9000) }] }),
-  });
-  if (!r.ok) return { error: "ai " + r.status };
-  const d = await r.json();
-  const text = (d.content || []).filter((c) => c.type === "text").map((c) => c.text).join("");
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) return { error: "no json" };
-  try { return { result: JSON.parse(m[0]) }; } catch (_) { return { error: "bad json" }; }
+  let last = "no json";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const system = attempt ? p.system + "\nKeep it brief. Reply with the JSON object only, complete and valid." : p.system;
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model: AI_MODEL, max_tokens: p.max, system, messages: [{ role: "user", content: String(facts).slice(0, 9000) }] }),
+    });
+    if (!r.ok) { last = "ai " + r.status; if (r.status === 429 || r.status >= 500) continue; return { error: last }; }
+    const d = await r.json();
+    const text = (d.content || []).filter((c) => c.type === "text").map((c) => c.text).join("");
+    const out = parseAiJson(text);
+    if (out) return { result: out };
+    last = d.stop_reason === "max_tokens" ? "cut off" : "no json";
+  }
+  return { error: last };
 }
 
 // Song search for the app. Apple's catalog first; Deezer as a backup. Results come back in Apple's field names.
