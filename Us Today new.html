@@ -433,6 +433,21 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wishbtn{background:#3a2a14;color:#f3c27a}}
 .hside .hwish{font-size:.78rem;font-weight:700;color:#8a4b00;text-decoration:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hside .hwish{color:#f3c27a}}
+.goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
+.goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
+.gh2{display:flex;gap:12px;align-items:center}.gh2 .gt{display:flex;flex-direction:column;gap:2px;min-width:0}.gh2 .gt b{font-weight:650}
+.gem{width:40px;height:40px;flex:none;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center;font-size:1.25rem}
+.gprog{display:flex;align-items:center;gap:10px}.gbar{flex:1;height:8px;border-radius:4px;background:var(--soft);overflow:hidden}.gbar i{display:block;height:100%;background:var(--accent);border-radius:4px;transition:width .3s}
+.gcheck{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.gwho{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:999px;background:var(--soft);font-size:.85rem}.gwho.on{background:#dff3e8;color:#17663f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .gwho.on{background:#173a28;color:#8fe0b4}}
+.greward{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.9rem;padding:8px 10px;border-radius:10px;background:#fff4e5;color:#7a4a05}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .greward{background:#3a2a14;color:#f3c27a}}
+.greward .ok{color:#1f8a5b}.gcheers{display:flex;flex-wrap:wrap;gap:6px}.gfoot .warn{color:var(--warn)}
+.grow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.gfl{margin-top:4px}.gswitch{display:flex;gap:10px;align-items:center;font-size:.9rem}.gswitch input{width:20px;height:20px;accent-color:var(--accent)}
+.opt.small{padding:5px 10px;font-size:.82rem}
+.gdone>summary{cursor:pointer;padding:4px 0}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}.confetti span{position:absolute;top:-40px;animation:cfall 2.6s ease-in forwards}
+@keyframes cfall{to{transform:translateY(110vh) rotate(540deg);opacity:.2}}
 .hgroup{border:1px solid var(--line);border-radius:14px;background:var(--card,transparent)}
 .hgroup>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
 .hgroup>summary::-webkit-details-marker{display:none}.hgroup>summary b{flex:1}.hgroup .hic{font-size:1.2rem}
@@ -607,6 +622,7 @@ details.pl summary{cursor:pointer;font-weight:600}
     <div class="qa" id="homeActions"></div>
     <div id="homeQ"></div>
     <div class="stack" style="gap:10px" id="homeNextBox"><h2>Next up</h2><div id="homeNext"></div></div>
+    <div class="stack" style="gap:10px" id="homeGoals"></div>
     <div class="stack" style="gap:10px"><div class="row between"><h2>Moments</h2><button class="link small" id="homeAll">See all</button></div><div class="stack" style="gap:10px" id="homeMoments"></div></div>
   </div>
 
@@ -730,6 +746,16 @@ details.pl summary{cursor:pointer;font-weight:600}
       <input type="text" id="chText" maxlength="80" placeholder="Your challenge, e.g. Kiss me at every red light" aria-label="Your challenge" hidden>
       <div class="row"><button class="primary" id="sendCh">Send challenge</button></div>
       </div></div>
+    </details>
+    <details class="sec" id="secGoals">
+      <summary><div class="sh"><h2>Goals together</h2><span class="ssum" id="sumGoals"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody">
+        <div class="opts" id="goalTabs" role="group" aria-label="Whose goals"></div>
+        <div id="goalList" class="stack" style="gap:10px"></div>
+        <button class="primary" id="goalNew" style="align-self:flex-start">＋ New goal</button>
+        <div class="card stack" id="goalForm" hidden></div>
+        <details class="gdone" id="goalDone" hidden><summary class="small muted" id="goalDoneSum"></summary><div id="goalDoneList" class="stack" style="gap:8px;margin-top:8px"></div></details>
+      </div>
     </details>
     <details class="sec" id="secSent">
       <summary><div class="sh"><h2>Everything you sent</h2><span class="ssum" id="sumSent"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
@@ -2209,7 +2235,7 @@ function renderConnectHead(){
     box.append(c);
   });
 }
-function renderConnect(){renderConnectHead();renderTouches();renderPicCard();renderSongs();renderPickers();renderInbox();renderSent()}
+function renderConnect(){renderConnectHead();renderTouches();renderPicCard();renderSongs();renderPickers();renderInbox();renderGoals();renderSent()}
 
 /* ================= About me + onboarding ================= */
 let step=0,pd={},firstRun=false;
@@ -2719,6 +2745,10 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-17n",date:"Oct 17, 2026",items:[
+    {em:"🎯",t:"Goals together",b:"Set short- or long-term goals, like the same bedtime, a new restaurant or paying off a debt. Couple goals count when you both check them off. Personal goals can be shared so your partner can cheer you on.",go:["connect","secGoals"]},
+    {em:"🎁",t:"Rewards",b:"Add a reward to any goal, or pledge one for your partner's goal. Finished goals celebrate on Home."}
+  ]},
   {id:"2026-10-17m",date:"Oct 17, 2026",items:[
     {em:"❓",t:"Help & FAQ",b:"Answers for every part of the app, with search. Tap the ? on any section to jump straight to its answers.",go:["me","helpCard"]},
     {em:"🩺",t:"Check my setup",b:"One tap checks notifications, your Home Screen icon, updates, dates, wish list, AI and your passcode, with a fix button for anything that's off.",go:["me","helpCard"]}
@@ -3000,7 +3030,7 @@ function renderStats(){
   // feature adoption
   const fa=el("div","chartc");fa.append(el("b",null,"What couples use"),el("span","small muted","Share of couples who have used each feature"));
   const n=Math.max(1,S.length),used=k=>S.filter(x=>x.n&&x.n[k]>0).length;
-  [["Daily check-in",S.filter(x=>x.d&&Object.keys(x.d).length).length],["Chat",used("chat")],["Hugs, kisses and emojis",used("touch")],["Photos",used("photo")],["Videos",used("video")],["Songs and links",used("song")],["Date invites",used("invite")],["Challenges",used("challenge")],["Notifications on (either partner)",S.filter(x=>x.notifOn>0).length],["AI ideas on (both partners)",S.filter(x=>x.aiOn>=2).length]]
+  [["Daily check-in",S.filter(x=>x.d&&Object.keys(x.d).length).length],["Chat",used("chat")],["Hugs, kisses and emojis",used("touch")],["Photos",used("photo")],["Videos",used("video")],["Songs and links",used("song")],["Date invites",used("invite")],["Challenges",used("challenge")],["Goals",used("goal")],["Notifications on (either partner)",S.filter(x=>x.notifOn>0).length],["AI ideas on (both partners)",S.filter(x=>x.aiOn>=2).length]]
    .forEach(([t,c])=>{const pct=Math.round(c/n*100),r=el("div","hb");r.append(el("span",null,t),el("span","v",`${c} · ${pct}%`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);fa.append(r)});
   box.append(fa);
   const tot=k=>S.reduce((a,x)=>a+(+(x.n&&x.n[k])||0),0);
@@ -3038,6 +3068,274 @@ function renderHelpStats(box,S){
 $("statsOpen").onclick=openStats;$("statsX").onclick=()=>{$("statsSheet").hidden=true};
 $("statsSheet").addEventListener("click",e=>{if(e.target.id==="statsSheet")$("statsSheet").hidden=true});
 
+/* ================= Goals ================= */
+const GOAL_CATS=[["connect","💞","Connection"],["health","💪","Health"],["adventure","🧭","Adventure"],["money","💰","Money"],["home","🏡","Home"],["growth","🌱","Growth"]];
+// id, category, couple title, personal title (null = couples only), tracking, target, default term
+const GOAL_TPL=[
+ ["bedtime","connect","Go to bed at the same time","Get to bed by 11","count",5,"short"],
+ ["nophones","connect","Phone-free dinners","Less phone time at night","count",4,"short"],
+ ["datenight","connect","A date night every week",null,"count",4,"long"],
+ ["walk","connect","Walk together after dinner","Take a daily walk","count",5,"short"],
+ ["workout","health","Work out together","Work out","count",3,"short"],
+ ["water","health","Drink more water","Drink more water","count",5,"short"],
+ ["fitgoal","health","Hit a fitness goal together","Hit a fitness goal","pct",100,"long"],
+ ["restaurant","adventure","Visit a new restaurant",null,"once",1,"short"],
+ ["state","adventure","Visit a new state",null,"once",1,"long"],
+ ["newthing","adventure","Try something new together","Try something new","once",1,"short"],
+ ["trip","adventure","Take a trip together",null,"once",1,"long"],
+ ["debt","money","Pay off a debt","Pay off a debt","pct",100,"long"],
+ ["save","money","Save for something big","Save for something big","pct",100,"long"],
+ ["budget","money","Monthly budget night",null,"once",1,"short"],
+ ["declutter","home","Declutter a room","Declutter my space","once",1,"short"],
+ ["cook","home","Cook dinner together","Cook more at home","count",2,"short"],
+ ["read","growth","Read a book together","Read a book","pct",100,"long"],
+ ["learn","growth","Learn something new together","Learn a new skill","pct",100,"long"]
+];
+const GOAL_WHEN={short:[["week","This week"],["weekend","This weekend"],["month","This month"],["pick","Pick a date"]],long:[["m3","3 months"],["m6","6 months"],["year","By the end of the year"],["pick","Pick a date"]]};
+const GOAL_REWARDS=["Winner picks the restaurant","Breakfast in bed","A massage","Movie night, your pick","A weekend away"];
+const GOAL_CHEERS=["👏","💪","❤️","🔥"];
+const GOAL_LIMIT=3;
+let goals=[],goalsLoaded=false,goalTab="ours",gf=null,goalBusy=false;
+function goalDue(when,pick){
+  const d=new Date();d.setHours(23,59,0,0);
+  if(when==="week"||when==="weekend")d.setDate(d.getDate()+(7-d.getDay())%7);
+  else if(when==="month")d.setMonth(d.getMonth()+1,0);
+  else if(when==="m3")d.setMonth(d.getMonth()+3);
+  else if(when==="m6")d.setMonth(d.getMonth()+6);
+  else if(when==="year")d.setMonth(11,31);
+  else if(when==="pick"){if(!isYmd(pick))return 0;const p=fromKey(pick);p.setHours(23,59,0,0);return p.getTime()}
+  return d.getTime();
+}
+const gCat=g=>GOAL_CATS.find(c=>c[0]===g.cat)||GOAL_CATS[0];
+const gDoneBy=(g,p)=>!!(g.done&&g.done[p]);
+const gVisible=g=>g.kind==="couple"||g.owner===me||!!g.shared;
+const gLive=g=>g.status==="active"||g.status==="proposed";
+const gOverdue=g=>g.status==="active"&&g.due&&dayDiff(g.due,new Date())<0;
+const gPn=()=>partnerId?(nickOf(partnerId)||nm(partnerId)):"your partner";
+const gReady=g=>g.track==="once"||(+g.prog||0)>=(+g.target||1);
+function gDueLabel(g){
+  if(!g.due)return"";const n=dayDiff(g.due,new Date());
+  if(n<0)return`Overdue by ${-n} day${n===-1?"":"s"}`;if(n===0)return"Due today";if(n===1)return"Due tomorrow";if(n<=13)return`${n} days left`;
+  const d=new Date(g.due);return"Due "+d.toLocaleDateString(undefined,{month:"short",day:"numeric",...(d.getFullYear()!==new Date().getFullYear()?{year:"numeric"}:{})});
+}
+function goalsFor(tab){
+  const v=goals.filter(gVisible);
+  if(tab==="ours")return v.filter(g=>g.kind==="couple");
+  if(tab==="mine")return v.filter(g=>g.kind==="me"&&g.owner===me);
+  return v.filter(g=>g.kind==="me"&&g.owner!==me&&g.shared);
+}
+function watchGoals(){
+  db.collection("goals").onSnapshot(q=>{
+    const before=goalsLoaded?new Map(goals.map(g=>[g.id,g])):null;
+    goals=q.docs.map(d=>({id:d.id,...(d.data()||{})})).filter(g=>g&&g.title&&g.status!=="deleted");goalsLoaded=true;
+    if(before)goals.forEach(g=>{const o=before.get(g.id);if(o&&g.status==="done"&&o.status!=="done"&&gVisible(g))celebrate(g)});
+    renderAll();
+  },()=>{});
+}
+async function gSave(id,patch){
+  try{if(!signedIn())throw{code:"signed_out"};await db.doc("goals/"+id).merge({...patch,updatedAt:Date.now()});return true}
+  catch(e){console.error(e);toast(saveErr(e));return false}
+}
+function celebrate(g){
+  toast(g.kind==="couple"?`🎉 You both did it: ${g.title}`:g.owner===me?`🎉 Goal reached: ${g.title}`:`🎉 ${gPn()} reached a goal: ${g.title}`);
+  try{if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return}catch(e){}
+  const box=el("div","confetti");box.setAttribute("aria-hidden","true");
+  for(let i=0;i<28;i++){const s=el("span",null,["🎉","💞","✨","🎊","❤️"][i%5]);s.style.left=Math.random()*100+"%";s.style.animationDelay=(Math.random()*.6)+"s";s.style.fontSize=(16+Math.random()*16)+"px";box.append(s)}
+  document.body.append(box);setTimeout(()=>box.remove(),3200);
+}
+/* ---- actions ---- */
+async function goalCreate(){
+  const err=$("gfErr");err.textContent="";
+  if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
+  const title=String(gf.title||"").trim();if(!title){err.textContent="Pick an idea or type your own goal.";return}
+  const due=goalDue(gf.when,gf.pick);if(!due){err.textContent="Pick a date.";return}if(due<Date.now()){err.textContent="Pick a date in the future.";return}
+  if(gf.kind==="couple"&&!partnerId){err.textContent="Your partner needs to join before you can set goals together.";return}
+  const live=goals.filter(gLive);
+  if(gf.kind==="couple"&&live.filter(g=>g.kind==="couple").length>=GOAL_LIMIT){err.textContent=`You have ${GOAL_LIMIT} goals together already. Finish or let one go first.`;return}
+  if(gf.kind==="me"&&live.filter(g=>g.kind==="me"&&g.owner===me).length>=GOAL_LIMIT){err.textContent=`You have ${GOAL_LIMIT} personal goals already. Finish or let one go first.`;return}
+  const target=gf.track==="count"?Math.max(1,Math.min(50,Math.round(+gf.target||1))):gf.track==="pct"?100:1;
+  const reward=String(gf.rewardCustom||gf.reward||"").trim().slice(0,80);
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+  const doc={kind:gf.kind,owner:me,title:title.slice(0,80),cat:gf.cat||"connect",tpl:gf.tpl||"",track:gf.track,target,prog:0,term:gf.term,when:gf.when,due,
+    shared:gf.kind==="couple"?true:!!gf.shared,reward,rewardFrom:reward?(gf.kind==="couple"?"both":me):"",status:gf.kind==="couple"?"proposed":"active",done:{},cheers:{},createdAt:Date.now(),updatedAt:Date.now()};
+  goalBusy=true;$("gfSave").disabled=true;
+  try{await db.doc("goals/"+id).set(doc)}catch(e){console.error(e);err.textContent=saveErr(e);goalBusy=false;$("gfSave").disabled=false;return}
+  goalBusy=false;track({"n.goal":1,["g.t."+(gf.tpl||"custom")]:1,["g.k."+gf.kind]:1,["g.term."+gf.term]:1});
+  if(gf.kind==="couple")notify(partnerId,nm(me),`Suggested a goal for you two: ${doc.title} 🎯 Tap to accept.`,"goal");
+  else if(doc.shared&&partnerId)notify(partnerId,nm(me),`Set a new goal: ${doc.title} 🎯 Cheer them on!`,"goal");
+  toast(gf.kind==="couple"?`Sent to ${gPn()} to accept 🎯`:"Goal set 🎯");
+  goalTab=gf.kind==="couple"?"ours":"mine";gf=null;renderGoals();
+}
+async function goalAccept(g){if(await gSave(g.id,{status:"active",acceptedAt:Date.now()})){notify(g.owner,nm(me),`Accepted your goal: ${g.title} 🎯 Let's do this!`,"goal");toast("Goal accepted 🎯")}}
+async function goalDecline(g){if(await gSave(g.id,{status:"dropped",droppedBy:me,droppedAt:Date.now()})){if(g.owner!==me)notify(g.owner,nm(me),`Passed on the goal “${g.title}” for now.`,"goal");toast(g.owner===me?"Goal removed":"Goal declined")}}
+async function goalCheck(g,on){
+  const done={...(g.done||{}),[me]:on?Date.now():0};
+  const all=g.kind==="couple"?(done[A]&&done[B]):!!done[me];
+  const patch={done};if(all){patch.status="done";patch.completedAt=Date.now()}
+  if(!await gSave(g.id,patch))return;
+  const other2=other(me);
+  if(all){track({"n.goalDone":1,["g.d."+(g.tpl||"custom")]:1});if(g.kind==="couple")notify(other2,nm(me),`🎉 You both finished: ${g.title}${g.reward?" · Reward: "+g.reward:""}`,"goal");else if(g.shared)notify(other2,nm(me),`🎉 Reached their goal: ${g.title}`,"goal")}
+  else if(on&&g.kind==="couple")notify(other2,nm(me),`Checked off “${g.title}” ✓ Your turn!`,"goal");
+}
+async function goalStep(g,delta){
+  const t=+g.target||1,n=Math.max(0,Math.min(t,(+g.prog||0)+delta));if(n===(+g.prog||0))return;
+  const patch={prog:n,progAt:Date.now(),progBy:me};
+  if(g.kind==="me"&&n>=t){patch.done={[me]:Date.now()};patch.status="done";patch.completedAt=Date.now()}
+  if(!await gSave(g.id,patch))return;
+  if(patch.status==="done"){track({"n.goalDone":1,["g.d."+(g.tpl||"custom")]:1});if(g.shared)notify(other(me),nm(me),`🎉 Reached their goal: ${g.title}`,"goal")}
+  else if(delta>0&&g.kind==="couple"&&n>=t)notify(other(me),nm(me),`“${g.title}” is complete! Check it off ✓`,"goal");
+  else if(delta>0&&g.kind==="me"&&g.shared&&g.track==="pct")notify(other(me),nm(me),`Is ${n}% of the way on “${g.title}” 💪`,"goal");
+}
+async function goalSetPct(g,pct){await goalStep(g,pct-(+g.prog||0))}
+async function goalExtend(g){const d=new Date(Math.max(g.due||0,Date.now()));d.setDate(d.getDate()+7);d.setHours(23,59,0,0);if(await gSave(g.id,{due:d.getTime()}))toast("Extended a week")}
+async function goalLetGo(g){if(await gSave(g.id,{status:"dropped",droppedBy:me,droppedAt:Date.now()}))toast("Let go. You can always set it again 💛")}
+async function goalCheer(g,e){
+  const ts=Date.now();if(!await gSave(g.id,{cheers:{[String(ts)]:{by:me,e}}}))return;
+  notify(g.owner,nm(me),`Cheered you on ${e} “${g.title}”`,"goal");track({"n.goalCheer":1});toast(`Cheered ${e}`);
+}
+async function goalPledge(g){const v=prompt(`What will you give ${nickOf(g.owner)||nm(g.owner)} when they reach this goal?`,"Dinner on me");if(!v||!v.trim())return;
+  if(await gSave(g.id,{reward:v.trim().slice(0,80),rewardFrom:me})){notify(g.owner,nm(me),`Pledged a reward for “${g.title}”: ${v.trim().slice(0,80)} 🎁`,"goal");toast("Reward pledged 🎁")}}
+async function goalGiven(g){if(await gSave(g.id,{rewardGiven:Date.now()}))toast("Reward delivered 💝")}
+async function goalRemove(g){if(!confirm("Remove this goal?"))return;if(await gSave(g.id,{status:"deleted"}))toast("Goal removed")}
+/* ---- rendering ---- */
+function goalCard(g){
+  const pn=gPn(),mine=g.owner===me,partnerOwned=g.kind==="me"&&!mine,canAct=g.kind==="couple"||mine,c=el("div","goal"+(g.status==="done"?" gdone2":"")+(gOverdue(g)?" overdue":""));
+  const h=el("div","gh2"),cat=gCat(g);h.append(el("span","gem",cat[1]));
+  const tx=el("div","gt");tx.append(el("b",null,g.title));
+  const who=g.kind==="couple"?"Together":mine?(g.shared?"Your goal · shared":"Your goal · private"):`${nickOf(g.owner)||nm(g.owner)}'s goal`;
+  tx.append(el("span","small muted",[who,g.status==="done"?"Done "+new Date(g.completedAt||g.updatedAt).toLocaleDateString(undefined,{month:"short",day:"numeric"}):gDueLabel(g)].filter(Boolean).join(" · ")));
+  h.append(tx);c.append(h);
+  if(g.status==="proposed"){
+    const r=el("div","grow");
+    if(mine){r.append(el("span","small muted",`Waiting for ${pn} to accept`));const x=el("button","link small","Cancel");x.onclick=()=>goalDecline(g);r.append(x)}
+    else{r.append(el("span","small",`${pn} suggested this goal for you two.`));const a=el("button","primary small","Accept");a.onclick=()=>goalAccept(g);const n=el("button","secondary small","Not now");n.onclick=()=>goalDecline(g);r.append(a,n)}
+    c.append(r);
+  }
+  if(g.status==="active"||g.status==="done"){
+    if(g.track==="count"||g.track==="pct"){
+      const t=+g.target||1,pv=Math.min(t,+g.prog||0),pr=el("div","gprog"),bar=el("div","gbar"),fi=el("i");fi.style.width=Math.round(pv/t*100)+"%";bar.append(fi);
+      pr.append(bar,el("span","small",g.track==="pct"?`${pv}%`:`${pv} of ${t}`));c.append(pr);
+      if(g.status==="active"&&canAct){
+        const r=el("div","grow");
+        if(g.track==="count"&&pv<t){const p=el("button","secondary small","＋ Log one");p.onclick=()=>goalStep(g,1);r.append(p)}
+        if(g.track==="count"&&pv>0){const u=el("button","link small","Undo");u.onclick=()=>goalStep(g,-1);r.append(u)}
+        if(g.track==="pct")[25,50,75,100].forEach(v=>{const b=el("button","opt small",v+"%");b.setAttribute("aria-pressed",String(pv>=v));b.onclick=()=>goalSetPct(g,pv===v?v-25:v);r.append(b)});
+        c.append(r);
+      }
+    }
+    if(g.kind==="couple"&&(g.status==="done"||gReady(g))){
+      const r=el("div","gcheck");
+      [me,partnerId].filter(Boolean).forEach(p=>{const d=gDoneBy(g,p),s=el("span","gwho"+(d?" on":""));s.append(avatar(p,"av-s"),el("span",null,(p===me?"You":nickOf(p)||nm(p))+(d?" ✓":" …")));r.append(s)});
+      if(g.status==="active"){const b=el("button",gDoneBy(g,me)?"link small":"primary small",gDoneBy(g,me)?"Undo":"I did it ✓");b.onclick=()=>goalCheck(g,!gDoneBy(g,me));r.append(b)}
+      c.append(r);
+      if(g.status==="active"&&gDoneBy(g,me)&&!gDoneBy(g,partnerId))c.append(el("span","small muted",`Waiting on ${pn} to check it off`));
+    }
+    if(g.kind==="me"&&mine&&g.status==="active"&&g.track==="once"){const b=el("button","primary small","Mark done ✓");b.onclick=()=>goalCheck(g,true);b.style.alignSelf="flex-start";c.append(b)}
+  }
+  if(g.reward){
+    const from=g.rewardFrom&&g.rewardFrom!=="both"&&g.rewardFrom!==g.owner?` · from ${g.rewardFrom===me?"you":nickOf(g.rewardFrom)||nm(g.rewardFrom)}`:"";
+    const r=el("div","greward");r.append(el("span",null,`🎁 ${g.reward}${from}`));
+    if(g.status==="done"){if(g.rewardGiven)r.append(el("span","small ok","Delivered 💝"));else{r.append(el("span","small muted","Owed"));const b=el("button","link small","Mark delivered");b.onclick=()=>goalGiven(g);r.append(b)}}
+    c.append(r);
+  }
+  const ch=Object.entries(g.cheers||{}).map(([ts,v])=>({ts:+ts,...v})).filter(x=>x.e).sort((a,b)=>b.ts-a.ts);
+  if(ch.length){const r=el("div","gcheers");ch.slice(0,4).forEach(x=>r.append(el("span","chip",`${x.e} ${x.by===me?"You":nickOf(x.by)||nm(x.by)} · ${timeAgo(x.ts)}`)));c.append(r)}
+  if(partnerOwned&&g.status==="active"){
+    const r=el("div","grow");r.append(el("span","small muted","Cheer them on"));GOAL_CHEERS.forEach(e=>{const b=el("button","fbtn",e);b.setAttribute("aria-label","Cheer "+e);b.onclick=()=>goalCheer(g,e);r.append(b)});
+    if(!g.reward){const pl=el("button","link small","🎁 Pledge a reward");pl.onclick=()=>goalPledge(g);r.append(pl)}
+    c.append(r);
+  }
+  if(g.status==="active"&&canAct){
+    const r=el("div","grow gfoot");
+    if(gOverdue(g)){r.append(el("span","small warn","Past due. No pressure."));const ex=el("button","secondary small","Extend a week");ex.onclick=()=>goalExtend(g);r.append(ex)}
+    const lg=el("button","link small","Let it go");lg.onclick=()=>goalLetGo(g);r.append(lg);
+    c.append(r);
+  }
+  return c;
+}
+function renderGoals(){
+  const box=$("goalList");if(!box)return;
+  const pn=gPn(),live=goals.filter(g=>gVisible(g)&&gLive(g));
+  const ours=live.filter(g=>g.kind==="couple"),mineL=live.filter(g=>g.kind==="me"&&g.owner===me),theirs=live.filter(g=>g.kind==="me"&&g.owner!==me&&g.shared);
+  const next=[...ours,...mineL].filter(g=>g.status==="active"&&g.due).sort((a,b)=>a.due-b.due)[0];
+  const waitMe=ours.filter(g=>g.status==="proposed"&&g.owner!==me).length;
+  setSum("sumGoals",live.length?[ours.length?`${ours.length} together`:"",mineL.length?`${mineL.length} yours`:"",theirs.length?`${theirs.length} ${pn}'s`:"",waitMe?`${waitMe} waiting for you`:next?`next: ${next.title} · ${gDueLabel(next).toLowerCase()}`:""].filter(Boolean).join(" · "):"Set goals together, like the same bedtime or a new restaurant");
+  const tabs=$("goalTabs");tabs.textContent="";
+  [["ours",`Together (${ours.length})`],["mine",`Mine (${mineL.length})`],["theirs",`${pn}'s (${theirs.length})`]].forEach(([k,t])=>{if(k==="theirs"&&!partnerId)return;const b=el("button","opt",t);b.setAttribute("aria-pressed",String(goalTab===k));b.onclick=()=>{goalTab=k;renderGoals()};tabs.append(b)});
+  box.textContent="";
+  const list=goalsFor(goalTab).filter(gLive).sort((a,b)=>(a.status==="proposed"?0:1)-(b.status==="proposed"?0:1)||(a.due||9e15)-(b.due||9e15));
+  if(!list.length)box.append(el("p","small muted empty-msg",goalTab==="ours"?"No goals together yet. Pick one below: same bedtime, a new restaurant, paying off a debt…":goalTab==="mine"?"No personal goals yet. Set one and share it so your partner can cheer you on.":`${pn} hasn't shared a goal yet.`));
+  list.forEach(g=>box.append(goalCard(g)));
+  const done=goalsFor(goalTab).filter(g=>g.status==="done").sort((a,b)=>(b.completedAt||0)-(a.completedAt||0));
+  $("goalDone").hidden=!done.length;$("goalDoneSum").textContent=`Completed (${done.length})`;const dl=$("goalDoneList");dl.textContent="";done.slice(0,20).forEach(g=>dl.append(goalCard(g)));
+  $("goalNew").hidden=!!gf||goalTab==="theirs";renderGoalForm();
+}
+function renderGoalForm(){
+  const f=$("goalForm");if(!f)return;f.hidden=!gf;if(!gf){f.textContent="";return}
+  const keep=document.activeElement&&f.contains(document.activeElement)?document.activeElement.id:null;
+  f.textContent="";const pn=gPn();
+  const sec=(t)=>{f.append(el("b","small gfl",t))};
+  const opts=(list,cur,set)=>{const o=el("div","opts");list.forEach(([k,t])=>{const b=el("button","opt",t);b.type="button";b.setAttribute("aria-pressed",String(cur===k));b.onclick=()=>{set(k);renderGoalForm()};o.append(b)});f.append(o)};
+  f.append(el("h3",null,"New goal"));
+  sec("Who's it for?");
+  opts([["couple","💞 Both of us"],["me","🙋 Just me"]],gf.kind,k=>{gf.kind=k;if(gf.tpl){const t=GOAL_TPL.find(x=>x[0]===gf.tpl);if(t){if(k==="me"&&!t[3]){gf.tpl=null;gf.title=""}else gf.title=k==="me"?t[3]:t[2]}}});
+  if(gf.kind==="couple")f.append(el("span","small muted",`${pn} gets it to accept. You both check it off to finish.`));
+  else{const lab=el("label","gswitch"),cb=el("input");cb.type="checkbox";cb.id="gfShare";cb.checked=!!gf.shared;cb.onchange=()=>{gf.shared=cb.checked};lab.append(cb,el("span",null,`Share with ${pn} so they can cheer you on`));f.append(lab)}
+  sec("Pick an idea");
+  const cats=el("div","opts");GOAL_CATS.forEach(([k,em,t])=>{const b=el("button","opt",`${em} ${t}`);b.type="button";b.setAttribute("aria-pressed",String(gf.cat===k));b.onclick=()=>{gf.cat=k;renderGoalForm()};cats.append(b)});f.append(cats);
+  if(gf.cat){const tp=el("div","opts");GOAL_TPL.filter(t=>t[1]===gf.cat&&(gf.kind==="couple"||t[3])).forEach(t=>{const title=gf.kind==="me"?t[3]:t[2];const b=el("button","opt",title);b.type="button";b.setAttribute("aria-pressed",String(gf.tpl===t[0]));
+      b.onclick=()=>{gf.tpl=t[0];gf.title=title;gf.track=t[4];gf.target=t[5];gf.term=t[6];gf.when=GOAL_WHEN[t[6]][0][0];renderGoalForm()};tp.append(b)});f.append(tp)}
+  const ti=el("input");ti.type="text";ti.id="gfTitle";ti.maxLength=80;ti.placeholder="Or type your own goal";ti.setAttribute("aria-label","Goal");ti.value=gf.title||"";ti.oninput=()=>{gf.title=ti.value;if(gf.tpl){const t=GOAL_TPL.find(x=>x[0]===gf.tpl);if(t&&ti.value!==t[2]&&ti.value!==t[3])gf.tpl=null}};f.append(ti);
+  sec("How will you track it?");
+  opts([["once","Check it off"],["count","Count it"],["pct","Milestones"]],gf.track,k=>{gf.track=k;if(k==="count"&&!(+gf.target>1))gf.target=3});
+  if(gf.track==="count"){const r=el("div","row");const n=el("input");n.type="number";n.id="gfTarget";n.min=1;n.max=50;n.value=gf.target||3;n.style.width="90px";n.setAttribute("aria-label","How many times");n.oninput=()=>{gf.target=n.value};r.append(n,el("span","small muted","times"));f.append(r)}
+  if(gf.track==="pct")f.append(el("span","small muted","Update it at 25%, 50%, 75% and done. Money goals track progress, never amounts."));
+  sec("When?");
+  opts([["short","Short-term"],["long","Long-term"]],gf.term,k=>{gf.term=k;gf.when=GOAL_WHEN[k][0][0]});
+  opts(GOAL_WHEN[gf.term],gf.when,k=>{gf.when=k});
+  if(gf.when==="pick"){const d=el("input");d.type="date";d.id="gfPick";d.min=todayKey();d.value=gf.pick||"";d.setAttribute("aria-label","Due date");d.onchange=()=>{gf.pick=d.value;renderGoalForm()};f.append(d)}
+  const due=goalDue(gf.when,gf.pick);if(due)f.append(el("span","small muted","Due "+new Date(due).toLocaleDateString(undefined,{weekday:"short",month:"long",day:"numeric",year:"numeric"})));
+  sec(gf.kind==="couple"?"Reward when you both finish (optional)":"Treat yourself when you finish (optional)");
+  const rw=el("div","opts");GOAL_REWARDS.forEach(t=>{const b=el("button","opt",t);b.type="button";b.setAttribute("aria-pressed",String(gf.reward===t&&!gf.rewardCustom));b.onclick=()=>{gf.reward=gf.reward===t?"":t;gf.rewardCustom="";renderGoalForm()};rw.append(b)});f.append(rw);
+  const rc=el("input");rc.type="text";rc.id="gfReward";rc.maxLength=80;rc.placeholder="Or type your own reward";rc.setAttribute("aria-label","Your own reward");rc.value=gf.rewardCustom||"";rc.oninput=()=>{gf.rewardCustom=rc.value};f.append(rc);
+  const r=el("div","row");const s=el("button","primary",gf.kind==="couple"?`Suggest to ${pn}`:"Set my goal");s.id="gfSave";s.disabled=goalBusy;s.onclick=goalCreate;const x=el("button","secondary","Cancel");x.onclick=()=>{gf=null;renderGoals()};r.append(s,x);f.append(r);
+  f.append(Object.assign(el("p","small"),{id:"gfErr",style:"color:var(--warn);margin:0"}));
+  if(keep&&$(keep)){const k2=$(keep);k2.focus();if(k2.setSelectionRange&&k2.type==="text")k2.setSelectionRange(k2.value.length,k2.value.length)}
+}
+$("goalNew").onclick=()=>{gf={kind:goalTab==="mine"?"me":"couple",shared:true,cat:null,tpl:null,title:"",track:"once",target:3,term:"short",when:"week",pick:"",reward:"",rewardCustom:""};renderGoals();setTimeout(()=>$("goalForm").scrollIntoView({behavior:"smooth",block:"start"}),60)};
+// Home: compact goals card
+function renderHomeGoals(){
+  const box=$("homeGoals");if(!box)return;box.textContent="";if(!partnerId&&!goals.length)return;
+  const live=goals.filter(g=>gVisible(g)&&g.status==="active"&&(g.kind==="couple"||g.owner===me)).sort((a,b)=>(a.due||9e15)-(b.due||9e15));
+  const wait=goals.filter(g=>g.kind==="couple"&&g.status==="proposed"&&g.owner!==me);
+  const hd=el("div","row between");hd.append(el("h2",null,"Goals"));const all=el("button","link small",live.length||wait.length?"See all":"Set a goal");all.onclick=()=>goTo(["connect","secGoals"]);hd.append(all);box.append(hd);
+  const card=el("div","nx");
+  wait.forEach(g=>{const r=el("button","nxr");r.type="button";r.style.cssText="border:0;background:none;width:100%;text-align:left;font:inherit;color:inherit";r.onclick=()=>{goalTab="ours";goTo(["connect","secGoals"])};r.append(el("span","ic2","🎯"));const tx=el("div","tx");tx.append(el("b",null,`${gPn()} suggested: ${g.title}`),el("span",null,"Tap to accept"));r.append(tx);card.append(r)});
+  live.slice(0,3).forEach(g=>{const r=el("button","nxr");r.type="button";r.style.cssText="border:0;background:none;width:100%;text-align:left;font:inherit;color:inherit";r.onclick=()=>{goalTab=g.kind==="couple"?"ours":"mine";goTo(["connect","secGoals"])};
+    r.append(el("span","ic2",gCat(g)[1]));const tx=el("div","tx");tx.append(el("b",null,g.title));
+    if(g.track!=="once"){const t=+g.target||1,pv=Math.min(t,+g.prog||0),br=el("div","bar2"),fi=el("i");fi.style.width=Math.round(pv/t*100)+"%";br.append(fi);tx.append(br)}
+    else tx.append(el("span",null,g.kind==="couple"?(gDoneBy(g,me)?`Waiting on ${gPn()}`:gDoneBy(g,partnerId)?`${gPn()} checked it off · your turn`:"Together"):"Your goal"));
+    r.append(tx,el("span","rt",gOverdue(g)?"Overdue":gDueLabel(g).replace(/^Due /,"").replace(" days left","d left")));card.append(r)});
+  if(!live.length&&!wait.length){const r=el("div","nxr");r.append(el("span","ic2","🎯"));const tx=el("div","tx");tx.append(el("b",null,"Set a goal together"),el("span",null,"Same bedtime, a new restaurant, paying off a debt…"));r.append(tx);card.append(r)}
+  box.append(card);
+}
+// Moments: finished goals
+function goalMoments(){return goals.filter(g=>g.status==="done"&&gVisible(g)&&g.completedAt).map(g=>({kind:"goal",g,createdAt:g.completedAt}))}
+function goalMomentEl(g){
+  const c=el("div","mo"),h=el("div","mh");h.append(avatar(g.kind==="couple"?me:g.owner,"av-m"));const t=el("div","t");
+  t.append(el("b",null,g.kind==="couple"?"You both reached a goal":g.owner===me?"You reached a goal":`${nickOf(g.owner)||nm(g.owner)} reached a goal`),el("span",null,timeAgo(g.completedAt)));h.append(t);c.append(h);
+  const b=el("div","mb");b.append(el("span",null,`${gCat(g)[1]} ${g.title} 🎉`));if(g.reward)b.append(el("span","small muted",`🎁 ${g.reward}${g.rewardGiven?" · delivered":""}`));c.append(b);return c;
+}
+// Reminders the server sends (2 days before, and the morning it's due)
+function goalRemEvents(){
+  const out=[],at9=(t,back)=>{const d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),d.getDate()-back,9,0).getTime()};
+  goals.filter(g=>g.status==="active"&&g.due&&(g.kind==="couple"?!gDoneBy(g,me):g.owner===me)).forEach(g=>{
+    out.push({at:at9(g.due,2),t:`🎯 2 days left: ${g.title}`,b:g.kind==="couple"?"Your goal together is almost due.":"Your goal is almost due. You've got this!",g:"goal-"+g.id});
+    out.push({at:at9(g.due,0),t:`🎯 Due today: ${g.title}`,b:g.kind==="couple"?"Check it off together in the app.":"Mark it done, or extend it a week.",g:"goal-"+g.id});
+  });
+  return out;
+}
+
 /* ================= Help, FAQ & setup check ================= */
 const HELP=[
  {g:"start",t:"Getting started",ic:"🚀",items:[
@@ -3070,6 +3368,12 @@ const HELP=[
   ["book","Can I book a table?","Pick Dinner out to get quick links to map nearby spots or book on OpenTable or Resy. Add the place to the invite so it shows on their side."],
   ["calendar","How do I add a date to my calendar?","Once an invite is accepted, tap Apple / Outlook or Google under it. You'll also get a reminder an hour before."],
   ["challenge","How do challenges work?","Send a fun challenge, like 5 kisses today. Your partner taps to count their progress, and finished challenges show up in Moments.",["connect","secCh"],"Send a challenge"]]},
+ {g:"goals",t:"Goals",ic:"🎯",items:[
+  ["goalhow","How do goals work?","Connect → Goals together → New goal. Pick an idea or type your own, choose how to track it (check it off, count it, or milestones), set when it's due, and add an optional reward.",["connect","secGoals"],"Open goals"],
+  ["goalcouple","What's the difference between a couple goal and my goal?","A couple goal is for both of you: your partner accepts it, and it only counts when you both check it off. My goal is just yours. Keep it private or share it so your partner can cheer you on and pledge a reward."],
+  ["goalmiss","What if we miss the due date?","Nothing bad happens. Extend it a week or let it go, and set it again any time."],
+  ["goalmoney","Do money goals show amounts?","No. Money goals use milestones (25%, 50%, 75%, done), so you never enter balances."],
+  ["goalreward","How do rewards work?","Add a reward when you set a goal, like winner picks the restaurant. On your partner's shared goal, tap Pledge a reward. When the goal is done, the reward shows as owed until someone marks it delivered."]]},
  {g:"gifts",t:"Dates to remember & gifts",ic:"🎁",items:[
   ["dates","Where do I add birthdays and anniversaries?","About me → Dates to remember. You add your partner's birthday, plus when you met and your wedding anniversary. Your own birthday is added by your partner.",["me","dtBday"],"Add dates"],
   ["giftrem","When do gift reminders show?","Two weeks before a birthday, anniversary, Valentine's Day or Christmas, a card shows on Home. You also get notifications a week before, the day before and on the day."],
@@ -3093,10 +3397,10 @@ const HELP=[
   ["update","How do I get the latest version?","When an update is ready, a banner says Update ready. Tap it. You can also close the app fully and reopen it."],
   ["slow","The app is blank, stuck or won't load","Check your internet, then close the app fully and reopen it from your personal link. If it still won't load, send feedback with a screenshot."]]}
 ];
-const HELP_FOR={secFor:"checkin",secWeek:"ai",secRead:"checkin",secInv:"plans",secCh:"plans",secSent:"chat",secNotif:"phone",secAi:"ai",secLock:"privacy",secAd:"privacy",secLinks:"start",secAnswers:"start"};
+const HELP_FOR={secFor:"checkin",secWeek:"ai",secRead:"checkin",secInv:"plans",secCh:"plans",secGoals:"goals",secSent:"chat",secNotif:"phone",secAi:"ai",secLock:"privacy",secAd:"privacy",secLinks:"start",secAnswers:"start"};
 const helpItems=()=>HELP.flatMap(g=>g.items.map(([id,q,a,go,goT,special])=>({id,q,a,go,goT,special,g:g.g,gt:g.t})));
 const H_STOP=new Set("the and for how what why when where who can does did doesnt dont isnt cant wont not are was were you your our its it this that with have has get got from into about there their them they she her his him use using app any all just like way want need help please is to do my me an on in of or at by be if no".split(" "));
-const H_TAGS={notifnone:"notification push alert not working broken stopped",notifon:"notification push alert enable",lockstuck:"locked code pin stuck screen",lock:"code pin password security",clipfail:"video clip upload fail error",songfail:"music song search broken",update:"refresh new version banner",slow:"blank white loading frozen crash stuck",autodel:"delete storage space remove photos",seedata:"privacy private secure safe data",wish:"amazon gift list",dates:"birthday anniversary wedding met",giftrem:"gift present birthday reminder",iphoneinstall:"icon home screen install iphone ios",androidinstall:"icon home screen install android pixel samsung",perslink:"link url",link:"join partner invite connect",code:"invite beta code",calendar:"calendar google apple outlook",chatmedia:"photo picture video",react:"emoji reaction like heart",streak:"streak days",stories:"story stories ring"};
+const H_TAGS={goalhow:"goal goals target habit",goalcouple:"goal partner shared private",goalmoney:"debt money save savings",goalreward:"reward incentive prize",notifnone:"notification push alert not working broken stopped",notifon:"notification push alert enable",lockstuck:"locked code pin stuck screen",lock:"code pin password security",clipfail:"video clip upload fail error",songfail:"music song search broken",update:"refresh new version banner",slow:"blank white loading frozen crash stuck",autodel:"delete storage space remove photos",seedata:"privacy private secure safe data",wish:"amazon gift list",dates:"birthday anniversary wedding met",giftrem:"gift present birthday reminder",iphoneinstall:"icon home screen install iphone ios",androidinstall:"icon home screen install android pixel samsung",perslink:"link url",link:"join partner invite connect",code:"invite beta code",calendar:"calendar google apple outlook",chatmedia:"photo picture video",react:"emoji reaction like heart",streak:"streak days",stories:"story stories ring"};
 const hNorm=t=>String(t||"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
 const hSlug=t=>hNorm(t).replace(/ /g,"_").slice(0,40);
 let helpSeen=new Set(),helpMissSent=new Set(),helpMissT=0;
@@ -3283,7 +3587,7 @@ async function setRemind(k){
 $("remAm").onclick=()=>setRemind("am");$("remMid").onclick=()=>setRemind("mid");
 
 /* ---- Collapsible sections ---- */
-const SECS=["secAnswers","secSelf","secFor","secWeek","secRead","secInv","secCh","secSent","secNotif","secAi","secLock","secAd","secLinks","secHelp"];
+const SECS=["secAnswers","secSelf","secFor","secWeek","secRead","secInv","secCh","secGoals","secSent","secNotif","secAi","secLock","secAd","secLinks","secHelp"];
 function initSecs(){SECS.forEach(id=>{const d=$(id);if(!d)return;let v=null;try{v=localStorage.getItem("ut_sec_"+id)}catch(x){}if(v!=null)d.open=v==="1";d.addEventListener("toggle",()=>{try{localStorage.setItem("ut_sec_"+id,d.open?"1":"0")}catch(x){}})})}
 initSecs();
 function setSum(id,t){const n=$(id);if(n)n.textContent=t||""}
@@ -3494,6 +3798,7 @@ function renderHome(){
       r.append(el("span","ic2",it.ic));const tx=el("div","tx");tx.append(el("b",null,it.t));if(it.prog!=null){const br=el("div","bar2"),fi=el("i");fi.style.width=Math.round(it.prog*100)+"%";br.append(fi);tx.append(br)}else tx.append(el("span",null,it.sub));
       r.append(tx);if(it.rt)r.append(el("span","rt",it.rt));list.append(r)});nb.append(list)}
   else{const e=el("div","nx");const r=el("div","nxr");r.append(el("span","ic2","💌"));const tx=el("div","tx");tx.append(el("b",null,"Nothing planned yet"),el("span",null,`Invite ${pn} to a date or send a challenge.`));r.append(tx);const b=el("button","secondary","Plan");b.onclick=()=>{setTab("connect");setTimeout(()=>{const s3=$("secInv");if(s3){s3.open=true;s3.scrollIntoView({behavior:"smooth",block:"start"})}},80)};r.append(b);e.append(r);nb.append(e)}
+  renderHomeGoals();
   // moments
   const mb=$("homeMoments");mb.textContent="";
   const all=[...incoming().map(x=>({...x,dir:"in"})),...outgoing().map(x=>({...x,dir:"out"}))];
@@ -3503,12 +3808,13 @@ function renderHome(){
     if(it.kind==="challenge")return (rep?.count||0)>=(it.target||1);
     if(it.kind==="invite")return rep?.status==="yes";
     return false;
-  }).sort((a,b)=>b.createdAt-a.createdAt).slice(0,6);
+  }).concat(goalMoments()).sort((a,b)=>b.createdAt-a.createdAt).slice(0,6);
   // on this day
   const md=k.slice(5),otd=all.find(it=>{const d=new Date(it.createdAt);return key(d).slice(5)===md&&key(d).slice(0,4)!==k.slice(0,4)&&(it.kind==="photo"||it.kind==="clip")});
   if(otd){const o=el("div","otd");const yrs=new Date().getFullYear()-new Date(otd.createdAt).getFullYear();o.append(el("span","eyebrow",`On this day · ${yrs} year${yrs>1?"s":""} ago`),itemMedia(otd));if(otd.caption)o.append(el("span","small",otd.caption));mb.append(o)}
-  if(!moments.length&&!otd){mb.append(el("p","muted small",`Photos, videos, songs, finished challenges and accepted dates show up here.`))}
+  if(!moments.length&&!otd){mb.append(el("p","muted small",`Photos, videos, songs, finished challenges, goals and accepted dates show up here.`))}
   moments.forEach(it=>{
+    if(it.kind==="goal"){mb.append(goalMomentEl(it.g));return}
     const who=it.dir==="in"?p:me,rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id],c2=el("div","mo"),h=el("div","mh");
     h.append(avatar(who,"av-m"));const t=el("div","t");t.append(el("b",null,itemTitle(it,it.dir).title.replace(/^You sent/,"You sent").replace(/:.*$/,"")),el("span",null,timeAgo(it.createdAt)));h.append(t);c2.append(h);
     if(isPicLike(it)){const b=el("div","mb flush");b.append(itemMedia(it));c2.append(b);const b2=el("div","mb");b2.style.paddingTop="10px";if(it.caption)b2.append(el("span",null,it.caption));
@@ -3627,6 +3933,7 @@ function remEvents(){
     const at=inviteAt(it);if(!at)return;
     ev.push({at:at-3600000,t:"💌 "+inviteTitle(it,it.dir)+" in 1 hour",b:it.place?`At ${it.place}. Have fun!`:"Have fun!",g:"inv-"+it.id});
   });
+  ev.push(...goalRemEvents());
   return ev.filter(e=>e.at>now).sort((a,b)=>a.at-b.at).slice(0,16);
 }
 
@@ -4035,7 +4342,7 @@ async function startSpace(firstTime){
   refreshPushSub();
   db.doc("settings/couple").onSnapshot(s=>{coupleSettings=s.exists?(s.data()||{}):{};if(tab==="home")renderHome();if(tab==="me")renderDates();remSoon()},()=>{});
   watchQuestion();
-  watchStories();
+  watchStories();watchGoals();
   watchLock();
   db.doc("settings/media").onSnapshot(s=>{mediaSettings=s.exists?(s.data()||{}):{autoDelete:0};if(tab==="me")renderAutoDel();maybeCleanup()},()=>{});
   [A,B].forEach(p=>{watch(p);db.doc(base(p)).onSnapshot(s=>{members[p]=s.exists?(s.data()||{}):{};renderAll()},()=>{})});
@@ -4078,7 +4385,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.35";
+const APP_VERSION="2026-10-17.36";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
