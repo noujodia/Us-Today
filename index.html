@@ -910,7 +910,7 @@ details.pl summary{cursor:pointer;font-weight:600}
           <h3>Good to know</h3>
           <ul class="small">
             <li><b>Your personal link is your key.</b> Keep it private, and turn on the Privacy lock.</li>
-            <li><b>Not end-to-end encrypted.</b> The app never shows your content to anyone but you two, but whoever runs the servers could technically access stored data. We don't look, and during the beta please don't share anything too intimate, like explicit photos.</li>
+            <li><b>We never look at your content.</b> It's against our policy to open or view your photos, videos, messages or check-ins. The only data we look at is anonymous: usage counts, error reports and feedback you choose to send.</li><li><b>Not end-to-end encrypted yet.</b> Your data is stored securely on Google's servers, but it isn't end-to-end encrypted, so during the beta please don't share anything too intimate, like explicit photos.</li>
           </ul>
           <div class="pdel">
             <h3>Leave Noudé and delete my data</h3>
@@ -4542,7 +4542,7 @@ Your code: ${c.id} (works once)
 2. Enter the code and tap Start our space
 3. Send your partner their invite from About me
 
-🔒 Heads up: Noudé is in beta. Your space is private to the two of you and your data is never shared or sold. It isn't end-to-end encrypted yet, so the app owner could technically access stored photos, messages and check-ins (we don't look). Please don't send explicit photos or videos.
+🔒 Heads up: Noudé is in beta. Your space is private to the two of you, and your data is never shared or sold. It's against our policy to open or view your photos, messages or check-ins. The only data we look at is anonymous usage counts. Because it isn't end-to-end encrypted yet, please don't send explicit photos or videos during the beta.
 
 Tell us what you think!`}
 async function shareCode(c){
@@ -4851,7 +4851,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.21";
+const APP_VERSION="2026-10-18.22";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
