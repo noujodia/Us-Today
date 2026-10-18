@@ -2001,15 +2001,18 @@ function renderBanner(){
   const go=el("button","secondary",it.kind==="touch"?"Send one back":it.kind==="photo"?"View":it.kind==="clip"?"Watch":it.kind==="media"?"Listen":"See it");go.onclick=()=>openItem(it.id);
   b.append(el("span","big",d.em),t,go);box.append(b);
 }
-// Open Connect right at one item from your partner (banner tap or notification)
-function openItem(id,tries){
-  setTab("connect");
-  setTimeout(()=>{const n=$("in-"+id);
-    if(!n){if((tries||0)<8)return openItem(id,(tries||0)+1);return}
+// Rule: tapping something on Home (or a banner/notification) lands right on that exact thing.
+function jumpTo(t,elId,tries){
+  if(!tries)setTab(t);
+  setTimeout(()=>{const n=$(elId);
+    if(!n){if((tries||0)<8)return jumpTo(t,elId,(tries||0)+1);return}
     let d=n.parentElement;while(d){if(d.tagName==="DETAILS")d.open=true;d=d.parentElement}
     n.scrollIntoView({behavior:"smooth",block:"center"});n.classList.remove("pulse");void n.offsetWidth;n.classList.add("pulse");setTimeout(()=>n.classList.remove("pulse"),3400);
-    const a=n.querySelector("audio");if(a&&a.paused)a.play().catch(()=>{});
-  },(tries?400:250));
+  },tries?300:250);
+}
+function openItem(id,dir){
+  if(dir==="out"){if(typeof sentFilter!=="undefined"&&sentFilter!=="all"){sentFilter="all"}jumpTo("connect","out-"+id);return}
+  jumpTo("connect","in-"+id);
 }
 async function reply(id,data){
   try{if(!signedIn())throw{code:"signed_out"};const prev=(replies[me]||{})[id]||{};const merged={...prev,...data};delete merged.updatedAt;if(merged.reaction==null)delete merged.reaction;await db.doc(`${base(me)}/replies/${id}`).set({...merged,updatedAt:Date.now()});notifyForReply(id,data);(replies[me]=replies[me]||{})[id]=merged;renderConnect();return true}
@@ -2094,7 +2097,7 @@ function renderSent(){
   const box=$("sentList");box.textContent="";const g=SENT_GROUPS.find(x=>x[0]===sentFilter)||SENT_GROUPS[0];const list=out.filter(g[2]).slice(0,40);
   if(!list.length){box.append(el("p","muted small empty-msg",out.length?"Nothing here yet.":"Things you send show up here with their status."));return}
   list.forEach(it=>{
-    const rep=partnerId?(replies[partnerId]||{})[it.id]:null,s=statusPill(it,rep),row=el("div","item");
+    const rep=partnerId?(replies[partnerId]||{})[it.id]:null,s=statusPill(it,rep),row=el("div","item");row.id="out-"+it.id;
     row.append(itemHead(it,"out",s?el("span","pill "+s[1],s[0]):null));
     if(isPicLike(it)){const im=itemMedia(it);if(it.kind==="photo")im.style.maxHeight="160px";row.append(im);if(it.caption)row.append(el("p","small muted",it.caption));if(rep?.reaction){const rr=el("div","reacted",`${nm(partnerId)} reacted`);rr.append(el("b",null,rep.reaction));row.append(rr)}if(rep?.comment)row.append(el("p","reply-cap",`${nm(partnerId)}: ${rep.comment}`))}
     if(it.kind==="media"){if(it.note)row.append(el("p","need","“"+it.note+"”"));row.append(mediaFor(it))}
@@ -2874,6 +2877,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-18g",at:"2026-10-18T16:10:00-04:00",date:"Oct 18, 2026",items:[
+    {em:"🎯",t:"Tap takes you right there",b:"Tapping an invite, challenge or goal on Home now opens that exact item, ready to update. No more scrolling to find it."}
+  ]},
   {id:"2026-10-18f",at:"2026-10-18T15:40:00-04:00",date:"Oct 18, 2026",items:[
     {em:"🎵",t:"More ways to react to a song",b:"Besides Loved it: Just what I needed 🥹, That's sweet 😊, Exactly how I feel 💯 and On repeat 🔁.",go:["connect","inbox"]},
     {em:"⏳",t:"Captions last 24 hours",b:"The caption under your photo now disappears after a day, like a status. Add a new one anytime.",go:["me","avCap"]}
@@ -3377,7 +3383,7 @@ async function goalGiven(g){if(await gSave(g.id,{rewardGiven:Date.now()}))toast(
 async function goalRemove(g){if(!confirm("Remove this goal?"))return;if(await gSave(g.id,{status:"deleted"}))toast("Goal removed")}
 /* ---- rendering ---- */
 function goalCard(g){
-  const pn=gPn(),mine=g.owner===me,partnerOwned=g.kind==="me"&&!mine,canAct=g.kind==="couple"||mine,c=el("div","goal"+(g.status==="done"?" gdone2":"")+(gOverdue(g)?" overdue":""));
+  const pn=gPn(),mine=g.owner===me,partnerOwned=g.kind==="me"&&!mine,canAct=g.kind==="couple"||mine,c=el("div","goal"+(g.status==="done"?" gdone2":"")+(gOverdue(g)?" overdue":""));c.id="goal-"+g.id;
   const h=el("div","gh2"),cat=gCat(g);h.append(el("span","gem",cat[1]));
   const tx=el("div","gt");tx.append(el("b",null,g.title));
   const who=g.kind==="couple"?"Together":mine?(g.shared?"Your goal · shared":"Your goal · private"):`${nickOf(g.owner)||nm(g.owner)}'s goal`;
@@ -3488,8 +3494,8 @@ function renderHomeGoals(){
   const wait=goals.filter(g=>g.kind==="couple"&&g.status==="proposed"&&g.owner!==me);
   const hd=el("div","row between");hd.append(el("h2",null,"Goals"));const all=el("button","link small",live.length||wait.length?"See all":"Set a goal");all.onclick=()=>goTo(["connect","secGoals"]);hd.append(all);box.append(hd);
   const card=el("div","nx");
-  wait.forEach(g=>{const r=el("button","nxr");r.type="button";r.style.cssText="border:0;background:none;width:100%;text-align:left;font:inherit;color:inherit";r.onclick=()=>{goalTab="ours";goTo(["connect","secGoals"])};r.append(el("span","ic2","🎯"));const tx=el("div","tx");tx.append(el("b",null,`${gPn()} suggested: ${g.title}`),el("span",null,"Tap to accept"));r.append(tx);card.append(r)});
-  live.slice(0,3).forEach(g=>{const r=el("button","nxr");r.type="button";r.style.cssText="border:0;background:none;width:100%;text-align:left;font:inherit;color:inherit";r.onclick=()=>{goalTab=g.kind==="couple"?"ours":"mine";goTo(["connect","secGoals"])};
+  wait.forEach(g=>{const r=el("button","nxr");r.type="button";r.style.cssText="border:0;background:none;width:100%;text-align:left;font:inherit;color:inherit";r.onclick=()=>{goalTab="ours";renderGoals();jumpTo("connect","goal-"+g.id)};r.append(el("span","ic2","🎯"));const tx=el("div","tx");tx.append(el("b",null,`${gPn()} suggested: ${g.title}`),el("span",null,"Tap to accept"));r.append(tx);card.append(r)});
+  live.slice(0,3).forEach(g=>{const r=el("button","nxr");r.type="button";r.style.cssText="border:0;background:none;width:100%;text-align:left;font:inherit;color:inherit";r.onclick=()=>{goalTab=g.kind==="couple"?"ours":"mine";renderGoals();jumpTo("connect","goal-"+g.id)};
     r.append(el("span","ic2",gCat(g)[1]));const tx=el("div","tx");tx.append(el("b",null,g.title));
     if(g.track!=="once"){const t=+g.target||1,pv=Math.min(t,+g.prog||0),br=el("div","bar2"),fi=el("i");fi.style.width=Math.round(pv/t*100)+"%";br.append(fi);tx.append(br)}
     else tx.append(el("span",null,g.kind==="couple"?(gDoneBy(g,me)?`Waiting on ${gPn()}`:gDoneBy(g,partnerId)?`${gPn()} checked it off · your turn`:"Together"):"Your goal"));
@@ -4133,7 +4139,7 @@ function nextItems(){
     const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id];
     if(rep?.status==="later"||isCleared(it.id)||invDone(it))return;
     const at=inviteWhen(it),what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(invLabel(it));
-    const go=()=>goTo(["connect",it.dir==="in"?"inbox":"secInv"]);
+    const go=()=>openItem(it.id,it.dir);
     if(rep?.status==="yes"){
       if(at&&at<now-3*H){ // happened (or should have): ask, then let it go after 3 days
         if(at<now-3*D)return;
@@ -4151,7 +4157,7 @@ function nextItems(){
     const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id],c=rep?.count||0,t=it.target||1;if(c>=t||isCleared(it.id))return;
     const weekLong=/week/i.test(it.text||""),due=(()=>{const d=new Date(it.createdAt);if(weekLong){d.setDate(d.getDate()+7)}else{d.setDate(d.getDate()+1)}d.setHours(0,0,0,0);return d.getTime()})(),over=now>=due;
     const acts=over?(it.dir==="in"?[["✓ Done",()=>reply(it.id,{count:t}).then(ok=>ok&&toast("Challenge done 🏆")),"primary"],["Remove",()=>clearItem(it.id),"link"]]:[["Remove",()=>deleteSent(it),"link"]]):null;
-    out.push({ic:"🏁",t:it.text,sub:over?(it.dir==="in"?`From ${pn} · time's up`:`${pnn} didn't finish`):(it.dir==="in"?`From ${pn}`:`You challenged ${pnn}`),prog:over?null:c/t,rt:over?"Overdue":`${c} of ${t}`,past:over,acts,go:()=>setTab("connect"),sort:it.createdAt,pri:over?2.6:3});
+    out.push({ic:"🏁",t:it.text,sub:over?(it.dir==="in"?`From ${pn} · time's up`:`${pnn} didn't finish`):(it.dir==="in"?`From ${pn}`:`You challenged ${pnn}`),prog:over?null:c/t,rt:over?"Overdue":`${c} of ${t}`,past:over,acts,go:()=>openItem(it.id,it.dir),sort:it.createdAt,pri:over?2.6:3});
   });
   occasions().filter(o=>o.until<=(o.holiday?GIFT_DAYS:45)).slice(0,2).forEach(o=>{const w=o.gift&&partnerId&&wishOf(partnerId);
     out.push({ic:o.ic,t:o.until===0?(o.mine?"Happy birthday to you! 🎉":`${o.t} is today`):o.t,sub:o.date.toLocaleDateString(undefined,{weekday:"short",month:"long",day:"numeric"})+(w?` · 🎁 tap for ${nickOf(partnerId)||nm(partnerId)}'s wish list`:""),rt:o.until===0?"Today":o.until===1?"Tomorrow":o.until+" days",sort:o.date.getTime()+1,pri:2,go:w?()=>window.open(w,"_blank","noopener"):null})});
@@ -4238,7 +4244,7 @@ function renderHome(){
       if(it.acts){if(it.go){tx.style.cursor="pointer";tx.onclick=it.go}const ab=el("div","nxacts");it.acts.forEach(([l,fn,cls])=>{const b=el("button",(cls||"link")+" small",l);b.type="button";b.onclick=e=>{e.stopPropagation();fn()};ab.append(b)});tx.append(ab)}
       r.append(tx);if(it.rt)r.append(el("span","rt"+(it.past?" late":""),it.rt));list.append(r)});nb.append(list)}
   else{const e=el("div","nx");const r=el("div","nxr");r.append(el("span","ic2","💌"));const tx=el("div","tx");tx.append(el("b",null,"Nothing planned yet"),el("span",null,`Invite ${pn} to a date or send a challenge.`));r.append(tx);const b=el("button","secondary","Plan");b.onclick=()=>{setTab("connect");setTimeout(()=>{const s3=$("secInv");if(s3){s3.open=true;s3.scrollIntoView({behavior:"smooth",block:"start"})}},80)};r.append(b);e.append(r);nb.append(e)}
-  {const dn=doneThisWeek();if(dn){const d=el("button","link small nxdone",`✓ ${dn} done this week · see Moments`);d.onclick=()=>$("homeMoments")?.scrollIntoView({behavior:"smooth",block:"start"});nb.append(d)}}
+  {const dn=doneThisWeek();if(dn)nb.append(el("span","small nxdone",`✓ ${dn} done this week`))}
   renderHomeGoals();
   // moments
   const mb=$("homeMoments");mb.textContent="";
@@ -4851,7 +4857,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.24";
+const APP_VERSION="2026-10-18.25";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
