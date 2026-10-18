@@ -459,6 +459,7 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .mecoach::before{content:"";position:absolute;top:-6px;right:18px;width:12px;height:12px;background:inherit;transform:rotate(45deg)}
 .mecoach .link{color:inherit;text-decoration:underline;align-self:flex-end;padding:0}
 .mecoach[hidden]{display:none}
+.sreacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.sreact{font:inherit;font-size:13px;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}.sreact.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:600}
 .leftcard{margin-top:10px;padding:14px;border-radius:14px;background:var(--accent-soft);display:flex;flex-direction:column;gap:6px;text-align:left}.leftcard p{margin:0}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
@@ -824,7 +825,7 @@ details.pl summary{cursor:pointer;font-weight:600}
       <div class="pfield" id="nickRow"><span class="pfl">Nickname</span><span class="pfv" id="nickView"></span><button class="link small" id="nickEdit" aria-label="Edit nickname">✏️ Edit</button></div>
       <div class="pform" id="nickForm" hidden><label for="avNick" class="small" style="font-weight:600">Your nickname</label><div class="cmt"><input type="text" id="avNick" maxlength="24" placeholder="Babe, Hun, Papi…"><button class="primary" id="avNickSave">Save</button></div><button class="link small" id="nickCancel">Cancel</button></div>
       <div class="pfield" id="capRow"><span class="pfl">Caption</span><span class="pfv" id="capView"></span><button class="link small" id="capEdit" aria-label="Edit caption">✏️ Edit</button></div>
-      <div class="pform" id="capForm" hidden><label for="avCap" class="small" style="font-weight:600">Caption under your photo</label><div class="cmt"><input type="text" id="avCap" maxlength="80" placeholder="Missing you already · Gym then home · Date night soon?"><button class="primary" id="avCapSave">Save</button></div><button class="link small" id="capCancel">Cancel</button></div>
+      <div class="pform" id="capForm" hidden><label for="avCap" class="small" style="font-weight:600">Caption under your photo <span class="muted" style="font-weight:400">· disappears after 24 hours</span></label><div class="cmt"><input type="text" id="avCap" maxlength="80" placeholder="Missing you already · Gym then home · Date night soon?"><button class="primary" id="avCapSave">Save</button></div><button class="link small" id="capCancel">Cancel</button></div>
     </div>
     <details class="sec" id="secDates">
       <summary><div class="sh"><h2>📅 Dates to remember</h2><span class="ssum" id="sumDates"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
@@ -1836,7 +1837,7 @@ function notifyForReply(id,data){
   const what=it.kind==="clip"?"video":"photo";
   if(isPicLike(it)&&data.reaction&&data.reaction!==prev.reaction)body=`Reacted ${data.reaction} to your ${what}`;
   else if(isPicLike(it)&&data.comment)body=`Replied to your ${what}: “${data.comment}”`;
-  else if(it.kind==="media"&&data.status==="loved")body=it.track?`Loved the song you sent ♥ ${it.track.name}`:`Loved the ${platformOf(it.url).noun.replace(/^an? /,"")} you sent ♥`;
+  else if(it.kind==="media"&&data.status&&data.status!==prev.status){const r=songReact(data.status),what=it.track?`“${it.track.name}”`:`the ${platformOf(it.url).noun.replace(/^an? /,"")} you sent`;body=r?(r[0]==="loved"?`Loved ${what} ♥`:`${r[2]} ${r[1]} · ${what}`):""}
   else if(it.kind==="invite"&&data.status==="yes")body=`Accepted your invite: ${invLabel(it)} 💌`;
   else if(it.kind==="invite"&&data.status==="later")body=`Can't make it this time: ${invLabel(it)}`;
   else if(it.kind==="challenge"&&(data.count||0)>=(it.target||1)&&(prev.count||0)<(it.target||1))body=`Completed your challenge: ${it.text} 🎉`;
@@ -2014,10 +2015,12 @@ async function reply(id,data){
   try{if(!signedIn())throw{code:"signed_out"};const prev=(replies[me]||{})[id]||{};const merged={...prev,...data};delete merged.updatedAt;if(merged.reaction==null)delete merged.reaction;await db.doc(`${base(me)}/replies/${id}`).set({...merged,updatedAt:Date.now()});notifyForReply(id,data);(replies[me]=replies[me]||{})[id]=merged;renderConnect();return true}
   catch(e){console.error(e);toast(saveErr(e));return false}
 }
+const SONG_REACTS=[["loved","♥","Loved it"],["needed","🥹","Just what I needed"],["sweet","😊","That's sweet"],["feel","💯","Exactly how I feel"],["repeat","🔁","On repeat"]];
+const songReact=k=>SONG_REACTS.find(r=>r[0]===k)||null;
 function statusPill(it,rep){
   if(it.kind==="invite")return rep?.status==="yes"?["Accepted","ok"]:rep?.status==="later"?["Not this time","no"]:["Waiting",""];
   if(it.kind==="challenge"){const c=rep?.count||0,t=it.target||1;return c>=t?["Done","ok"]:[c?`${c} of ${t}`:"Not started",""]}
-  if(it.kind==="media")return rep?.status==="loved"?["Loved it","ok"]:null;
+  if(it.kind==="media"){const r=songReact(rep?.status);return r?[`${r[1]} ${r[2]}`,"ok"]:null}
   if(it.kind==="photo"||it.kind==="clip")return rep?.comment?["Replied","ok"]:null;
   return null;
 }
@@ -2048,7 +2051,9 @@ function renderInbox(){
       inp.onkeydown=ev=>{if(ev.key==="Enter")post.click()};
       c.append(inp,post);row.append(c);
     }
-    if(it.kind==="media"){row.append(mediaFor(it));const a=el("div","row");if(rep?.status==="loved")a.append(el("span","pill ok","Loved it"));else{const b=el("button","secondary","♥ Loved it");b.onclick=()=>reply(it.id,{status:"loved"}).then(ok=>ok&&toast("They'll see you loved it"));a.append(b)}row.append(a)}
+    if(it.kind==="media"){row.append(mediaFor(it));const a=el("div","sreacts");a.setAttribute("role","group");a.setAttribute("aria-label","React to this song");
+      SONG_REACTS.forEach(([k,em,t])=>{const on=rep?.status===k,b=el("button","sreact"+(on?" on":""));b.type="button";b.setAttribute("aria-pressed",String(on));b.append(el("span",null,em),document.createTextNode(" "+t));
+        b.onclick=()=>{if(on)return;reply(it.id,{status:k}).then(ok=>ok&&toast(`Sent: ${t} ${em}`))};a.append(b)});row.append(a)}
     if(it.kind==="invite"&&it.place)row.append(placeEl(it));
     if(it.kind==="invite"&&rep?.status==="yes"){const cr=inviteCal(it,"in");if(cr)row.append(cr)}
     if(it.kind==="invite"){
@@ -2321,7 +2326,11 @@ function renderSongs(){
   all.slice(0,40).forEach(it=>{const w=el("div","stack");w.style.gap="4px";w.append(el("span","small muted",`${it.dir==="in"?"From "+nm(partnerId):"From you"} · ${timeAgo(it.createdAt)}${it.note?" · “"+it.note+"”":""}`),mediaFor(it));box.append(w)});
   $("songHint").textContent=partnerId?`Search for a song to send ${nm(partnerId)}, or paste a link to a video or song.`:"Search for a song, or paste a link to a video or song.";
 }
-const capOf=p=>{const c=members[p]?.profile?.caption;return typeof c==="string"?c.slice(0,80):""};
+// Captions last 24 hours. Older captions (saved before this rule) count from when it shipped.
+const CAP_TTL=864e5,CAP_SINCE=Date.parse("2026-10-18T15:30:00-04:00");
+const capT=p=>+members[p]?.profile?.captionAt||CAP_SINCE;
+const capOf=p=>{const c=members[p]?.profile?.caption;if(typeof c!=="string"||!c)return"";return Date.now()-capT(p)<CAP_TTL?c.slice(0,80):""};
+const capLeft=p=>{const ms=CAP_TTL-(Date.now()-capT(p));if(ms<=0)return"";const h=Math.floor(ms/36e5);return h>=1?`${h}h left`:`${Math.max(1,Math.ceil(ms/6e4))}m left`};
 const capAt=p=>+members[p]?.profile?.captionAt||0;
 function renderConnectHead(){
   const box=$("connectHead");box.textContent="";
@@ -2865,6 +2874,10 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-18f",at:"2026-10-18T15:40:00-04:00",date:"Oct 18, 2026",items:[
+    {em:"🎵",t:"More ways to react to a song",b:"Besides Loved it: Just what I needed 🥹, That's sweet 😊, Exactly how I feel 💯 and On repeat 🔁.",go:["connect","inbox"]},
+    {em:"⏳",t:"Captions last 24 hours",b:"The caption under your photo now disappears after a day, like a status. Add a new one anytime.",go:["me","avCap"]}
+  ]},
   {id:"2026-10-18e",at:"2026-10-18T13:30:00-04:00",date:"Oct 18, 2026",items:[
     {em:"👋",t:"Leaving is now individual",b:"Leave and delete my data removes only your own things. Your partner keeps what they created.",go:["me","secPriv"]},
     {em:"📝",t:"A quick question before you go",b:"If you leave, we ask why. It's anonymous and your partner never sees the answer."},
@@ -4836,7 +4849,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.18";
+const APP_VERSION="2026-10-18.19";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
