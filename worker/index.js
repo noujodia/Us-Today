@@ -1,4 +1,4 @@
-// Us, Today notification sender (Cloudflare Worker).
+// Noudé notification sender (Cloudflare Worker).
 // Receives {sub, title, body, url} from the app and delivers an encrypted Web Push.
 // The VAPID private key is stored as the secret VAPID_D in Cloudflare, never in this file.
 const VAPID_PUBLIC = "BH9swIrCDeQtLef9p5w_PeBjFBodHEF5AWX2j4aktaTlHWYquTK9HCNx_VIgClhmmK4F1sC0Jn6UmK_AgKvm8jU";
@@ -49,7 +49,7 @@ function cors(origin) {
 const reply = (obj, status, origin) => new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json", ...cors(origin) } });
 
 async function sendPush(env, sub, msg) {
-  const payload = JSON.stringify({ title: String(msg.title || "Us, Today").slice(0, 80), body: String(msg.body || "").slice(0, 240), url: String(msg.url || "").slice(0, 400), tag: String(msg.tag || "").slice(0, 40) });
+  const payload = JSON.stringify({ title: String(msg.title || "Noudé").slice(0, 80), body: String(msg.body || "").slice(0, 240), url: String(msg.url || "").slice(0, 400), tag: String(msg.tag || "").slice(0, 40) });
   const body = await encrypt(sub, payload);
   const res = await fetch(sub.endpoint, { method: "POST", headers: { "Content-Encoding": "aes128gcm", "Content-Type": "application/octet-stream", TTL: "86400", Urgency: "normal", Authorization: await vapidAuth(sub.endpoint, env.VAPID_D) }, body });
   return { ok: res.ok, status: res.status, gone: res.status === 404 || res.status === 410 };

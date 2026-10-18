@@ -1,6 +1,6 @@
 {
-  "name": "Us, Today",
-  "short_name": "Us, Today",
+  "name": "Noudé",
+  "short_name": "Noudé",
   "description": "A private daily check-in for the two of you.",
   "display": "standalone",
   "scope": "./",
