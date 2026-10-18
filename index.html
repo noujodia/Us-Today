@@ -896,7 +896,7 @@ details.pl summary{cursor:pointer;font-weight:600}
             <tr><td>Daily check-ins and notes</td><td>You two</td></tr>
             <tr><td>Chat, photos, videos, stories, songs</td><td>You two</td></tr>
             <tr><td>Invites, challenges, goals, dates, wish list link</td><td>You two</td></tr>
-            <tr><td>Usage counts and error reports (no content, no names)</td><td>The app's owner</td></tr>
+            <tr><td>Usage counts, time spent in the app and error reports (no content, no names)</td><td>The app's owner</td></tr>
             <tr><td>Feedback you choose to send</td><td>The app's owner</td></tr>
           </tbody></table>
           <p class="small"><b>Never collected:</b> email, phone number, passwords, location, contacts or payment details.</p>
@@ -3184,6 +3184,13 @@ function trackOpen(){
   const today=todayKey();
   track({},{["a."+today]:true,createdAt:+members[A]?.joinedAt||Date.now(),partnerJoined:!!members[B]?.onboarded,aiOn:[A,B].filter(p=>members[p]?.aiOk).length,notifOn:[A,B].filter(p=>members[p]?.push).length,v:APP_VERSION});
 }
+// Time in app (anonymous): counts visits and seconds the app is on screen, per day, per couple.
+let sessT0=0,sessTimer=0;
+function sessFlush(){if(!sessT0)return;const now=Date.now(),secs=Math.round(Math.min(now-sessT0,15*60000)/1000);sessT0=document.visibilityState==="visible"?now:0;if(secs>=2)track({["t."+todayKey()]:secs})}
+function sessStart(){if(sessT0||document.visibilityState!=="visible"||!spaceHash)return;sessT0=Date.now();track({["sn."+todayKey()]:1});clearInterval(sessTimer);sessTimer=setInterval(sessFlush,60000)}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")sessStart();else{sessFlush();sessT0=0;clearInterval(sessTimer)}});
+addEventListener("pagehide",()=>{sessFlush();sessT0=0});
+const fmtTime=secs=>{secs=Math.round(secs||0);if(secs<60)return secs+"s";const m=Math.floor(secs/60);if(m<60)return m+"m "+String(secs%60).padStart(2,"0")+"s";return Math.floor(m/60)+"h "+(m%60)+"m"};
 const KIND_STAT={touch:"touch",photo:"photo",clip:"video",media:"song",invite:"invite",challenge:"challenge"};
 function trackItem(kind){const k=KIND_STAT[kind];if(k)track({["n."+k]:1})}
 
@@ -3205,6 +3212,16 @@ function renderStats(){
   const tiles=el("div","tiles");
   [[S.length,"Couples"],[S.filter(x=>x.partnerJoined).length,"Both partners joined"],[activeWeek,"Active this week"],[ciWeek,"Check-ins this week"]].forEach(([v,t])=>{const c=el("div","tile");c.append(el("b",null,String(v)),el("span",null,t));tiles.append(c)});
   box.append(tiles);
+  // time in app
+  {const secByDay=dayKeys.map(k=>S.reduce((n,x)=>n+(+(x.t&&x.t[k])||0),0)),visByDay=dayKeys.map(k=>S.reduce((n,x)=>n+(+(x.sn&&x.sn[k])||0),0));
+   const sec7=secByDay.slice(7).reduce((a,b)=>a+b,0),vis7=visByDay.slice(7).reduce((a,b)=>a+b,0);
+   const coupleDays=S.reduce((n,x)=>n+last7.filter(k=>x.t&&+x.t[k]>0).length,0);
+   const tc=el("div","chartc");tc.append(el("b",null,"Time in the app"),el("span","small muted","Time Noudé is open on screen, all couples. Started Oct 18, 2026."));
+   const t2=el("div","tiles");[[fmtTime(coupleDays?sec7/coupleDays:0),"Per couple, per active day"],[fmtTime(vis7?sec7/vis7:0),"Average visit"],[String(vis7),"Visits this week"],[fmtTime(sec7),"Total this week"]].forEach(([v,t])=>{const c=el("div","tile");c.append(el("b",null,v),el("span",null,t));t2.append(c)});tc.append(t2);
+   const tip2=el("span","ctip");tip2.hidden=true;tc.append(tip2);
+   const mx=Math.max(1,...secByDay),bars2=el("div","bars");bars2.setAttribute("role","img");bars2.setAttribute("aria-label","Minutes in the app per day: "+dayKeys.map((k,i)=>`${fromKey(k).toLocaleDateString(undefined,{month:"short",day:"numeric"})} ${Math.round(secByDay[i]/60)}`).join(", "));
+   dayKeys.forEach((k,i)=>{const v=secByDay[i],b=el("button",v?null:"zero"),bar=el("i");bar.style.height=(v/mx*100)+"%";b.append(bar);const lab=`${fromKey(k).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}: ${fmtTime(v)} · ${visByDay[i]} visit${visByDay[i]===1?"":"s"}`;b.setAttribute("aria-label",lab);b.title=lab;const show=()=>{tip2.textContent=lab;tip2.hidden=false};b.onmouseenter=show;b.onfocus=show;b.onclick=show;b.onmouseleave=()=>{tip2.hidden=true};bars2.append(b)});
+   tc.append(bars2);const xl2=el("div","xlab");xl2.append(el("span",null,fromKey(dayKeys[0]).toLocaleDateString(undefined,{month:"short",day:"numeric"})),el("span",null,"Today"));tc.append(xl2);box.append(tc)}
   // check-ins per day
   const cc=el("div","chartc");cc.append(el("b",null,"Check-ins per day"),el("span","small muted","Last 14 days, all couples"));
   const tip=el("span","ctip");tip.hidden=true;cc.append(tip);
@@ -3225,7 +3242,7 @@ function renderStats(){
   [["Chat messages",tot("chat")],["Hugs, kisses and emojis",tot("touch")],["Photos",tot("photo")],["Videos",tot("video")],["Songs and links",tot("song")],["Date invites",tot("invite")],["Challenges",tot("challenge")],["Chat reactions",tot("react")]].forEach(([t,v])=>{const r=el("div","row between small");r.append(el("span",null,t),el("b",null,String(v)));tt.append(r)});
   box.append(tt);
   renderQuestStats(box,S);renderLeaveStats(box,S);renderHelpStats(box,S);
-  box.append(el("p","small muted","Counts only. No messages, check-ins, photos or names are collected. Counting started Oct 17, 2026, so totals before then aren't included."));
+  box.append(el("p","small muted","Counts and time only. No messages, check-ins, photos or names are collected. Counting started Oct 17, 2026, so totals before then aren't included."));
 }
 function renderQuestStats(box,S){
   const card=(t,sub)=>{const c=el("div","chartc");c.append(el("b",null,t));if(sub)c.append(el("span","small muted",sub));return c};
@@ -4847,7 +4864,7 @@ async function startSpace(firstTime){
   else if(!OWNER_LINK)maybeWhatsNew();
   done();
   initOwner();
-  setTimeout(maybeMeCoach,2500);setTimeout(maybeMeCoach,12000);hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen();setTimeout(syncReminder,1500);setTimeout(dailySetupPing,8000)});
+  setTimeout(maybeMeCoach,2500);setTimeout(maybeMeCoach,12000);hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen();sessStart();setTimeout(syncReminder,1500);setTimeout(dailySetupPing,8000)});
   refreshPushSub();
   db.doc("settings/couple").onSnapshot(s=>{coupleSettings=s.exists?(s.data()||{}):{};if(tab==="home")renderHome();if(tab==="me")renderDates();remSoon()},()=>{});
   watchQuestion();
@@ -4895,7 +4912,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.27";
+const APP_VERSION="2026-10-18.28";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
