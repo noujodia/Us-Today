@@ -810,6 +810,8 @@ details.pl summary{cursor:pointer;font-weight:600}
       <input type="file" id="avFile" accept="image/*" hidden>
       <div class="row"><button class="secondary" id="avChange">Upload photo</button><button class="link small" id="avRemove" hidden>Remove</button></div>
       <p class="small muted" id="avMsg"></p>
+      <div class="pfield" id="nameRow"><span class="pfl">Name</span><span class="pfv" id="nameView"></span><button class="link small" id="nameEdit" aria-label="Edit name">✏️ Edit</button></div>
+      <div class="pform" id="nameForm" hidden><label for="avName" class="small" style="font-weight:600">Your name</label><div class="cmt"><input type="text" id="avName" maxlength="30" autocomplete="given-name" placeholder="Your first name"><button class="primary" id="avNameSave">Save</button></div><button class="link small" id="nameCancel">Cancel</button></div>
       <div class="pfield" id="nickRow"><span class="pfl">Nickname</span><span class="pfv" id="nickView"></span><button class="link small" id="nickEdit" aria-label="Edit nickname">✏️ Edit</button></div>
       <div class="pform" id="nickForm" hidden><label for="avNick" class="small" style="font-weight:600">Your nickname</label><div class="cmt"><input type="text" id="avNick" maxlength="24" placeholder="Babe, Hun, Papi…"><button class="primary" id="avNickSave">Save</button></div><button class="link small" id="nickCancel">Cancel</button></div>
       <div class="pfield" id="capRow"><span class="pfl">Caption</span><span class="pfv" id="capView"></span><button class="link small" id="capEdit" aria-label="Edit caption">✏️ Edit</button></div>
@@ -2388,6 +2390,7 @@ function renderPhotoBox(){
   if(document.activeElement!==$("avNick"))$("avNick").value=nk;
   if(document.activeElement!==$("avWish"))$("avWish").value=wishOf(me);
   if(document.activeElement!==$("avCap"))$("avCap").value=capOf(me);
+  {const nmv=$("nameView");nmv.textContent=P(me).name||"Add your name";nmv.className="pfv"+(P(me).name?"":" empty");if(document.activeElement!==$("avName"))$("avName").value=P(me).name||"";}
   {const nv=$("nickView");nv.textContent=nk||"Add a nickname";nv.className="pfv"+(nk?"":" empty");const cv=$("capView"),c=capOf(me);cv.textContent=c?"“"+c+"”":"Add a caption";cv.className="pfv"+(c?"":" empty");
    const w=wishOf(me);setSum("sumWish",w?"Added · "+(()=>{try{return new URL(w).hostname.replace(/^www\./,"")}catch(e){return"link"}})()+" · tap to change":"Add your wish list so your partner never has to guess")}
   renderDates();
@@ -2429,8 +2432,19 @@ $("avCapSave").onclick=async()=>{
   finally{btn.disabled=false}
 };
 $("avCap").addEventListener("keydown",e=>{if(e.key==="Enter")$("avCapSave").click()});
-function openEdit(k){setTab("me");const row=$(k+"Row"),form=$(k+"Form");if(!row||!form)return;row.hidden=true;form.hidden=false;$("avMsg").textContent="";setTimeout(()=>{const i=$(k==="nick"?"avNick":"avCap");i.focus();i.setSelectionRange(i.value.length,i.value.length);form.scrollIntoView({behavior:"smooth",block:"center"})},60)}
-function closeEdit(k){const row=$(k+"Row"),form=$(k+"Form");if(row)row.hidden=false;if(form)form.hidden=true;$(k==="nick"?"avNick":"avCap").value=k==="nick"?nickOf(me):capOf(me)}
+const editInput=k=>$(k==="nick"?"avNick":k==="name"?"avName":"avCap");
+function openEdit(k){setTab("me");const row=$(k+"Row"),form=$(k+"Form");if(!row||!form)return;row.hidden=true;form.hidden=false;$("avMsg").textContent="";setTimeout(()=>{const i=editInput(k);i.focus();i.setSelectionRange(i.value.length,i.value.length);form.scrollIntoView({behavior:"smooth",block:"center"})},60)}
+function closeEdit(k){const row=$(k+"Row"),form=$(k+"Form");if(row)row.hidden=false;if(form)form.hidden=true;editInput(k).value=k==="nick"?nickOf(me):k==="name"?(P(me).name||""):capOf(me)}
+$("nameEdit").onclick=()=>openEdit("name");$("nameCancel").onclick=()=>closeEdit("name");
+$("avNameSave").onclick=async()=>{
+  const v=$("avName").value.trim().replace(/\s+/g," ").slice(0,30),btn=$("avNameSave");if(!v){$("avMsg").textContent="Your name can't be empty.";return}
+  btn.disabled=true;$("avMsg").textContent="Saving…";
+  try{if(!signedIn())throw{code:"signed_out"};const prof={...P(me),name:v};
+    await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),profile:prof});
+    members[me]={...(members[me]||{}),profile:prof};$("avMsg").textContent="Name saved";closeEdit("name");renderAll()}
+  catch(e){console.error(e);$("avMsg").textContent=saveErr(e)}finally{btn.disabled=false}
+};
+$("avName").addEventListener("keydown",e=>{if(e.key==="Enter")$("avNameSave").click()});
 $("nickEdit").onclick=()=>openEdit("nick");$("capEdit").onclick=()=>openEdit("cap");$("nickCancel").onclick=()=>closeEdit("nick");$("capCancel").onclick=()=>closeEdit("cap");
 $("avFile").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;$("avMsg").textContent="Uploading…";
@@ -2899,7 +2913,7 @@ function openWhatsNew(all){
     r.items.forEach(it=>{const c=el("div","wn");c.append(el("span","em",it.em),el("b",null,it.t),el("p",null,it.b));if(it.go){const b=el("button","try","Try it →");b.onclick=()=>{closeWhatsNew();if(it.dot)useDot(it.dot);goTo(it.go)};c.append(b)}sec.append(c)});
     box.append(sec);
   });
-  $("wnSheet").hidden=false;$("wnDone").focus();
+  $("wnSheet").hidden=false;const pn=$("wnSheet").querySelector(".panel");if(pn)pn.scrollTop=0;try{$("wnDone").focus({preventScroll:true})}catch(e){}requestAnimationFrame(()=>{if(pn)pn.scrollTop=0});
 }
 function closeWhatsNew(){$("wnSheet").hidden=true;markRelSeen()}
 $("wnX").onclick=closeWhatsNew;$("wnDone").onclick=closeWhatsNew;
@@ -4711,7 +4725,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.13";
+const APP_VERSION="2026-10-18.14";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
