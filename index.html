@@ -2761,6 +2761,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-18c",date:"Oct 18, 2026",items:[
+    {em:"🏡",t:"Our new home: noudeapp.com",b:"Noudé now lives at noudeapp.com. Old links still work and bring you here. For the best experience, remove the old Home Screen icon and add Noudé again from this page, then turn notifications back on. If you set a passcode, you'll enter it once more.",go:["home","gsBox"]}
+  ]},
   {id:"2026-10-18b",date:"Oct 18, 2026",items:[
     {em:"✨",t:"Meet Noudé",b:"Us, Today is now Noudé (from Haitian Creole nou de, \"the two of us\"). Everything you've shared is right where you left it. If you added the app to your Home Screen, remove the old icon and add it again to see the new name."}
   ]},
@@ -4594,7 +4597,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.6";
+const APP_VERSION="2026-10-18.7";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
