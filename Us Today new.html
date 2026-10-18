@@ -4280,14 +4280,30 @@ async function ensureAccess(code,isNew){
 function genCode(){const A2="ABCDEFGHJKMNPQRSTUVWXYZ23456789",b=new Uint8Array(6);crypto.getRandomValues(b);return"US-"+[...b].map(x=>A2[x%A2.length]).join("")}
 let codesUnsub=null,codesList=[],codesErr=false;
 const appLink=()=>location.origin+location.pathname;
-function codeMsg(c){return `Here's your private invite to the Us, Today beta 💞\nCode: ${c.id}\n\n1. Open ${appLink()} on your phone\n2. Enter the code and tap Start our space\n3. Send your partner the invite link from About me\n\nThe code works once, so please don't share it.`}
+function codeMsg(c){return `You're invited to the private beta of Us, Today 💞
+
+Us, Today is a private space just for the two of you. In 30 seconds a day, you each share how you're feeling and what you need, and get simple, specific ideas to show up for each other. It also has private chat, stories, songs, date invites, goals and birthday reminders.
+
+Your invite code: ${c.id}
+
+1. Open ${appLink()} on your phone
+2. Enter the code and tap Start our space
+3. Fill out About me, then send your partner their invite link
+4. Add it to your Home Screen and turn on notifications
+
+It's a beta, so your feedback means a lot (tap Send feedback in the app). The code works once, so please don't share it.`}
+async function shareCode(c){
+  const text=codeMsg(c);track({"n.codeShare":1});
+  if(navigator.share){try{await navigator.share({title:"Your Us, Today invite",text});return}catch(e){if(e&&e.name==="AbortError")return}}
+  try{await navigator.clipboard.writeText(text);toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't share. Use Copy instead.")}
+}
 function watchCodes(){
   if(codesUnsub)return;
   try{codesUnsub=db.top.collection("betaCodes").orderBy("createdAt","desc").limit(200).onSnapshot(q=>{codesErr=false;codesList=q.docs.map(d=>({id:d.id,...(d.data()||{})}));if(!$("codesSheet").hidden)renderCodes()},()=>{codesErr=true;codesUnsub=null;if(!$("codesSheet").hidden)renderCodes()})}catch(e){codesErr=true}
 }
 async function newCode(note){
   const id=genCode();
-  try{await db.top.doc("betaCodes/"+id).set({used:false,createdAt:Date.now(),note:String(note||"").slice(0,60)});toast("Code created: "+id)}
+  try{await db.top.doc("betaCodes/"+id).set({used:false,createdAt:Date.now(),note:String(note||"").slice(0,60)});toast("Code created: "+id);return id}
   catch(e){console.error(e);toast("Couldn't create a code. Your rules may need the update below.");codesErr=true;renderCodes()}
 }
 function renderCodes(){
@@ -4304,13 +4320,13 @@ function renderCodes(){
   const form=el("div","card stack");form.append(el("b",null,"Create an invite code"),el("p","small muted","One code per couple. It works once."));
   const lab=el("label","small",null);lab.textContent="Who it's for (only you see this)";lab.htmlFor="codeNote";lab.style.fontWeight="600";
   const inp=el("input");inp.type="text";inp.id="codeNote";inp.maxLength=60;inp.placeholder="e.g. Jay & Kim";
-  const b=el("button","primary","Create code");b.onclick=async()=>{b.disabled=true;await newCode(inp.value);inp.value="";b.disabled=false};
+  const b=el("button","primary","Create code");b.onclick=async()=>{b.disabled=true;const id=await newCode(inp.value);inp.value="";b.disabled=false;if(id)toast(`Code ${id} created. Tap 📤 Share invite below.`)};
   form.append(lab,inp,b);box.append(form);
   const unused=codesList.filter(c=>!c.used),used=codesList.filter(c=>c.used);
   const sec=(title,list)=>{if(!list.length)return;box.append(el("h4",null,title));list.forEach(c=>{
     const r=el("div","fbi"+(c.used?" fdone":" isnew")),top=el("div","top");top.append(el("span","kind "+(c.used?"love":"idea"),c.used?"Used":"Unused"),el("span","who",c.id),el("span","when",c.used&&c.usedAt?timeAgo(c.usedAt):timeAgo(c.createdAt||Date.now())));r.append(top);
     if(c.note)r.append(el("p","msg",c.note));
-    if(!c.used){const a=el("div","acts");const cp=el("button","link small","Copy invite message");cp.onclick=async()=>{try{await navigator.clipboard.writeText(codeMsg(c));toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't copy")}};
+    if(!c.used){const a=el("div","acts");const sh=el("button","primary small","📤 Share invite");sh.onclick=()=>shareCode(c);a.append(sh);const cp=el("button","link small","Copy");cp.onclick=async()=>{try{await navigator.clipboard.writeText(codeMsg(c));toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't copy")}};
       const del=el("button","link small","Delete");del.style.color="var(--warn)";del.onclick=()=>{if(confirm("Delete this unused code?"))db.top.doc("betaCodes/"+c.id).delete().then(()=>toast("Deleted")).catch(()=>toast("Couldn't delete"))};a.append(cp,del);r.append(a)}
     box.append(r)})};
   sec(`Unused (${unused.length})`,unused);sec(`Used (${used.length})`,used);
@@ -4576,7 +4592,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.2";
+const APP_VERSION="2026-10-18.3";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
