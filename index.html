@@ -447,6 +447,7 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 @media (prefers-reduced-motion:reduce){.hcap.pulse{animation:none}}
 .brand{font-size:2.6rem;letter-spacing:-.02em;margin:0}.tagline{margin:-6px 0 0;font-style:italic;color:var(--accent);font-weight:600}
 .relh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.relnew{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--accent);color:#fff}
+.nxr.past .ic2{opacity:.7}.nxr.past b{font-weight:600}.nxr .rt.late{color:#d38a12}.nxacts{display:flex;gap:10px;align-items:center;margin-top:6px;flex-wrap:wrap}.nxacts .primary.small{padding:6px 12px;font-size:.82rem}.nxdone{display:block;margin-top:8px}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
 .gh2{display:flex;gap:12px;align-items:center}.gh2 .gt{display:flex;flex-direction:column;gap:2px;min-width:0}.gh2 .gt b{font-weight:650}
@@ -3926,25 +3927,50 @@ const feelsShort=e=>{const t=topList(e.levels,2).map(x=>word(x.k,x.v));return t.
 function nextItems(){
   const now=Date.now(),out=[],pn=nm(partnerId);
   const all=[...incoming().map(x=>({...x,dir:"in"})),...outgoing().map(x=>({...x,dir:"out"}))];
+  const H=3600000,D=86400000,pnn=nickOf(partnerId)||pn;
   all.filter(x=>x.kind==="invite").forEach(it=>{
     const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id];
-    const fresh=it.at?it.at>now-3*3600000:it.createdAt>now-3*86400000;
-    if(!fresh)return;
-    const what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(invLabel(it));
-    let rt="",sub=it.when+(rep?.status==="yes"?" · Accepted":rep?.status==="later"?" · Not this time":it.dir==="in"?" · Tap to answer":` · Waiting for ${nickOf(partnerId)||pn} to accept`);
-    if(rep?.status==="later")return;
-    if(it.at){const dd=Math.round((new Date(it.at).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/86400000);rt=dd<=0?"Today":dd===1?"Tomorrow":dd+" days"}
-    out.push({ic:"💌",t:it.dir==="in"?`${pn} invited you: ${what}`:rep?.status==="yes"?what:`You invited ${nickOf(partnerId)||pn}: ${what}`,sub,rt,go:()=>goTo(["connect",it.dir==="in"?"inbox":"secInv"]),sort:it.at||it.createdAt,pri:rep?.status==="yes"?1:0});
+    if(rep?.status==="later"||isCleared(it.id)||invDone(it))return;
+    const at=inviteWhen(it),what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(invLabel(it));
+    const go=()=>goTo(["connect",it.dir==="in"?"inbox":"secInv"]);
+    if(rep?.status==="yes"){
+      if(at&&at<now-3*H){ // happened (or should have): ask, then let it go after 3 days
+        if(at<now-3*D)return;
+        out.push({ic:"💌",t:`${what}: did it happen?`,sub:`${it.when} · Accepted`,rt:"Past",past:true,go,sort:at,pri:0.5,acts:[["✓ We did it",()=>markInviteDone(it),"primary"],["Didn't happen",()=>clearItem(it.id),"link"]]});return}
+      let rt="";if(at){const dd=Math.round((new Date(at).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/D);rt=dd<=0?"Today":dd===1?"Tomorrow":dd+" days"}
+      out.push({ic:"💌",t:what,sub:it.when+" · Accepted",rt,go,sort:at||it.createdAt,pri:1});return}
+    // not answered yet
+    const expired=at?at<now:it.createdAt<now-3*D;
+    if(expired){if((at||it.createdAt)<now-3*D)return;
+      out.push({ic:"💌",t:it.dir==="in"?`${pn} invited you: ${what}`:`You invited ${pnn}: ${what}`,sub:`${it.when} · No answer, time passed`,rt:"Expired",past:true,go,sort:at||it.createdAt,pri:2.5,acts:it.dir==="out"?[["Remove",()=>deleteSent(it),"link"]]:[["Dismiss",()=>clearItem(it.id),"link"]]});return}
+    let rt="";if(at){const dd=Math.round((new Date(at).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/D);rt=dd<=0?"Today":dd===1?"Tomorrow":dd+" days"}
+    out.push({ic:"💌",t:it.dir==="in"?`${pn} invited you: ${what}`:`You invited ${pnn}: ${what}`,sub:it.when+(it.dir==="in"?" · Tap to answer":` · Waiting for ${pnn} to accept`),rt,go,sort:at||it.createdAt,pri:0});
   });
-  all.filter(x=>x.kind==="challenge"&&x.createdAt>now-3*86400000).forEach(it=>{
-    const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id],c=rep?.count||0,t=it.target||1;if(c>=t)return;
-    out.push({ic:"🏁",t:it.text,sub:it.dir==="in"?`From ${pn}`:`You challenged ${pn}`,prog:c/t,rt:`${c} of ${t}`,go:()=>setTab("connect"),sort:it.createdAt,pri:3});
+  all.filter(x=>x.kind==="challenge"&&x.createdAt>now-7*D).forEach(it=>{
+    const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id],c=rep?.count||0,t=it.target||1;if(c>=t||isCleared(it.id))return;
+    const weekLong=/week/i.test(it.text||""),due=(()=>{const d=new Date(it.createdAt);if(weekLong){d.setDate(d.getDate()+7)}else{d.setDate(d.getDate()+1)}d.setHours(0,0,0,0);return d.getTime()})(),over=now>=due;
+    const acts=over?(it.dir==="in"?[["✓ Done",()=>reply(it.id,{count:t}).then(ok=>ok&&toast("Challenge done 🏆")),"primary"],["Remove",()=>clearItem(it.id),"link"]]:[["Remove",()=>deleteSent(it),"link"]]):null;
+    out.push({ic:"🏁",t:it.text,sub:over?(it.dir==="in"?`From ${pn} · time's up`:`${pnn} didn't finish`):(it.dir==="in"?`From ${pn}`:`You challenged ${pnn}`),prog:over?null:c/t,rt:over?"Overdue":`${c} of ${t}`,past:over,acts,go:()=>setTab("connect"),sort:it.createdAt,pri:over?2.6:3});
   });
   occasions().filter(o=>o.until<=(o.holiday?GIFT_DAYS:45)).slice(0,2).forEach(o=>{const w=o.gift&&partnerId&&wishOf(partnerId);
     out.push({ic:o.ic,t:o.until===0?(o.mine?"Happy birthday to you! 🎉":`${o.t} is today`):o.t,sub:o.date.toLocaleDateString(undefined,{weekday:"short",month:"long",day:"numeric"})+(w?` · 🎁 tap for ${nickOf(partnerId)||nm(partnerId)}'s wish list`:""),rt:o.until===0?"Today":o.until===1?"Tomorrow":o.until+" days",sort:o.date.getTime()+1,pri:2,go:w?()=>window.open(w,"_blank","noopener"):null})});
   // Invites waiting on an answer come first, then accepted plans, special days, challenges.
-  return out.sort((a,b)=>(a.pri||0)-(b.pri||0)||a.sort-b.sort).slice(0,5);
+  return out.sort((a,b)=>(a.pri||0)-(b.pri||0)||a.sort-b.sort).slice(0,6);
 }
+// Next up housekeeping: when things happened, clear what's past, and count what got done.
+function inviteWhen(it){const t=inviteAt(it);if(t)return t;if(it.when==="This weekend"){const d=new Date(it.createdAt||Date.now());d.setDate(d.getDate()+((7-d.getDay())%7));d.setHours(20,0,0,0);return d.getTime()}return 0}
+const clearedBy=p=>{const c=p&&members[p]?.cleared;return c&&typeof c==="object"?c:{}};
+const isCleared=id=>!!clearedBy(me)[id];
+const invDone=it=>!!(it.doneAt||(replies[me]||{})[it.id]?.doneAt||(partnerId&&(replies[partnerId]||{})[it.id]?.doneAt));
+async function clearItem(id){try{if(!signedIn())throw{code:"signed_out"};const t=Date.now();await db.doc(base(me)).merge({cleared:{[id]:t}});members[me]={...(members[me]||{}),cleared:{...clearedBy(me),[id]:t}};toast("Cleared from Next up");renderAll()}catch(e){console.error(e);toast(saveErr(e))}}
+async function deleteSent(it){if(!confirm("Remove this for both of you?"))return;try{await db.doc(`${base(me)}/sent/${it.id}`).delete();toast("Removed")}catch(e){console.error(e);toast(saveErr(e))}}
+async function markInviteDone(it){try{if(!signedIn())throw{code:"signed_out"};const t=Date.now();if(it.dir==="out")await db.doc(`${base(me)}/sent/${it.id}`).merge({doneAt:t});else await reply(it.id,{doneAt:t});
+  notify(partnerId,nm(me),`Marked “${invLabel(it)}” as done 💞`,"");toast("💞 Marked as done. It's in Moments now.");renderAll()}catch(e){console.error(e);toast(saveErr(e))}}
+function doneThisWeek(){const wk=Date.now()-7*86400000;let n=0;
+  [...incoming().map(x=>({...x,dir:"in"})),...outgoing().map(x=>({...x,dir:"out"}))].forEach(it=>{const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id];
+    if(it.kind==="challenge"&&(rep?.count||0)>=(it.target||1)&&(+rep.updatedAt||it.createdAt)>wk)n++;
+    if(it.kind==="invite"&&invDone(it)&&(it.doneAt||rep?.doneAt||0)>wk)n++});
+  n+=goals.filter(g=>g.status==="done"&&gVisible(g)&&(g.completedAt||0)>wk).length;return n}
 function renderHome(){
   if(!$("pHome"))return;
   const p=partnerId,pn=p?nm(p):"Your partner",k=todayKey();
@@ -4006,10 +4032,12 @@ function renderHome(){
     qb.append(d)}
   // next up
   const nb=$("homeNext");nb.textContent="";
-  if(nx.length){const list=el("div","nx");nx.forEach(it=>{const r=el(it.go?"button":"div","nxr");if(it.go){r.type="button";r.style.cssText="border:0;background:none;width:100%;text-align:left;font:inherit;color:inherit";r.onclick=it.go}
+  if(nx.length){const list=el("div","nx");nx.forEach(it=>{const useBtn=it.go&&!it.acts,r=el(useBtn?"button":"div","nxr"+(it.past?" past":""));if(useBtn){r.type="button";r.style.cssText="border:0;background:none;width:100%;text-align:left;font:inherit;color:inherit";r.onclick=it.go}
       r.append(el("span","ic2",it.ic));const tx=el("div","tx");tx.append(el("b",null,it.t));if(it.prog!=null){const br=el("div","bar2"),fi=el("i");fi.style.width=Math.round(it.prog*100)+"%";br.append(fi);tx.append(br)}else tx.append(el("span",null,it.sub));
-      r.append(tx);if(it.rt)r.append(el("span","rt",it.rt));list.append(r)});nb.append(list)}
+      if(it.acts){if(it.go){tx.style.cursor="pointer";tx.onclick=it.go}const ab=el("div","nxacts");it.acts.forEach(([l,fn,cls])=>{const b=el("button",(cls||"link")+" small",l);b.type="button";b.onclick=e=>{e.stopPropagation();fn()};ab.append(b)});tx.append(ab)}
+      r.append(tx);if(it.rt)r.append(el("span","rt"+(it.past?" late":""),it.rt));list.append(r)});nb.append(list)}
   else{const e=el("div","nx");const r=el("div","nxr");r.append(el("span","ic2","💌"));const tx=el("div","tx");tx.append(el("b",null,"Nothing planned yet"),el("span",null,`Invite ${pn} to a date or send a challenge.`));r.append(tx);const b=el("button","secondary","Plan");b.onclick=()=>{setTab("connect");setTimeout(()=>{const s3=$("secInv");if(s3){s3.open=true;s3.scrollIntoView({behavior:"smooth",block:"start"})}},80)};r.append(b);e.append(r);nb.append(e)}
+  {const dn=doneThisWeek();if(dn){const d=el("button","link small nxdone",`✓ ${dn} done this week · see Moments`);d.onclick=()=>$("homeMoments")?.scrollIntoView({behavior:"smooth",block:"start"});nb.append(d)}}
   renderHomeGoals();
   // moments
   const mb=$("homeMoments");mb.textContent="";
@@ -4018,7 +4046,7 @@ function renderHome(){
     if(it.kind==="photo"||it.kind==="clip"||it.kind==="media")return true;
     const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id];
     if(it.kind==="challenge")return (rep?.count||0)>=(it.target||1);
-    if(it.kind==="invite")return rep?.status==="yes";
+    if(it.kind==="invite")return invDone(it);
     return false;
   }).concat(goalMoments()).sort((a,b)=>b.createdAt-a.createdAt).slice(0,6);
   // on this day
@@ -4033,7 +4061,7 @@ function renderHome(){
       const theirRep=it.dir==="out"?rep:(replies[me]||{})[it.id];if(theirRep?.reaction)b2.append(el("span","small muted",`${it.dir==="out"?pn:"You"} reacted ${theirRep.reaction}`));if(theirRep?.comment)b2.append(el("span","small muted",`${it.dir==="out"?pn:"You"}: “${theirRep.comment}”`));if(b2.childNodes.length)c2.append(b2)}
     else if(it.kind==="media"){const b=el("div","mb");b.append(mediaFor(it));if(it.note)b.append(el("span","small muted","“"+it.note+"”"));c2.append(b)}
     else if(it.kind==="challenge"){const b=el("div","mb");b.append(el("span",null,`🏆 ${it.dir==="out"?pn+" finished your challenge":"You finished "+pn+"'s challenge"}: ${it.text}`));c2.append(b)}
-    else if(it.kind==="invite"){const b=el("div","mb");b.append(el("span",null,`💌 Accepted · ${it.when}`));c2.append(b)}
+    else if(it.kind==="invite"){const b=el("div","mb");b.append(el("span",null,invDone(it)?`💞 Done · ${invLabel(it)} · ${it.when}`:`💌 Accepted · ${it.when}`));c2.append(b)}
     mb.append(c2);
   });
 }
@@ -4614,7 +4642,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.11";
+const APP_VERSION="2026-10-18.12";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
