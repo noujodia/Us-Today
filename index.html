@@ -949,6 +949,7 @@ details.pl summary{cursor:pointer;font-weight:600}
     <div class="card stack">
       <h3>Already have a space?</h3>
       <p class="small muted">Paste the invite link your partner sent you, or your own link from About me. No code needed.</p>
+      <p class="small" style="margin:0">💡 Used <b>Us, Today</b> before? Open your old Home Screen icon once and it brings you right back to your space, or paste your old link here.</p>
       <input type="text" id="joinInput" placeholder="Paste link here" aria-label="Invite link">
       <button class="secondary" id="joinBtn">Join</button>
     </div>
@@ -4597,7 +4598,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.7";
+const APP_VERSION="2026-10-18.8";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
