@@ -3054,7 +3054,8 @@ const ownerList=uid=>[...new Set([...OWNER_UIDS,uid].filter(x=>/^[A-Za-z0-9]{10,
 function ownerRules(uid){const L=ownerList(uid);return`rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isOwner() { return request.auth != null && request.auth.uid in [${L}]; }
+    function isOwner() { return request.auth != null && (request.auth.uid in [${L}]
+      || exists(/databases/$(database)/documents/owners/$(request.auth.uid))); }
     function hasAccess(key) { return exists(/databases/$(database)/documents/betaAccess/$(key)); }
     function lockOn(key) { return exists(/databases/$(database)/documents/couples/$(key)/lock/main); }
     function onDevice(key) { return exists(/databases/$(database)/documents/couples/$(key)/devices/$(request.auth.uid)); }
@@ -3086,13 +3087,21 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 2000;
-      allow read, update, delete: if request.auth != null
-        && request.auth.uid in [${L}];
+      allow read, update, delete: if isOwner();
     }
     match /spaces/{id} {
       allow create, update: if request.auth != null && id.size() == 16;
-      allow read: if request.auth != null
-        && request.auth.uid in [${L}];
+      allow read: if isOwner();
+    }
+    match /config/owner {
+      allow create, update: if isOwner();
+    }
+    match /owners/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.k is string
+        && request.resource.data.k == get(/databases/$(database)/documents/config/owner).data.k;
+      allow list, delete: if isOwner();
     }
   }
 }`}
@@ -3109,6 +3118,11 @@ function renderFbInbox(){
   const box=$("inboxBody");box.textContent="";
   if(!isOwner){
     const uid=db?.uid||"";
+    {const kc=el("div","card stack");kc.style.gap="8px";kc.append(el("b",null,"🔑 Enter your owner key"),el("p","small muted","Unlocks the owner tools (feedback, usage and beta invites) on this phone."));
+      const lab=el("label","small","Owner key");lab.htmlFor="ownKeyIn";lab.style.cssText="position:absolute;left:-9999px";const inp=el("input");inp.type="password";inp.id="ownKeyIn";inp.autocomplete="current-password";inp.placeholder="Owner key";
+      const m=el("p","small");m.style.margin="0";m.setAttribute("role","status");const go=el("button","primary","Unlock");go.onclick=()=>unlockOwner(inp.value,m);inp.onkeydown=e=>{if(e.key==="Enter")go.click()};
+      kc.append(lab,inp,go,m);box.append(kc)}
+    box.append(el("p","small muted","No owner key yet, or it isn't working? Do this once:"));
     box.append(el("p","small","To make this phone an owner, replace your Firestore rules with the text below and tap Publish. It adds this phone's ID next to your existing owner phones, so the owner tools (feedback, usage and beta invites) work here too."));
     box.append(el("p","small muted","This phone's ID: "+(uid||"(not connected)")));
     const pre=el("pre","code",ownerRules(uid));box.append(pre);
@@ -3117,6 +3131,11 @@ function renderFbInbox(){
     const t=el("button","link small","I published it, check again");t.onclick=()=>{fbUnsub=null;watchInbox();setTimeout(renderFbInbox,1500)};
     r.append(c,l);box.append(r,t);return;
   }
+  {let has=false;try{has=!!localStorage.getItem("ut_ownerkey")}catch(e){}
+    const kc=el("details","card");kc.style.padding="10px 14px";if(!has)kc.open=true;const sm=el("summary",null,has?"🔑 Owner key is set · change it":"🔑 Set an owner key so you never get locked out");sm.style.cssText="cursor:pointer;font-weight:600";kc.append(sm);
+    const w=el("div","stack");w.style.cssText="gap:8px;margin-top:8px";w.append(el("p","small muted","Pick a phrase only you know. On a new phone or after re-adding the app, tap the version number 5 times and enter it to get your owner tools back."));
+    const lab=el("label","small","New owner key");lab.htmlFor="ownKeySet";lab.style.cssText="position:absolute;left:-9999px";const inp=el("input");inp.type="password";inp.id="ownKeySet";inp.autocomplete="new-password";inp.placeholder="At least 10 characters";
+    const m=el("p","small");m.style.margin="0";m.setAttribute("role","status");const b=el("button","secondary","Save owner key");b.onclick=()=>setOwnerKey(inp.value,m);w.append(lab,inp,b,m);kc.append(w);box.append(kc)}
   const counts={new:fbItems.filter(x=>!x.done).length,all:fbItems.length,bug:fbItems.filter(x=>x.kind==="bug").length,idea:fbItems.filter(x=>x.kind==="idea").length,love:fbItems.filter(x=>x.kind==="love").length};
   const ch=el("div","opts");[["new","New"],["all","All"],["bug","Bugs"],["idea","Ideas"],["love","Love"]].forEach(([k,t])=>{const b=el("button","opt",`${t} (${counts[k]})`);b.setAttribute("aria-pressed",String(fbFilter===k));b.onclick=()=>{fbFilter=k;renderFbInbox()};ch.append(b)});box.append(ch);
   const list=fbItems.filter(x=>fbFilter==="all"?true:fbFilter==="new"?!x.done:x.kind===fbFilter);
@@ -3135,6 +3154,21 @@ function renderFbInbox(){
   });
 }
 function openInbox(){renderFbInbox();$("inboxSheet").hidden=false}
+// Owner key: any phone that enters it becomes an owner phone, no rules editing needed.
+async function ownerKeyHash(k){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("noude-owner:"+String(k).trim()));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function unlockOwner(k,msg){
+  if(!db?.top||!db.uid){msg.textContent="Open your space first, then try again.";return}
+  if(String(k).trim().length<10){msg.textContent="The owner key is at least 10 characters.";return}
+  msg.textContent="Checking…";
+  try{await db.top.doc("owners/"+db.uid).set({k:await ownerKeyHash(k),at:Date.now(),device:deviceName(navigator.userAgent)});try{localStorage.setItem("ut_owner","1")}catch(e){}fbUnsub=null;watchInbox();msg.textContent="Unlocked 🎉";setTimeout(renderFbInbox,1200)}
+  catch(e){msg.textContent=isDenied(e)?"That key didn't work. Check it and try again.":"Couldn't check. Check your connection and try again."}
+}
+async function setOwnerKey(k,msg){
+  if(String(k).trim().length<10){msg.textContent="Use at least 10 characters. A short phrase works well.";return}
+  msg.textContent="Saving…";
+  try{const h=await ownerKeyHash(k);await db.top.doc("config/owner").set({k:h,at:Date.now()});await db.top.doc("owners/"+db.uid).set({k:h,at:Date.now(),device:deviceName(navigator.userAgent)});try{localStorage.setItem("ut_ownerkey","1")}catch(e){}msg.textContent="Owner key saved. On any new phone, tap the version number 5 times and enter it.";renderFbInbox()}
+  catch(e){msg.textContent=isDenied(e)?"Publish the latest rules first (below), then try again.":"Couldn't save. Check your connection and try again."}
+}
 let verTaps=0,verTimer=0;
 $("verTap").addEventListener("click",()=>{verTaps++;clearTimeout(verTimer);verTimer=setTimeout(()=>verTaps=0,1500);if(verTaps>=5){verTaps=0;try{localStorage.setItem("ut_owner","1")}catch(e){}watchInbox();openInbox()}});
 $("inboxOpen").onclick=openInbox;$("inboxX").onclick=()=>{$("inboxSheet").hidden=true};
@@ -4861,7 +4895,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.26";
+const APP_VERSION="2026-10-18.27";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
