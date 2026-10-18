@@ -448,6 +448,10 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .brand{font-size:2.6rem;letter-spacing:-.02em;margin:0}.tagline{margin:-6px 0 0;font-style:italic;color:var(--accent);font-weight:600}
 .relh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.relnew{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--accent);color:#fff}
 .nxr.past .ic2{opacity:.7}.nxr.past b{font-weight:600}.nxr .rt.late{color:#d38a12}.nxacts{display:flex;gap:10px;align-items:center;margin-top:6px;flex-wrap:wrap}.nxacts .primary.small{padding:6px 12px;font-size:.82rem}.nxdone{display:block;margin-top:8px}
+.priv h3{margin:6px 0 0;font-size:1rem}.priv ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.ptab{width:100%;border-collapse:collapse;font-size:.88rem}.ptab td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}.ptab td:last-child{text-align:right;color:var(--muted);white-space:nowrap;padding-left:10px}
+.pdel{margin-top:8px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+button.danger{align-self:flex-start;background:none;border:1.5px solid var(--warn);color:var(--warn);border-radius:12px;padding:10px 16px;font-weight:700}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
 .gh2{display:flex;gap:12px;align-items:center}.gh2 .gt{display:flex;flex-direction:column;gap:2px;min-width:0}.gh2 .gt b{font-weight:650}
@@ -868,6 +872,40 @@ details.pl summary{cursor:pointer;font-weight:600}
       <p class="small muted" id="aiState"></p>
     </div>
         </div>
+      </details>
+      <details class="sec" id="secPriv">
+        <summary><div class="sh"><h2>🛡️ Privacy &amp; your data</h2><span class="ssum" id="sum_secPriv">What we store, who can see it, and how to delete it</span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="secbody"><div class="card stack priv">
+          <h3>What Noudé stores</h3>
+          <table class="ptab"><tbody>
+            <tr><td>Names, nicknames, captions, photo</td><td>You two</td></tr>
+            <tr><td>About me answers</td><td>You two</td></tr>
+            <tr><td>Daily check-ins and notes</td><td>You two</td></tr>
+            <tr><td>Chat, photos, videos, stories, songs</td><td>You two</td></tr>
+            <tr><td>Invites, challenges, goals, dates, wish list link</td><td>You two</td></tr>
+            <tr><td>Usage counts and error reports (no content, no names)</td><td>The app's owner</td></tr>
+            <tr><td>Feedback you choose to send</td><td>The app's owner</td></tr>
+          </tbody></table>
+          <p class="small"><b>Never collected:</b> email, phone number, passwords, location, contacts or payment details.</p>
+          <h3>How it's protected</h3>
+          <ul class="small">
+            <li>Everything is encrypted in transit and at rest on Google's Firebase servers.</li>
+            <li>Your space can only be opened with your private personal link. Turn on the <b>Privacy lock</b> and a phone also needs your 6-digit passcode.</li>
+            <li>Notifications are encrypted, so Apple and Google can't read them on the way.</li>
+            <li>AI ideas are off unless you both turn them on. Then only check-ins and About me answers are used, never chat or photos, and the AI provider doesn't train on them.</li>
+            <li>Stories disappear after 24 hours. Photos and videos can auto-delete after 15 or 30 days.</li>
+          </ul>
+          <h3>Good to know</h3>
+          <ul class="small">
+            <li><b>Your personal link is your key.</b> Keep it private, and turn on the Privacy lock.</li>
+            <li><b>Not end-to-end encrypted.</b> The app never shows your content to anyone but you two, but whoever runs the servers could technically access stored data. We don't look, and during the beta please don't share anything too intimate, like explicit photos.</li>
+          </ul>
+          <div class="pdel">
+            <h3>Delete our space</h3>
+            <p class="small muted">Permanently deletes everything in your space for both of you: check-ins, chat, photos, videos, stories, dates, goals and answers. It can't be undone.</p>
+            <button class="danger" id="delSpace">Delete our space</button>
+          </div>
+        </div></div>
       </details>
       <details class="sec" id="secLock">
         <summary><div class="sh"><h2>Privacy lock 🔒</h2><span class="ssum" id="sum_secLock"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
@@ -2776,6 +2814,10 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-18d",at:"2026-10-18T12:10:00-04:00",date:"Oct 18, 2026",items:[
+    {em:"🛡️",t:"Privacy & your data",b:"A plain-language page in About me: what Noudé stores, who can see it, how it's protected, and how to delete everything.",go:["me","secPriv"]},
+    {em:"🗑️",t:"Delete our space",b:"Either of you can permanently delete your whole space from Privacy & your data."}
+  ]},
   {id:"2026-10-18c",at:"2026-10-18T09:46:32-04:00",date:"Oct 18, 2026",items:[
     {em:"🏡",t:"Our new home: noudeapp.com",b:"Noudé now lives at noudeapp.com. Old links still work and bring you here. For the best experience, remove the old Home Screen icon and add Noudé again from this page, then turn notifications back on. If you set a passcode, you'll enter it once more.",go:["home","gsBox"]}
   ]},
@@ -3544,6 +3586,28 @@ function homeInstallBanner(){
   const go=el("button","primary small","Show me");go.onclick=openInstall;const x=el("button","x","×");x.setAttribute("aria-label","Not now");x.onclick=()=>{try{localStorage.setItem("ut_instsnooze",String(Date.now()+3*86400000))}catch(e){}b.remove()};b.append(go,x);return b;
 }
 
+/* ================= Delete our space ================= */
+async function deleteSpace(){
+  const t=prompt("This permanently deletes your space for BOTH of you: check-ins, chat, photos, videos, stories, dates, goals and answers. It can't be undone.\n\nType DELETE to confirm.");
+  if((t||"").trim().toUpperCase()!=="DELETE"){toast("Nothing was deleted");return}
+  if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
+  const btn=$("delSpace");btn.disabled=true;btn.textContent="Deleting…";
+  const delColl=async p=>{try{const q=await db.collection(p).get();await Promise.all(q.docs.map(d=>db.doc(p+"/"+d.id).delete().catch(()=>{})))}catch(e){}};
+  try{
+    if(partnerId)notify(partnerId,nm(me),"Deleted your Noudé space. Everything you shared there is gone.","");
+    for(const p of [A,B])for(const sub of ["days","sent","replies","messages"])await delColl(`${base(p)}/${sub}`);
+    try{const v=await db.collection("videos").get();for(const d of v.docs){const n=+(d.data()?.parts)||0;for(let i=0;i<n;i++)await db.doc(`videos/${d.id}/parts/${i}`).delete().catch(()=>{})}}catch(e){}
+    for(const c of ["photos","videos","stories","goals","q","ai","settings"])await delColl(c);
+    if(WORKER_URL&&spaceHash)for(const p of [A,B])fetch(WORKER_URL+"remind",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:spaceHash+"-"+p,sub:null,am:false,mid:false})}).catch(()=>{});
+    for(const p of [A,B])await db.doc(base(p)).delete().catch(()=>{});
+    await db.doc("lock/main").delete().catch(()=>{});await delColl("devices");
+    track({"n.spaceDeleted":1});
+    try{localStorage.removeItem("ut_space");localStorage.removeItem("ut_who");localStorage.removeItem("ut_known_"+spaceKey)}catch(e){}
+    alert("Your space has been deleted.");location.replace(location.origin+location.pathname);
+  }catch(e){console.error(e);toast("Couldn't finish deleting. Try again.");btn.disabled=false;btn.textContent="Delete our space"}
+}
+$("delSpace").onclick=deleteSpace;
+
 /* ================= Help, FAQ & setup check ================= */
 const HELP=[
  {g:"start",t:"Getting started",ic:"🚀",items:[
@@ -3595,11 +3659,16 @@ const HELP=[
   ["aiwhat","What does AI ideas use?","Only your check-ins, About me answers and schedules. It never uses chat messages or photos."],
   ["aiboth","Why do we both have to turn it on?","AI ideas read both of your check-ins, so each person decides for themselves. Until you both turn it on, it stays off.",["me","aiCard"],"Open AI settings"],
   ["week","When is the weekly summary written?","On Sundays, once you've had at least 3 check-ins that week. You can also tap to write it early."]]},
- {g:"privacy",t:"Privacy & storage",ic:"🔒",items:[
-  ["seedata","Can anyone see our data?","Your space is private to the two of you. The app's builder can't open your profile, check-ins or chat. During the beta, please don't share anything too intimate, like explicit photos."],
+ {g:"privacy",t:"Privacy & your data",ic:"🔒",items:[
+  ["seedata","Can anyone see our stuff?","The app never shows what you write or share to anyone but you two. The owner's dashboard only shows anonymous counts, like how many couples checked in today. It isn't end-to-end encrypted, so whoever runs the servers could technically access stored data. We don't look, and during the beta please don't share anything too intimate, like explicit photos.",["me","secPriv"],"Privacy & your data"],
+  ["wherestored","Where is our data stored?","On Google's Firebase cloud, encrypted in transit and at rest. Noudé never collects your email, phone number, location, contacts or payment details."],
+  ["linkkey","Who else can get into our space?","Only someone with your personal link. Keep it private, and turn on the Privacy lock so even someone with the link needs your 6-digit code.",["me","lockCard"],"Set a passcode"],
+  ["aiprivacy","Does AI read our messages?","No. AI ideas are off unless you both turn them on. Even then it only uses check-ins and About me answers, never chat or photos, and the AI provider doesn't train on it."],
   ["lock","What does the privacy passcode do?","With the passcode on, no phone can see your space until it enters your shared 6-digit code, even with your link. Tell your partner the code in person.",["me","lockCard"],"Set a passcode"],
-  ["lockstuck","I'm stuck on a passcode screen I never set","Tap No passcode set? Try again. If that doesn't work, close the app fully and reopen it from your personal link."],
-  ["autodel","How does auto-delete work?","In About me → Photos & videos, choose to delete after 15 or 30 days, or keep everything. It applies to both of you.",["me","secAd"],"Open storage settings"]]},
+  ["lockstuck","I'm stuck on a passcode screen","If you never set a passcode, tap No passcode set? Try again. If you forgot it, your partner can change it in About me → Privacy lock, or turn it off."],
+  ["autodel","How does auto-delete work?","In About me → Photos & videos, choose to delete after 15 or 30 days, or keep everything. It applies to both of you. Stories always disappear after 24 hours.",["me","secAd"],"Open storage settings"],
+  ["delspace","How do I delete everything?","About me → Privacy & your data → Delete our space. It permanently deletes everything for both of you and can't be undone.",["me","secPriv"],"Open"]]},
+
  {g:"phone",t:"Phone setup & notifications",ic:"📱",items:[
   ["iphoneinstall","How do I add the app to my iPhone Home Screen?","In Safari, tap Share ⬆︎ → Add to Home Screen → Add. Then always open Noudé from that icon. Notifications on iPhone only work from the icon.",null,"Show me how","install"],
   ["androidinstall","How do I add it on Android (Pixel, Samsung)?","In Chrome, tap ⋮ → Add to Home screen → Install. It gets its own icon and opens full screen.",null,"Show me how","install"],
@@ -3609,10 +3678,10 @@ const HELP=[
   ["update","How do I get the latest version?","When an update is ready, a banner says Update ready. Tap it. You can also close the app fully and reopen it."],
   ["slow","The app is blank, stuck or won't load","Check your internet, then close the app fully and reopen it from your personal link. If it still won't load, send feedback with a screenshot."]]}
 ];
-const HELP_FOR={secFor:"checkin",secWeek:"ai",secRead:"checkin",secInv:"plans",secCh:"plans",secGoals:"goals",secSent:"chat",secNotif:"phone",secAi:"ai",secLock:"privacy",secAd:"privacy",secLinks:"start",secAnswers:"start"};
+const HELP_FOR={secFor:"checkin",secWeek:"ai",secRead:"checkin",secInv:"plans",secCh:"plans",secGoals:"goals",secSent:"chat",secNotif:"phone",secAi:"ai",secLock:"privacy",secPriv:"privacy",secAd:"privacy",secLinks:"start",secAnswers:"start"};
 const helpItems=()=>HELP.flatMap(g=>g.items.map(([id,q,a,go,goT,special])=>({id,q,a,go,goT,special,g:g.g,gt:g.t})));
 const H_STOP=new Set("the and for how what why when where who can does did doesnt dont isnt cant wont not are was were you your our its it this that with have has get got from into about there their them they she her his him use using app any all just like way want need help please is to do my me an on in of or at by be if no".split(" "));
-const H_TAGS={questwhat:"quest game levels badge onboarding steps",questnudge:"nudge remind partner",goalhow:"goal goals target habit",goalcouple:"goal partner shared private",goalmoney:"debt money save savings",goalreward:"reward incentive prize",notifnone:"notification push alert not working broken stopped",notifon:"notification push alert enable",lockstuck:"locked code pin stuck screen",lock:"code pin password security",clipfail:"video clip upload fail error",songfail:"music song search broken",update:"refresh new version banner",slow:"blank white loading frozen crash stuck",autodel:"delete storage space remove photos",seedata:"privacy private secure safe data",wish:"amazon gift list",dates:"birthday anniversary wedding met",giftrem:"gift present birthday reminder",iphoneinstall:"icon home screen install iphone ios",androidinstall:"icon home screen install android pixel samsung",perslink:"link url",link:"join partner invite connect",code:"invite beta code",calendar:"calendar google apple outlook",chatmedia:"photo picture video",react:"emoji reaction like heart",streak:"streak days",stories:"story stories ring"};
+const H_TAGS={delspace:"delete remove erase account data everything",wherestored:"stored server google firebase encrypted safe",aiprivacy:"ai privacy messages read train",linkkey:"access link someone else hack",questwhat:"quest game levels badge onboarding steps",questnudge:"nudge remind partner",goalhow:"goal goals target habit",goalcouple:"goal partner shared private",goalmoney:"debt money save savings",goalreward:"reward incentive prize",notifnone:"notification push alert not working broken stopped",notifon:"notification push alert enable",lockstuck:"locked code pin stuck screen",lock:"code pin password security",clipfail:"video clip upload fail error",songfail:"music song search broken",update:"refresh new version banner",slow:"blank white loading frozen crash stuck",autodel:"delete storage space remove photos",seedata:"privacy private secure safe data",wish:"amazon gift list",dates:"birthday anniversary wedding met",giftrem:"gift present birthday reminder",iphoneinstall:"icon home screen install iphone ios",androidinstall:"icon home screen install android pixel samsung",perslink:"link url",link:"join partner invite connect",code:"invite beta code",calendar:"calendar google apple outlook",chatmedia:"photo picture video",react:"emoji reaction like heart",streak:"streak days",stories:"story stories ring"};
 const hNorm=t=>String(t||"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
 const hSlug=t=>hNorm(t).replace(/ /g,"_").slice(0,40);
 let helpSeen=new Set(),helpMissSent=new Set(),helpMissT=0;
@@ -3799,7 +3868,7 @@ async function setRemind(k){
 $("remAm").onclick=()=>setRemind("am");$("remMid").onclick=()=>setRemind("mid");
 
 /* ---- Collapsible sections ---- */
-const SECS=["secDates","secAnswers","secSelf","secFor","secWeek","secRead","secInv","secCh","secGoals","secSent","secNotif","secAi","secLock","secAd","secLinks","secHelp"];
+const SECS=["secPriv","secDates","secAnswers","secSelf","secFor","secWeek","secRead","secInv","secCh","secGoals","secSent","secNotif","secAi","secLock","secAd","secLinks","secHelp"];
 function initSecs(){SECS.forEach(id=>{const d=$(id);if(!d)return;let v=null;try{v=localStorage.getItem("ut_sec_"+id)}catch(x){}if(v!=null)d.open=v==="1";d.addEventListener("toggle",()=>{try{localStorage.setItem("ut_sec_"+id,d.open?"1":"0")}catch(x){}})})}
 initSecs();
 function setSum(id,t){const n=$(id);if(n)n.textContent=t||""}
@@ -4642,7 +4711,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.12";
+const APP_VERSION="2026-10-18.13";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
