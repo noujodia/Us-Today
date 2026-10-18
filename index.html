@@ -4542,7 +4542,7 @@ Your code: ${c.id} (works once)
 2. Enter the code and tap Start our space
 3. Send your partner their invite from About me
 
-🔒 Heads up: Noudé is in beta. Your space is private to the two of you, and your data is never shared or sold. It's against our policy to open or view your photos, messages or check-ins. The only data we look at is anonymous usage counts. Because it isn't end-to-end encrypted yet, please don't send explicit photos or videos during the beta.
+🔒 Heads up: Noudé is in beta. Your space is private to the two of you, and your data is never shared or sold. It's against our policy to open or view your photos, messages or check-ins. The only data we look at is anonymous usage counts. While we're in beta, we recommend not sending explicit photos or videos.
 
 Tell us what you think!`}
 async function shareCode(c){
@@ -4851,7 +4851,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.22";
+const APP_VERSION="2026-10-18.23";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
