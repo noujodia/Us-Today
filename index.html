@@ -452,6 +452,13 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .ptab{width:100%;border-collapse:collapse;font-size:.88rem}.ptab td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}.ptab td:last-child{text-align:right;color:var(--muted);white-space:nowrap;padding-left:10px}
 .pdel{margin-top:8px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
 button.danger{align-self:flex-start;background:none;border:1.5px solid var(--warn);color:var(--warn);border-radius:12px;padding:10px 16px;font-weight:700}
+.mewrap{position:relative;flex:none;display:flex;flex-direction:column;align-items:center;gap:2px}
+.mebadge{position:absolute;top:30px;right:-4px;width:20px;height:20px;border-radius:50%;background:var(--surface);border:1.5px solid var(--line);display:grid;place-items:center;font-size:.72rem;color:var(--muted);pointer-events:none}
+.melab{font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.03em;pointer-events:none}
+.mecoach{position:absolute;top:76px;right:0;z-index:30;width:210px;background:var(--ink,#222);color:var(--bg,#fff);border-radius:14px;padding:10px 12px;font-size:.85rem;line-height:1.35;display:flex;flex-direction:column;gap:6px;box-shadow:0 8px 24px rgba(0,0,0,.25);text-align:left;animation:qpulse 1.6s ease-in-out 2}
+.mecoach::before{content:"";position:absolute;top:-6px;right:18px;width:12px;height:12px;background:inherit;transform:rotate(45deg)}
+.mecoach .link{color:inherit;text-decoration:underline;align-self:flex-end;padding:0}
+.mecoach[hidden]{display:none}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
 .gh2{display:flex;gap:12px;align-items:center}.gh2 .gt{display:flex;flex-direction:column;gap:2px;min-width:0}.gh2 .gt b{font-weight:650}
@@ -619,7 +626,8 @@ details.pl summary{cursor:pointer;font-weight:600}
       <span class="eyebrow" id="dateLabel">Today</span>
       <h1 id="hello">How are we feeling?</h1>
     </div>
-    <button class="mebtn" role="tab" id="tabMe" aria-selected="false" aria-label="About me"></button>
+    <div class="mewrap"><button class="mebtn" role="tab" id="tabMe" aria-selected="false" aria-label="About me and settings"></button><span class="mebadge" aria-hidden="true">⚙︎</span><span class="melab" aria-hidden="true">Me</span>
+      <div class="mecoach" id="meCoach" hidden role="status"><span>👆 Tap your photo for <b>About me</b>, settings and help</span><button class="link small" id="meCoachOk">Got it</button></div></div>
   </div>
   <div class="switch" id="whoSwitch" role="group" aria-label="Who's using the app" hidden><button id="whoA">Me</button><button id="whoB">Partner</button></div>
 
@@ -2915,7 +2923,7 @@ function openWhatsNew(all){
   });
   $("wnSheet").hidden=false;const pn=$("wnSheet").querySelector(".panel");if(pn)pn.scrollTop=0;try{$("wnDone").focus({preventScroll:true})}catch(e){}requestAnimationFrame(()=>{if(pn)pn.scrollTop=0});
 }
-function closeWhatsNew(){$("wnSheet").hidden=true;markRelSeen()}
+function closeWhatsNew(){$("wnSheet").hidden=true;markRelSeen();setTimeout(maybeMeCoach,600)}
 $("wnX").onclick=closeWhatsNew;$("wnDone").onclick=closeWhatsNew;
 $("wnSheet").addEventListener("click",e=>{if(e.target.id==="wnSheet")closeWhatsNew()});
 $("wnOpen").onclick=()=>openWhatsNew(true);
@@ -4561,7 +4569,10 @@ function setTab(t){
   try{window.scrollTo({top:0})}catch(e){}
   renderBanner();renderCiBanner();
 }
-$("tabHome").onclick=()=>setTab("home");$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>setTab("me");$("tabChat").onclick=()=>setTab("chat");
+function meCoachSeen(){try{localStorage.setItem("ut_mecoach","1")}catch(e){}$("meCoach").hidden=true}
+function maybeMeCoach(){let seen=false;try{seen=!!localStorage.getItem("ut_mecoach")}catch(e){}if(seen||!spaceKey||!members[me]?.onboarded||tab==="me"||!$("sheet").hidden||!$("wnSheet").hidden)return;$("meCoach").hidden=false}
+$("meCoachOk").onclick=e=>{e.stopPropagation();meCoachSeen()};
+$("tabHome").onclick=()=>setTab("home");$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>{meCoachSeen();setTab("me")};$("tabChat").onclick=()=>setTab("chat");
 
 let remT=0;function remSoon(){clearTimeout(remT);remT=setTimeout(()=>syncReminder(),1500)}
 function renderAll(){remSoon();questSoon();if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
@@ -4678,7 +4689,7 @@ async function startSpace(firstTime){
   else if(!OWNER_LINK)maybeWhatsNew();
   done();
   initOwner();
-  hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen();setTimeout(syncReminder,1500);setTimeout(dailySetupPing,8000)});
+  setTimeout(maybeMeCoach,2500);setTimeout(maybeMeCoach,12000);hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen();setTimeout(syncReminder,1500);setTimeout(dailySetupPing,8000)});
   refreshPushSub();
   db.doc("settings/couple").onSnapshot(s=>{coupleSettings=s.exists?(s.data()||{}):{};if(tab==="home")renderHome();if(tab==="me")renderDates();remSoon()},()=>{});
   watchQuestion();
@@ -4725,7 +4736,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.14";
+const APP_VERSION="2026-10-18.15";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
