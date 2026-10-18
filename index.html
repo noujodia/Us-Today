@@ -2856,9 +2856,10 @@ async function setAiOk(v){
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
   {id:"2026-10-18e",at:"2026-10-18T13:30:00-04:00",date:"Oct 18, 2026",items:[
-    "👋 Deleting is now individual: Leave and delete my data removes only your own things. Your partner keeps what they created.",
-    "📝 A short, anonymous question asks why you're leaving. Your partner never sees the answer.",
-    "💛 If your partner leaves, you'll see a gentle note on Home and can keep your space or delete your data too."]},
+    {em:"👋",t:"Leaving is now individual",b:"Leave and delete my data removes only your own things. Your partner keeps what they created.",go:["me","secPriv"]},
+    {em:"📝",t:"A quick question before you go",b:"If you leave, we ask why. It's anonymous and your partner never sees the answer."},
+    {em:"💛",t:"If your partner leaves",b:"You'll see a gentle note on Home and can keep your space or delete your data too."}
+  ]},
   {id:"2026-10-18d",at:"2026-10-18T12:10:00-04:00",date:"Oct 18, 2026",items:[
     {em:"🛡️",t:"Privacy & your data",b:"A plain-language page in About me: what Noudé stores, who can see it, how it's protected, and how to delete everything.",go:["me","secPriv"]},
     {em:"🗑️",t:"Leave and delete my data",b:"Each of you can delete your own data from Privacy & your data. Your partner keeps only what they created."}
@@ -2941,7 +2942,7 @@ function openWhatsNew(all){
   const box=$("wnList");box.textContent="";
   rels.forEach((r,ri)=>{
     const sec=el("div","stack rel");sec.style.gap="10px";if(all||rels.length>1){const h=el("h4","relh");let lab=r.date;if(r.at){const d=new Date(r.at);if(!isNaN(d)){lab=d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})+" · "+d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});const ago=Date.now()-d.getTime();if(ago<7*86400000&&ago>=0)lab+=" · "+timeAgo(d.getTime())}}h.append(document.createTextNode(lab));if(ri===0)h.append(el("span","relnew","Latest"));sec.append(h)}
-    r.items.forEach(it=>{const c=el("div","wn");c.append(el("span","em",it.em),el("b",null,it.t),el("p",null,it.b));if(it.go){const b=el("button","try","Try it →");b.onclick=()=>{closeWhatsNew();if(it.dot)useDot(it.dot);goTo(it.go)};c.append(b)}sec.append(c)});
+    r.items.forEach(it=>{if(typeof it==="string"){const m=it.match(/^(\p{Extended_Pictographic}\S*)\s+(.*)$/u);it={em:m?m[1]:"✨",t:"",b:m?m[2]:it}}const c=el("div","wn");c.append(el("span","em",it.em),el("b",null,it.t),el("p",null,it.b));if(it.go){const b=el("button","try","Try it →");b.onclick=()=>{closeWhatsNew();if(it.dot)useDot(it.dot);goTo(it.go)};c.append(b)}sec.append(c)});
     box.append(sec);
   });
   $("wnSheet").hidden=false;const pn=$("wnSheet").querySelector(".panel");if(pn)pn.scrollTop=0;try{$("wnDone").focus({preventScroll:true})}catch(e){}requestAnimationFrame(()=>{if(pn)pn.scrollTop=0});
@@ -4823,7 +4824,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.16";
+const APP_VERSION="2026-10-18.17";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
