@@ -433,6 +433,18 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wishbtn{background:#3a2a14;color:#f3c27a}}
 .hside .hwish{font-size:.78rem;font-weight:700;color:#8a4b00;text-decoration:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hside .hwish{color:#f3c27a}}
+.quest .qhead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.quest h3{margin:0}
+.qprog{display:flex;flex-direction:column;gap:6px}.qrow{display:flex;align-items:center;gap:8px}.qrow .qname{width:64px;font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.qrow .bar{flex:1}
+.qtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.qtab{display:flex;flex-direction:column;align-items:center;gap:1px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 4px;font-size:.78rem;font-weight:600;color:var(--ink)}
+.qtab .qic{font-size:1.15rem}.qtab.on{border-color:var(--accent);background:var(--accent-soft)}.qtab.full .small{color:var(--ok)}.qtab.ahead{opacity:.6}
+.quest .gstep{align-items:flex-start}.quest .qt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.quest .qwhy{font-size:.8rem;color:var(--muted)}
+.quest .qp{font-size:.74rem;color:var(--muted)}.quest .qp.yes{color:var(--ok)}.quest .go.nudge{background:var(--soft);color:var(--ink)}.qreward{margin:0}
+.hcap.pulse{animation:qpulse 1.6s ease-in-out infinite;font-weight:700}
+@keyframes qpulse{0%,100%{opacity:1}50%{opacity:.55}}
+.fbadge{display:inline-block;margin-top:2px;padding:3px 10px;border-radius:999px;background:linear-gradient(135deg,#f8d36b,#e8a93a);color:#4a3000;font-weight:700;font-size:.78rem}
+.sring.gold{padding:6px;background:conic-gradient(from 0deg,#fff1a8,#f2c14e,#d4932a,#f8d36b,#fff1a8)}
+.ibanner{display:flex;align-items:center;gap:10px;margin-top:10px;padding:12px;border-radius:14px;background:var(--accent-soft);text-align:left}.ibanner .iic{font-size:1.5rem}.ibanner .itx{flex:1;display:flex;flex-direction:column;gap:2px}.ibanner .x{position:static}
+@media (prefers-reduced-motion:reduce){.hcap.pulse{animation:none}}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
 .gh2{display:flex;gap:12px;align-items:center}.gh2 .gt{display:flex;flex-direction:column;gap:2px;min-width:0}.gh2 .gt b{font-weight:650}
@@ -2748,6 +2760,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-18a",date:"Oct 18, 2026",items:[
+    {em:"🏆",t:"Couple Quest",b:"A short game on Home that walks you both through the app in 3 levels. See each other's progress, nudge your partner, and finish together to unlock the Founding Couple badge and gold story rings.",go:["home","gsBox"]}
+  ]},
   {id:"2026-10-17n",date:"Oct 17, 2026",items:[
     {em:"🎯",t:"Goals together",b:"Set short- or long-term goals, like the same bedtime, a new restaurant or paying off a debt. Couple goals count when you both check them off. Personal goals can be shared so your partner can cheer you on.",go:["connect","secGoals"]},
     {em:"🎁",t:"Rewards",b:"Add a reward to any goal, or pledge one for your partner's goal. Finished goals celebrate on Home."}
@@ -2862,18 +2877,6 @@ function gsSteps(){
     {t:"Send a chat message",done:(msgs[me]||[]).length>0,go:()=>goTo(["chat","msgIn"])},
     {t:"Turn on AI ideas",done:!!members[me]?.aiOk,go:()=>goTo(["me","aiCard"])}
   ];
-}
-function renderGs(){
-  const box=$("gsBox");if(!box)return;box.textContent="";
-  if(!spaceKey||!signedIn())return;
-  let hidden=false;try{hidden=!!localStorage.getItem(gsHideKey())}catch(e){}
-  const st=gsSteps(),n=st.filter(x=>x.done).length;
-  if(hidden||n===st.length)return;
-  const c=el("div","gs"),hd=el("div","row between");hd.append(el("h3",null,"Get started"),el("span","small muted",`${n} of ${st.length} done`));c.append(hd);
-  const bar=el("div","bar"),fill=el("i");fill.style.width=Math.round(n/st.length*100)+"%";bar.append(fill);c.append(bar);
-  st.forEach(x=>{const r=el("div","gstep"+(x.done?" isdone":""));r.append(el("span","ck",x.done?"✓":""),el("span","t",x.t));if(!x.done){const b=el("button","go","Go");b.setAttribute("aria-label",x.t);b.onclick=x.go;r.append(b)}c.append(r)});
-  const hide=el("button","link small","Hide this");hide.style.alignSelf="flex-start";hide.onclick=()=>{try{localStorage.setItem(gsHideKey(),"1")}catch(e){}renderGs()};c.append(hide);
-  box.append(c);
 }
 
 /* ---- Feedback ---- */
@@ -3040,8 +3043,33 @@ function renderStats(){
   const tt=el("div","chartc");tt.append(el("b",null,"All-time totals"));
   [["Chat messages",tot("chat")],["Hugs, kisses and emojis",tot("touch")],["Photos",tot("photo")],["Videos",tot("video")],["Songs and links",tot("song")],["Date invites",tot("invite")],["Challenges",tot("challenge")],["Chat reactions",tot("react")]].forEach(([t,v])=>{const r=el("div","row between small");r.append(el("span",null,t),el("b",null,String(v)));tt.append(r)});
   box.append(tt);
-  renderHelpStats(box,S);
+  renderQuestStats(box,S);renderHelpStats(box,S);
   box.append(el("p","small muted","Counts only. No messages, check-ins, photos or names are collected. Counting started Oct 17, 2026, so totals before then aren't included."));
+}
+function renderQuestStats(box,S){
+  const card=(t,sub)=>{const c=el("div","chartc");c.append(el("b",null,t));if(sub)c.append(el("span","small muted",sub));return c};
+  const bar=(c,label,v,max,txt)=>{const r=el("div","hb");r.append(el("span",null,label),el("span","v",txt));const tr=el("div","tr"),fi=el("i");fi.style.width=Math.round(max?v/max*100:0)+"%";tr.append(fi);r.append(tr);c.append(r)};
+  const has=(x,id,w)=>!!(x.q&&x.q[id]&&x.q[id][w]);
+  const people=[];S.forEach(x=>[A,B].forEach(w=>{if(w===B&&!x.partnerJoined&&!QSTEPS.some(s=>has(x,s[0],w)))return;people.push({x,w})}));
+  const c1=card("Couple Quest funnel",`${people.length} people in ${S.length} couples · share who finished each step`);
+  if(!people.length)c1.append(el("p","small muted","No data yet."));
+  else QSTEPS.forEach(([id,lv,t])=>{const n=people.filter(o=>has(o.x,id,o.w)).length;bar(c1,`L${lv} · ${t}`,n,people.length,`${n} · ${Math.round(n/people.length*100)}%`)});
+  box.append(c1);
+  const c2=card("Quest levels","Where each person is now");const lvOf=o=>+((o.x.ql||{})[o.w])||0;
+  [[0,"Not started a level"],[1,"🌱 Getting Cozy"],[2,"💞 In Sync"],[3,"🔥 All In (finished)"]].forEach(([n,t])=>{const k=people.filter(o=>lvOf(o)===n).length;bar(c2,t,k,people.length||1,String(k))});
+  const days=people.filter(o=>lvOf(o)===3).map(o=>{const last=Math.max(...QSTEPS.map(s=>+(o.x.q?.[s[0]]?.[o.w])||0));return (last-(+o.x.createdAt||last))/86400000}).filter(d=>d>=0).sort((a,b)=>a-b);
+  c2.append(el("span","small muted",days.length?`Median time to finish: ${days[Math.floor(days.length/2)].toFixed(1)} days (${days.length} finished)`:"Nobody has finished all 3 levels yet."));
+  box.append(c2);
+  const c3=card("Nudges that worked","Partner nudges sent, and steps finished within a week of one · evening reminders followed by the step within 3 days");
+  const rows=QSTEPS.map(([id,,t])=>{const sum=k=>S.reduce((a,x)=>a+(+(k(x))||0),0);return{t,sent:sum(x=>x.qn?.s?.[id]),win:sum(x=>x.qn?.win?.[id]),pw:sum(x=>x.qp?.win?.[id])}}).filter(r=>r.sent||r.win||r.pw);
+  if(!rows.length)c3.append(el("p","small muted","No nudges yet."));
+  rows.forEach(r=>{const e=el("div","erow");e.append(el("b",null,r.t),el("span","small muted",`Partner nudges: ${r.sent} sent · ${r.win} led to the step · Reminder pushes that led to the step: ${r.pw}`));c3.append(e)});
+  box.append(c3);
+  const c4=card("Couples, step by step","Anonymous · newest first · where each partner is stuck");
+  S.slice().sort((a,b)=>(+b.createdAt||0)-(+a.createdAt||0)).slice(0,25).forEach((x,i)=>{const e=el("div","erow");
+    const desc=w=>{if(w===B&&!x.partnerJoined)return"partner not joined";const n=QSTEPS.filter(s=>has(x,s[0],w)).length,nx=QSTEPS.find(s=>!has(x,s[0],w));return `L${+((x.ql||{})[w])||0} · ${n}/${QSTEPS.length}${nx?` · next: ${nx[2]}`:" · done 🏅"}`};
+    e.append(el("b",null,`Couple ${i+1}${x.createdAt?" · started "+new Date(+x.createdAt).toLocaleDateString(undefined,{month:"short",day:"numeric"}):""}`),el("span","small muted",`Partner 1: ${desc(A)}`),el("span","small muted",`Partner 2: ${desc(B)}`));c4.append(e)});
+  box.append(c4);
 }
 function renderHelpStats(box,S){
   const sum=(path)=>{const o={};S.forEach(x=>{const m=path.split(".").reduce((a,k)=>a&&a[k],x);if(m&&typeof m==="object")Object.entries(m).forEach(([k,v])=>{if(typeof v==="number")o[k]=(o[k]||0)+v})});return o};
@@ -3339,6 +3367,158 @@ function goalRemEvents(){
   return out;
 }
 
+/* ================= Couple Quest ================= */
+const QLEVELS=[{n:1,ic:"🌱",t:"Getting Cozy",sub:"Set up"},{n:2,ic:"💞",t:"In Sync",sub:"Try it out"},{n:3,ic:"🔥",t:"All In",sub:"Go deeper"}];
+// id, level, title, why, nudge text for partner (null = not nudgeable), push text
+const QSTEPS=[
+ ["photo",1,"Add your photo","So your partner sees you, not a letter.","Add your photo so I can see your face 📸","📸 Add your photo so {p} sees you, not a letter."],
+ ["install",1,"Add Us, Today to your Home Screen","It's the only way to get notifications on iPhone.","Add Us, Today to your Home Screen so you get my notifications 📲","📲 Add Us, Today to your Home Screen so you never miss {p}."],
+ ["notif",1,"Turn on notifications","Know the moment your partner checks in or sends something.","Turn on notifications so you see what I send 🔔",null],
+ ["about",1,"Fill out About me","Your answers shape the ideas you both get.","Finish your About me so I know how to love you better 💗","💗 Finish About me so {p} knows how to show up for you."],
+ ["partner",1,"Invite your partner","It takes two. Send them their invite link.",null,null],
+ ["checkin",2,"Do your first check-in","30 seconds to tell your partner how you feel.","Do a check-in so I know how you're feeling 💞","💞 30 seconds: tell {p} how you're feeling today."],
+ ["hug",2,"Send a hug","A tiny moment that says I'm thinking of you.","Send me a hug 🤗","🤗 Send {p} a hug. It takes one tap."],
+ ["song",2,"Send a song","Pick the song that reminds you of them.","Send me a song that reminds you of me 🎵","🎵 Send {p} the song that reminds you of them."],
+ ["story",2,"Post a photo or video story","A 24-hour peek into your day, just for them.","Post a story for me 📸","📸 Post a story for {p}. It disappears in 24 hours."],
+ ["challenge",2,"Send a challenge","Something playful, like 5 kisses today.","Send me a challenge 😏","😏 Send {p} a playful challenge, like 5 kisses today."],
+ ["react",2,"React to a message","Heart or laugh at something in Chat.",null,"❤️ React to something {p} sent you in Chat."],
+ ["dates",3,"Add your important dates","Get gift reminders before birthdays and anniversaries.","Add our dates so we never miss a birthday 🎂","🎂 Add your dates so you never miss {p}'s birthday."],
+ ["wish",3,"Add your wish list","So your partner never has to guess.","Add your wish list so I know what to get you 🎁","🎁 Add your wish list so {p} never has to guess."],
+ ["plan",3,"Plan a date","Invite your partner to something, even a night in.","Plan a date for us 💌","💌 Plan a date with {p}, even a cozy night in."],
+ ["goal",3,"Set a goal together","Same bedtime, a new restaurant, saving for a trip.","Let's set a goal together 🎯","🎯 Set a goal with {p}: same bedtime, a new restaurant…"],
+ ["ai",3,"Turn on AI ideas","Personal ideas for showing up for each other.","Turn on AI ideas so we both get them ✨","✨ Turn on AI ideas for personal ways to show up for {p}."],
+ ["streak",3,"Reach a 3-day streak","Check in 3 days in a row, together.","Check in today so we keep our streak 🔥",null]
+];
+const qById=id=>QSTEPS.find(s=>s[0]===id);
+const qStored=p=>{const q=p&&members[p]?.quest;return q&&typeof q==="object"?q:{}};
+function qLive(id){
+  try{switch(id){
+    case"photo":return!!P(me).photo;
+    case"install":return isInstalled()||platformKey()==="desktop";
+    case"notif":return!!members[me]?.push;
+    case"about":return!!members[me]?.onboarded;
+    case"partner":return!!(partnerId&&members[partnerId]?.onboarded);
+    case"checkin":return Object.keys(E(me)).length>0;
+    case"hug":return outgoing().some(x=>x.kind==="touch");
+    case"song":return outgoing().some(x=>x.kind==="media");
+    case"story":return stories.some(x=>x.by===me);
+    case"challenge":return outgoing().some(x=>x.kind==="challenge");
+    case"react":return allMsgs().some(m=>!!(me===A?m.ra:m.rb));
+    case"dates":return!!(bdayOf(other(me))||isYmd(coupleSettings.since)||isYmd(coupleSettings.wed));
+    case"wish":return!!wishOf(me);
+    case"plan":return outgoing().some(x=>x.kind==="invite");
+    case"goal":return goals.some(g=>g.owner===me||(g.kind==="couple"&&g.status!=="proposed"&&g.status!=="dropped"));
+    case"ai":return aiOk(me);
+    case"streak":return streakDays()>=3;
+  }}catch(e){}return false;
+}
+const qDone=(p,id)=>!!qStored(p)[id]||(p===me&&qLive(id));
+const qCount=p=>QSTEPS.filter(s=>qDone(p,s[0])).length;
+function qLevel(p){let lv=0;for(const L of QLEVELS){if(QSTEPS.filter(s=>s[1]===L.n).every(s=>qDone(p,s[0])))lv=L.n;else break}return lv}
+const qNext=p=>QSTEPS.find(s=>!qDone(p,s[0]));
+const qFounder=p=>!!p&&qLevel(p)===3;
+const qCoupleFounder=()=>qFounder(A)&&qFounder(B);
+let qSyncT=0,qSyncing=false;
+function questSoon(){clearTimeout(qSyncT);qSyncT=setTimeout(questSync,1200)}
+async function questSync(){
+  if(qSyncing||!signedIn()||!members[me])return;
+  const st=qStored(me),fresh=QSTEPS.filter(s=>!st[s[0]]&&qLive(s[0]));if(!fresh.length)return;
+  qSyncing=true;const now=Date.now(),before=qLevel(me),patch={};fresh.forEach(s=>patch[s[0]]=now);
+  try{await db.doc(base(me)).merge({quest:patch});members[me]={...members[me],quest:{...st,...patch}}}catch(e){qSyncing=false;return}
+  qSyncing=false;
+  const set={},inc={};fresh.forEach(s=>{set["q."+s[0]+"."+me]=now;
+    const nudged=+(members[me]?.nudged||{})[s[0]]||0;if(nudged&&now-nudged<7*86400000)inc["qn.win."+s[0]]=1;
+    let pushed=0;try{pushed=+localStorage.getItem("ut_qpush_"+spaceHash+me+s[0])||0}catch(e){}if(pushed&&now>pushed&&now-pushed<3*86400000)inc["qp.win."+s[0]]=1});
+  const after=qLevel(me);set["ql."+me]=after;track(inc,set);
+  // tell the partner about interactive firsts they haven't done yet
+  const pn=partnerId&&members[partnerId]?.onboarded?partnerId:null;
+  if(pn&&members[pn]?.push){
+    const firsts={song:`Sent you their first song 🎶 Send one back!`,story:`Posted their first story 📸 Post one back!`,challenge:`Sent you a challenge 😏 Send one back!`,hug:`Sent you a hug 🤗 Send one back!`,wish:`Added their wish list 🎁 Add yours!`};
+    const s=fresh.find(x=>firsts[x[0]]&&!qDone(pn,x[0]));
+    if(after>before){const L=QLEVELS[after-1];const left=QSTEPS.length-qCount(pn);notify(pn,nm(me),after===3?`Finished the Couple Quest 🏅 ${left?`You're ${left} step${left>1?"s":""} from Founding Couple!`:""}`:`Reached ${L.ic} ${L.t} in the Couple Quest! You're ${left} step${left>1?"s":""} from the finish.`,"quest")}
+    else if(s)notify(pn,nm(me),firsts[s[0]],"quest");
+  }
+  if(after>before)levelUp(after);
+  renderAll();
+}
+function levelUp(n){const L=QLEVELS[n-1];toast(n===3?"🏅 Couple Quest complete! You're a Founding Couple once your partner finishes.":`${L.ic} Level up: ${L.t}!`);burstConfetti()}
+function burstConfetti(){try{if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return}catch(e){}
+  const box=el("div","confetti");box.setAttribute("aria-hidden","true");for(let i=0;i<28;i++){const s=el("span",null,["🎉","💞","✨","🎊","🏅"][i%5]);s.style.left=Math.random()*100+"%";s.style.animationDelay=(Math.random()*.6)+"s";s.style.fontSize=(16+Math.random()*16)+"px";box.append(s)}
+  document.body.append(box);setTimeout(()=>box.remove(),3200)}
+function qGo(id){
+  switch(id){
+    case"photo":goTo(["me","avChange"]);break;case"install":openInstall();break;
+    case"notif":if(isIOS&&!isStandalone())openInstall();else goTo(["me","notifCard"]);break;
+    case"about":openSheet(false);break;case"partner":goTo(["me","inviteCard"]);break;
+    case"checkin":setTab("today");setTimeout(()=>$("dialBox")?.scrollIntoView({behavior:"smooth",block:"start"}),80);break;
+    case"hug":goTo(["connect","tray"]);break;case"song":goTo(["connect","songCard"]);break;
+    case"story":setTab("home");setTimeout(()=>{const a=document.querySelector("#homeHead .sadd");if(a)a.click();else goTo(["home","homeHead"])},150);break;
+    case"challenge":goTo(["connect","secCh"]);break;case"react":setTab("chat");toast("Tap any message to react ❤️");break;
+    case"dates":goTo(["me","dtBday"]);break;case"wish":goTo(["me","avWish"]);break;
+    case"plan":goTo(["connect","secInv"]);break;case"goal":goalTab="ours";goTo(["connect","secGoals"]);break;
+    case"ai":goTo(["me","aiCard"]);break;case"streak":setTab("today");break;
+  }
+}
+async function qNudge(id){
+  const s=qById(id);if(!s||!s[4]||!partnerId)return;
+  const k="ut_qn_"+spaceHash+me+id+todayKey();let sent=false;try{sent=!!localStorage.getItem(k)}catch(e){}
+  if(sent){toast("You already nudged them today 😄");return}
+  if(!members[partnerId]?.push){toast(`${nm(partnerId)} hasn't turned on notifications yet. Tell them in person 😉`);return}
+  notify(partnerId,nm(me),s[4],"quest");try{localStorage.setItem(k,"1")}catch(e){}
+  try{await db.doc(base(partnerId)).merge({nudged:{[id]:Date.now()}})}catch(e){}
+  track({"qn.sent":1,["qn.s."+id]:1});toast(`Nudge sent to ${nickOf(partnerId)||nm(partnerId)} 👋`);
+}
+const qOpenKey=()=>"ut_qopen_"+spaceKey+me;
+let qLvlView=0;
+function renderGs(){
+  const box=$("gsBox");if(!box)return;box.textContent="";
+  if(!spaceKey||!signedIn()||!members[me])return;
+  const p=partnerId&&members[partnerId]?.onboarded?partnerId:null,mc=qCount(me),pc=p?qCount(p):0,tot=QSTEPS.length,lv=qLevel(me);
+  if(qCoupleFounder())return; // both finished: the badge lives on their profiles
+  let collapsed=false;try{collapsed=localStorage.getItem(qOpenKey())==="0"}catch(e){}
+  const c=el("div","gs quest");
+  const hd=el("div","qhead");const L=QLEVELS[Math.min(lv,2)];
+  const tt=el("div","stack");tt.style.gap="2px";tt.append(el("span","eyebrow","Couple Quest"),el("h3",null,lv===3?"🏅 You finished!":`${L.ic} Level ${L.n}: ${L.t}`));hd.append(tt);
+  const tg=el("button","link small",collapsed?"Open":"Hide");tg.onclick=()=>{try{localStorage.setItem(qOpenKey(),collapsed?"1":"0")}catch(e){}renderGs()};hd.append(tg);c.append(hd);
+  // couple progress
+  const pr=el("div","qprog");
+  const row=(who,n,lab)=>{const r=el("div","qrow");r.append(avatar(who,"av-s"),el("span","qname",lab));const b=el("div","bar"),f=el("i");f.style.width=Math.round(n/tot*100)+"%";b.append(f);r.append(b,el("span","small muted",`${n}/${tot}`));return r};
+  pr.append(row(me,mc,"You"));if(p)pr.append(row(p,pc,nickOf(p)||nm(p)));c.append(pr);
+  if(collapsed){box.append(c);return}
+  if(lv===3){c.append(el("p","small",p?`Waiting on ${nickOf(p)||nm(p)} to finish. When you both do, you're a 🏅 Founding Couple.`:"Invite your partner to finish together."));}
+  // level tabs
+  const cur=qLvlView||Math.min(lv+1,3);
+  const tabs=el("div","qtabs");QLEVELS.forEach(Lv=>{const done=QSTEPS.filter(s=>s[1]===Lv.n&&qDone(me,s[0])).length,all=QSTEPS.filter(s=>s[1]===Lv.n).length,locked=Lv.n>lv+1;
+    const b=el("button","qtab"+(cur===Lv.n?" on":"")+(done===all?" full":"")+(locked?" ahead":""));b.type="button";b.append(el("span","qic",Lv.ic),el("span",null,Lv.t),el("span","small",`${done}/${all}`));b.onclick=()=>{qLvlView=Lv.n;renderGs()};tabs.append(b)});
+  c.append(tabs);
+  QSTEPS.filter(s=>s[1]===cur).forEach(([id,,t,why,nudge])=>{
+    const d=qDone(me,id),pd=p?qDone(p,id):false,r=el("div","gstep"+(d?" isdone":""));
+    r.append(el("span","ck",d?"✓":""));const tx=el("div","qt");tx.append(el("span","t",t));if(!d)tx.append(el("span","qwhy",why));
+    if(p&&id!=="partner")tx.append(el("span","qp"+(pd?" yes":""),pd?`${nickOf(p)||nm(p)} ✓`:`${nickOf(p)||nm(p)} not yet`));r.append(tx);
+    if(!d){const g=el("button","go","Go");g.setAttribute("aria-label",t);g.onclick=()=>qGo(id);r.append(g)}
+    else if(p&&!pd&&nudge){const n=el("button","go nudge","Nudge 👋");n.setAttribute("aria-label",`Nudge ${nm(p)}: ${t}`);n.onclick=()=>qNudge(id);r.append(n)}
+    c.append(r)});
+  c.append(el("p","small muted qreward","Finish all 3 levels together to unlock the 🏅 Founding Couple badge and gold story rings."));
+  box.append(c);
+}
+// Server-sent quest reminders: up to 3 evenings, one missing step each (only with notifications on)
+function questRemEvents(){
+  const out=[],pn=partnerId?(nickOf(partnerId)||nm(partnerId)):"your partner";
+  const missing=QSTEPS.filter(s=>s[5]&&!qDone(me,s[0])&&!(s[0]==="install"&&isInstalled()));
+  const base0=new Date();base0.setHours(19,0,0,0);if(base0.getTime()<Date.now()+30*60000)base0.setDate(base0.getDate()+1);
+  missing.slice(0,3).forEach((s,i)=>{const at=new Date(base0);at.setDate(at.getDate()+i);const t=at.getTime();
+    try{localStorage.setItem("ut_qpush_"+spaceHash+me+s[0],String(t))}catch(e){}
+    out.push({at:t,t:"Couple Quest",b:s[5].replace("{p}",pn),g:"quest-"+s[0]})});
+  return out;
+}
+// Home: nudges where the gap is
+function homeInstallBanner(){
+  const mobile=platformKey()!=="desktop";if(!mobile||isInstalled())return null;
+  let snooze=0;try{snooze=+localStorage.getItem("ut_instsnooze")||0}catch(e){}if(Date.now()<snooze)return null;
+  const b=el("div","ibanner");b.append(el("span","iic","📲"));const tx=el("div","itx");tx.append(el("b",null,"Add Us, Today to your Home Screen"),el("span","small",isIOS?"It's the only way to get notifications on iPhone.":"Faster to open, and notifications just work."));b.append(tx);
+  const go=el("button","primary small","Show me");go.onclick=openInstall;const x=el("button","x","×");x.setAttribute("aria-label","Not now");x.onclick=()=>{try{localStorage.setItem("ut_instsnooze",String(Date.now()+3*86400000))}catch(e){}b.remove()};b.append(go,x);return b;
+}
+
 /* ================= Help, FAQ & setup check ================= */
 const HELP=[
  {g:"start",t:"Getting started",ic:"🚀",items:[
@@ -3371,6 +3551,10 @@ const HELP=[
   ["book","Can I book a table?","Pick Dinner out to get quick links to map nearby spots or book on OpenTable or Resy. Add the place to the invite so it shows on their side."],
   ["calendar","How do I add a date to my calendar?","Once an invite is accepted, tap Apple / Outlook or Google under it. You'll also get a reminder an hour before."],
   ["challenge","How do challenges work?","Send a fun challenge, like 5 kisses today. Your partner taps to count their progress, and finished challenges show up in Moments.",["connect","secCh"],"Send a challenge"]]},
+ {g:"quest",t:"Couple Quest",ic:"🏆",items:[
+  ["questwhat","What is the Couple Quest?","A short game that walks you both through everything Us, Today can do, in 3 levels: Getting Cozy, In Sync and All In. It's on Home. Finish all 3 together to unlock the 🏅 Founding Couple badge and gold story rings.",["home","gsBox"],"Open the quest"],
+  ["questnudge","What does Nudge do?","When you've done a step your partner hasn't, tap Nudge to send them a friendly reminder. You can nudge once a day per step."],
+  ["questhide","Can I hide the quest?","Yes. Tap Hide on the quest card to fold it down to your progress bars. Tap Open any time."]]},
  {g:"goals",t:"Goals",ic:"🎯",items:[
   ["goalhow","How do goals work?","Connect → Goals together → New goal. Pick an idea or type your own, choose how to track it (check it off, count it, or milestones), set when it's due, and add an optional reward.",["connect","secGoals"],"Open goals"],
   ["goalcouple","What's the difference between a couple goal and my goal?","A couple goal is for both of you: your partner accepts it, and it only counts when you both check it off. My goal is just yours. Keep it private or share it so your partner can cheer you on and pledge a reward."],
@@ -3403,7 +3587,7 @@ const HELP=[
 const HELP_FOR={secFor:"checkin",secWeek:"ai",secRead:"checkin",secInv:"plans",secCh:"plans",secGoals:"goals",secSent:"chat",secNotif:"phone",secAi:"ai",secLock:"privacy",secAd:"privacy",secLinks:"start",secAnswers:"start"};
 const helpItems=()=>HELP.flatMap(g=>g.items.map(([id,q,a,go,goT,special])=>({id,q,a,go,goT,special,g:g.g,gt:g.t})));
 const H_STOP=new Set("the and for how what why when where who can does did doesnt dont isnt cant wont not are was were you your our its it this that with have has get got from into about there their them they she her his him use using app any all just like way want need help please is to do my me an on in of or at by be if no".split(" "));
-const H_TAGS={goalhow:"goal goals target habit",goalcouple:"goal partner shared private",goalmoney:"debt money save savings",goalreward:"reward incentive prize",notifnone:"notification push alert not working broken stopped",notifon:"notification push alert enable",lockstuck:"locked code pin stuck screen",lock:"code pin password security",clipfail:"video clip upload fail error",songfail:"music song search broken",update:"refresh new version banner",slow:"blank white loading frozen crash stuck",autodel:"delete storage space remove photos",seedata:"privacy private secure safe data",wish:"amazon gift list",dates:"birthday anniversary wedding met",giftrem:"gift present birthday reminder",iphoneinstall:"icon home screen install iphone ios",androidinstall:"icon home screen install android pixel samsung",perslink:"link url",link:"join partner invite connect",code:"invite beta code",calendar:"calendar google apple outlook",chatmedia:"photo picture video",react:"emoji reaction like heart",streak:"streak days",stories:"story stories ring"};
+const H_TAGS={questwhat:"quest game levels badge onboarding steps",questnudge:"nudge remind partner",goalhow:"goal goals target habit",goalcouple:"goal partner shared private",goalmoney:"debt money save savings",goalreward:"reward incentive prize",notifnone:"notification push alert not working broken stopped",notifon:"notification push alert enable",lockstuck:"locked code pin stuck screen",lock:"code pin password security",clipfail:"video clip upload fail error",songfail:"music song search broken",update:"refresh new version banner",slow:"blank white loading frozen crash stuck",autodel:"delete storage space remove photos",seedata:"privacy private secure safe data",wish:"amazon gift list",dates:"birthday anniversary wedding met",giftrem:"gift present birthday reminder",iphoneinstall:"icon home screen install iphone ios",androidinstall:"icon home screen install android pixel samsung",perslink:"link url",link:"join partner invite connect",code:"invite beta code",calendar:"calendar google apple outlook",chatmedia:"photo picture video",react:"emoji reaction like heart",streak:"streak days",stories:"story stories ring"};
 const hNorm=t=>String(t||"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
 const hSlug=t=>hNorm(t).replace(/ /g,"_").slice(0,40);
 let helpSeen=new Set(),helpMissSent=new Set(),helpMissT=0;
@@ -3746,17 +3930,18 @@ function renderHome(){
   const side=who=>{const sd=el("div","hside");sd.append(storyRing(who,ringFor(who),false));const nk=who?nickOf(who):"";if(nk)sd.append(el("span","hnick",nk));const cp=who?capOf(who):"";
     if(cp)sd.append(el("span","hcap","“"+cp+"”"));
     if(who&&who!==me&&wishOf(who)){const a=el("a","hwish","🎁 Wish list");a.href=wishOf(who);a.target="_blank";a.rel="noopener";sd.append(a)}
+    else if(who===me&&!P(me).photo&&signedIn()){const b=el("button","hcap add pulse","📷 Add your photo");b.onclick=()=>{goTo(["me","avChange"]);toast("Add a photo so your partner sees you, not a letter 📸")};sd.append(b)}
     else if(who===me&&!cp&&signedIn()){const b=el("button","hcap add","Add a caption");b.onclick=()=>goTo(["me","avCap"]);sd.append(b)}
     return sd};
   pair.append(side(me),ht,side(p));c.append(pair);
-  c.append(el("span","hnames",p?`${nm(me)} & ${pn}`:nm(me)));
+  c.append(el("span","hnames",p?`${nm(me)} & ${pn}`:nm(me)));if(qCoupleFounder())c.append(el("span","fbadge","🏅 Founding Couple"));
   const si=sinceInfo();
   if(si)c.append(el("span","small muted",`Together since ${si.d.toLocaleDateString(undefined,{month:"long",year:"numeric"})} · ${si.days.toLocaleString()} days`));
   else if(p&&signedIn()){const f=el("div","since"),lab=el("label","small muted","Together since");const inp=el("input");inp.type="date";inp.id="sinceIn";lab.htmlFor="sinceIn";inp.max=k;const b=el("button","secondary","Save");b.onclick=()=>saveSince(inp.value);f.append(lab,inp,b);c.append(f)}
   const pills=el("div","hpills"),st=streakDays();
   if(p){const sp=el("span","hpill streak");sp.append(svgI("flame",15),document.createTextNode(st?`${st}${st>=39?"+":""}-day streak`:"Start a streak: both check in today"));pills.append(sp)}
   const nx=nextItems();if(nx[0]&&nx[0].rt)pills.append(el("span","hpill",`Next: ${nx[0].t.replace(/^.*invited (you|[^:]+): /,"")} · ${nx[0].rt}`));
-  c.append(pills);hh.append(c);
+  c.append(pills);hh.append(c);{const ib=homeInstallBanner();if(ib)hh.append(ib)}
   // glance
   const g=$("homeGlance");g.textContent="";
   const mine=E(me)[k],theirs=p?E(p)[k]:null;
@@ -3939,7 +4124,7 @@ function remEvents(){
     const at=inviteAt(it);if(!at)return;
     ev.push({at:at-3600000,t:"💌 "+inviteTitle(it,it.dir)+" in 1 hour",b:it.place?`At ${it.place}. Have fun!`:"Have fun!",g:"inv-"+it.id});
   });
-  ev.push(...goalRemEvents());
+  ev.push(...goalRemEvents());ev.push(...questRemEvents());
   return ev.filter(e=>e.at>now).sort((a,b)=>a.at-b.at).slice(0,16);
 }
 
@@ -3977,7 +4162,7 @@ function markStorySeen(t){if(t>storySeenAt()){try{localStorage.setItem(storySeen
 const unseenStories=p=>activeStories(p).filter(x=>x.createdAt>storySeenAt());
 function storyRing(p,inner,big){
   const list=p?activeStories(p):[],mine=p===me;
-  const w=el("div","sring"+(list.length?(mine||unseenStories(p).length?" has":" seen"):""));
+  const w=el("div","sring"+(list.length?(mine||unseenStories(p).length?" has":" seen"):"")+(p&&qCoupleFounder()?" gold":""));
   w.append(inner);
   if(!mine&&p&&unseenStories(p).length)w.append(el("span","snew","New"));
   if(list.length){w.setAttribute("role","button");w.tabIndex=0;w.setAttribute("aria-label",(mine?"Your story":`${nm(p)}'s story`)+", "+list.length+" item"+(list.length>1?"s":""));
@@ -4230,7 +4415,7 @@ function setTab(t){
 $("tabHome").onclick=()=>setTab("home");$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>setTab("me");$("tabChat").onclick=()=>setTab("chat");
 
 let remT=0;function remSoon(){clearTimeout(remT);remT=setTimeout(()=>syncReminder(),1500)}
-function renderAll(){remSoon();if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
+function renderAll(){remSoon();questSoon();if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
 
 /* ================= Live data ================= */
 const subs={},seenSnap={};
@@ -4391,7 +4576,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.1";
+const APP_VERSION="2026-10-18.2";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
