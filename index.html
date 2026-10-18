@@ -3861,7 +3861,7 @@ async function setupChecks(live){
   const add=(id,label,ok,fixT,fix,why)=>{if(ok==null)return;out.push({id,label,ok:!!ok,fixT,fix,why})};
   let online=navigator.onLine&&signedIn(),latest=null,server=null;
   if(live){
-    try{const r=await fetch(location.pathname+"?vcheck="+Date.now(),{cache:"no-store"});const m=(await r.text()).match(/const APP_VERSION="2026-10-18.24"]*)"/);latest=m?m[1]===APP_VERSION:null}catch(e){latest=null}
+    try{const r=await fetch(location.pathname+"?vcheck="+Date.now(),{cache:"no-store"});const m=(await r.text()).match(/const APP_VERSION="(\d[^"]*)"/);latest=m?m[1]===APP_VERSION:null}catch(e){latest=null}
     if(WORKER_URL)try{const r=await fetch(WORKER_URL,{cache:"no-store"});server=r.ok}catch(e){server=false}
   }
   add("online","Connected to your space",online,"Reload",()=>location.reload(),"Check your Wi-Fi or data, then reopen the app.");
@@ -4851,7 +4851,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.23";
+const APP_VERSION="2026-10-18.24";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
