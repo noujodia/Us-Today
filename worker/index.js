@@ -5,7 +5,7 @@ const VAPID_PUBLIC = "BH9swIrCDeQtLef9p5w_PeBjFBodHEF5AWX2j4aktaTlHWYquTK9HCNx_V
 const VAPID_X = "f2zAisIN5C0t5_2nnD894GMUGh0cQXkBZfaPhqS1pOU";
 const VAPID_Y = "HWYquTK9HCNx_VIgClhmmK4F1sC0Jn6UmK_AgKvm8jU";
 const SUBJECT = "https://noujodia.github.io/Us-Today/";
-const ALLOWED_ORIGINS = ["https://noujodia.github.io"];
+const ALLOWED_ORIGINS = ["https://noujodia.github.io", "https://noudeapp.com", "https://www.noudeapp.com"];
 const PUSH_HOSTS = [/\.push\.apple\.com$/, /^fcm\.googleapis\.com$/, /^android\.googleapis\.com$/, /\.push\.services\.mozilla\.com$/, /\.notify\.windows\.com$/];
 
 const enc = new TextEncoder();
