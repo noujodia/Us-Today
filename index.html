@@ -459,6 +459,7 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .mecoach::before{content:"";position:absolute;top:-6px;right:18px;width:12px;height:12px;background:inherit;transform:rotate(45deg)}
 .mecoach .link{color:inherit;text-decoration:underline;align-self:flex-end;padding:0}
 .mecoach[hidden]{display:none}
+.leftcard{margin-top:10px;padding:14px;border-radius:14px;background:var(--accent-soft);display:flex;flex-direction:column;gap:6px;text-align:left}.leftcard p{margin:0}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
 .gh2{display:flex;gap:12px;align-items:center}.gh2 .gt{display:flex;flex-direction:column;gap:2px;min-width:0}.gh2 .gt b{font-weight:650}
@@ -911,9 +912,9 @@ details.pl summary{cursor:pointer;font-weight:600}
             <li><b>Not end-to-end encrypted.</b> The app never shows your content to anyone but you two, but whoever runs the servers could technically access stored data. We don't look, and during the beta please don't share anything too intimate, like explicit photos.</li>
           </ul>
           <div class="pdel">
-            <h3>Delete our space</h3>
-            <p class="small muted">Permanently deletes everything in your space for both of you: check-ins, chat, photos, videos, stories, dates, goals and answers. It can't be undone.</p>
-            <button class="danger" id="delSpace">Delete our space</button>
+            <h3>Leave Noudé and delete my data</h3>
+            <p class="small muted">Permanently deletes <b>your</b> profile, answers, check-ins, messages, photos, videos, stories and goals. Your partner keeps only what they created themselves. If your partner has already left, the whole space is deleted. It can't be undone.</p>
+            <button class="danger" id="delSpace">Leave and delete my data</button>
           </div>
         </div></div>
       </details>
@@ -936,6 +937,7 @@ details.pl summary{cursor:pointer;font-weight:600}
         <summary><div class="sh"><h2>Invite &amp; your link</h2><span class="ssum" id="sum_secLinks"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
         <div class="secbody">
     <div class="card stack" id="inviteCard">
+      <p class="small" id="invLeftNote" hidden style="margin:0">Your partner left Noudé. To connect with someone new, start a fresh space with a new invite code so your history stays private.</p>
       <h3>Invite your partner</h3>
       <p class="small muted">Send this link to your partner and have them open it on their phone. Anyone with the link can open your space, so only share it with each other.</p>
       <code id="invLink" style="display:block;word-break:break-all;background:var(--soft);border-radius:10px;padding:10px 12px;font-size:.78rem"></code>
@@ -1074,6 +1076,23 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="panel">
     <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="codesTitle">Beta invites</h2></div><button class="x" id="codesX" aria-label="Close">×</button></div>
     <div id="codesBody" class="stack" style="gap:12px"></div>
+  </div>
+</div>
+<div class="ov" id="leaveSheet" hidden role="dialog" aria-modal="true" aria-labelledby="leaveTitle">
+  <div class="panel">
+    <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Before you go</span><h2 id="leaveTitle">Why are you leaving?</h2></div><button class="x" id="leaveX" aria-label="Close">×</button></div>
+    <p class="small muted" style="margin:0">Your answer is anonymous and helps make Noudé better. Your partner never sees it.</p>
+    <div class="opts" id="leaveReasons" role="group" aria-label="Reason for leaving"></div>
+    <p class="small" id="leaveCare" hidden style="margin:0"></p>
+    <textarea id="leaveNote" rows="3" maxlength="600" placeholder="Anything we could have done better? (optional)" aria-label="Anything we could have done better"></textarea>
+    <div class="card stack" style="gap:6px">
+      <b class="small">What happens</b>
+      <p class="small muted" id="leaveWhat" style="margin:0"></p>
+    </div>
+    <label for="leaveConfirm" class="small" style="font-weight:600">Type DELETE to confirm</label>
+    <input type="text" id="leaveConfirm" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="DELETE">
+    <div class="row"><button class="danger" id="leaveGo">Delete my data</button><button class="secondary" id="leaveCancel">Keep my account</button></div>
+    <p class="small" id="leaveErr" style="color:var(--warn);margin:0" role="status"></p>
   </div>
 </div>
 <div class="ov" id="helpSheet" hidden role="dialog" aria-modal="true" aria-labelledby="helpTitle">
@@ -1404,7 +1423,7 @@ function renderTop(){
   const n=nm(me);$("hello").textContent=n!=="You"?`Hi ${n}. How are we feeling?`:"How are we feeling?";
   $("todayBtn").hidden=isToday;
   $("tabMe").replaceChildren(avatar(me,"av-m"));$("tabMe").classList.toggle("has",activeStories(me).length>0);
-  if(A){$("whoA").replaceChildren(avatar(A,"av-s"),P(A).name||acctNames[A]||"Me");$("whoB").replaceChildren(avatar(B,"av-s"),P(B).name||"Partner");$("whoA").setAttribute("aria-pressed",String(me===A));$("whoB").setAttribute("aria-pressed",String(me===B))}
+  if(A){$("whoA").replaceChildren(avatar(A,"av-s"),P(A).name||acctNames[A]||"Me");$("whoB").replaceChildren(avatar(B,"av-s"),P(B).name||"Partner");$("whoA").setAttribute("aria-pressed",String(me===A));$("whoB").setAttribute("aria-pressed",String(me===B))}if(spaceKey&&members[me]&&!members[me].left)$("whoSwitch").hidden=partnerLeft();
   $("dialTitle").textContent=isToday?"Your check-in":"Your check-in for "+d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
   renderCard($("meCard"),"You",draft,isToday?"Check in below":"No check-in that day",isToday?schedLine(me):"",me==="__local"?null:me);
   renderCard($("partnerCard"),p?nm(p):"Your partner",p?E(p)[selDate]:null,!p?"Not joined yet":isToday?"Hasn't checked in yet":"No check-in that day",isToday&&p?schedLine(p):"",p);
@@ -2472,7 +2491,7 @@ function renderProfile(){
   $("verTap").textContent="Version "+APP_VERSION;
   renderAutoDel();renderAiCard();
   renderNotifCard();
-  {const joined=!!(other(me)&&members[other(me)]?.onboarded);$("invLink").textContent=spaceKey&&!joined?inviteLink():"";$("inviteCard").querySelector("p").textContent=joined?`${nm(other(me))} has joined, so there's nothing to share. Keep your personal link private${lockDoc?". With the privacy lock on, a new phone also needs your passcode":": anyone who has it can open your space as you. Turn on the privacy lock for extra protection"}.`:"Send this link to your partner and have them open it on their phone. Anyone with the link can open your space, so only share it with each other.";$("copyInv").hidden=joined;$("invLink").hidden=joined}$("myLink").textContent=spaceKey?linkFor(me):"";
+  {const gone=partnerLeft();$("invLeftNote").hidden=!gone;$("inviteCard").querySelector("h3").hidden=gone;const joined=gone||!!(other(me)&&members[other(me)]?.onboarded);$("invLink").textContent=spaceKey&&!joined?inviteLink():"";$("inviteCard").querySelector("p:not(#invLeftNote)").textContent=gone?"Your personal link still opens your space on a new phone. Keep it private.":joined?`${nm(other(me))} has joined, so there's nothing to share. Keep your personal link private${lockDoc?". With the privacy lock on, a new phone also needs your passcode":": anyone who has it can open your space as you. Turn on the privacy lock for extra protection"}.`:"Send this link to your partner and have them open it on their phone. Anyone with the link can open your space, so only share it with each other.";$("copyInv").hidden=joined;$("invLink").hidden=joined}$("myLink").textContent=spaceKey?linkFor(me):"";
   renderPhotoBox();
   renderProfileView();
 }
@@ -2529,7 +2548,7 @@ function renderSettingsSums(){
   setSum("sum_secNotif",notifsOn()?`On · reminders ${pr.am&&pr.mid?"9:00 AM and 12:30 PM":pr.am?"9:00 AM":pr.mid?"12:30 PM":"off"}`:"Off · tap to turn on");
   setSum("sum_secAi",aiOk(me)&&p&&aiOk(p)?"On for both of you":aiOk(me)?`On for you · waiting for ${pn}`:"Off");
   const d=+mediaSettings.autoDelete||0;setSum("sum_secAd",d?`Delete after ${d} days`:"Keep everything");
-  setSum("sum_secLinks",p&&members[p]?.onboarded?`${nm(p)} has joined · your personal link`:"Invite your partner");
+  setSum("sum_secLinks",partnerLeft()?"Your partner left · your personal link":p&&members[p]?.onboarded?`${nm(p)} has joined · your personal link`:"Invite your partner");
   setSum("sum_secHelp",`Send feedback · What's new · Version ${APP_VERSION}`);
 }
 $("pvMe").onclick=()=>{profView="me";renderProfileView()};$("pvPartner").onclick=()=>{profView="partner";$("secAnswers").open=true;renderProfileView()};
@@ -2836,9 +2855,13 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-18e",at:"2026-10-18T13:30:00-04:00",date:"Oct 18, 2026",items:[
+    "👋 Deleting is now individual: Leave and delete my data removes only your own things. Your partner keeps what they created.",
+    "📝 A short, anonymous question asks why you're leaving. Your partner never sees the answer.",
+    "💛 If your partner leaves, you'll see a gentle note on Home and can keep your space or delete your data too."]},
   {id:"2026-10-18d",at:"2026-10-18T12:10:00-04:00",date:"Oct 18, 2026",items:[
     {em:"🛡️",t:"Privacy & your data",b:"A plain-language page in About me: what Noudé stores, who can see it, how it's protected, and how to delete everything.",go:["me","secPriv"]},
-    {em:"🗑️",t:"Delete our space",b:"Either of you can permanently delete your whole space from Privacy & your data."}
+    {em:"🗑️",t:"Leave and delete my data",b:"Each of you can delete your own data from Privacy & your data. Your partner keeps only what they created."}
   ]},
   {id:"2026-10-18c",at:"2026-10-18T09:46:32-04:00",date:"Oct 18, 2026",items:[
     {em:"🏡",t:"Our new home: noudeapp.com",b:"Noudé now lives at noudeapp.com. Old links still work and bring you here. For the best experience, remove the old Home Screen icon and add Noudé again from this page, then turn notifications back on. If you set a passcode, you'll enter it once more.",go:["home","gsBox"]}
@@ -2989,7 +3012,7 @@ $("fbSend").onclick=async()=>{
 /* ---- Owner feedback inbox ---- */
 const OWNER_LINK=/#owner\b/.test(location.hash);
 let isOwner=false,fbItems=[],fbFilter="new",fbUnsub=null;
-const FB_LABEL={bug:"🐞 Bug",idea:"💡 Idea",love:"❤️ Love it",other:"Other"};
+const FB_LABEL={bug:"🐞 Bug",idea:"💡 Idea",love:"❤️ Love it",other:"Other",leave:"👋 Left"};
 function deviceName(ua){ua=String(ua||"");let m=ua.match(/iPhone OS (\d+)_(\d+)/);if(m)return`iPhone · iOS ${m[1]}.${m[2]}`;m=ua.match(/iPad.*OS (\d+)_(\d+)/);if(m)return`iPad · iOS ${m[1]}.${m[2]}`;m=ua.match(/Android (\d+(\.\d+)?)/);if(m)return`Android ${m[1]}`;if(/Macintosh/.test(ua))return"Mac";if(/Windows/.test(ua))return"Windows";return"Unknown device"}
 // Phones that can see the owner tools. Each new phone or domain gets a new ID, so we keep the old ones and add the current one.
 const OWNER_UIDS=["WVQyIdy6C4dDqKsWGY9oILmbIok2"];
@@ -3067,6 +3090,7 @@ function renderFbInbox(){
   list.forEach(f=>{
     const c=el("div","fbi"+(f.done?" fdone":" isnew")),top=el("div","top");
     top.append(el("span","kind "+(f.kind||"other"),FB_LABEL[f.kind]||"Other"),el("span","who",f.from||"Someone"),el("span","when",f.createdAt?timeAgo(f.createdAt):""));c.append(top);
+    if(f.kind==="leave")c.append(el("p","msg",`Reason: ${(LEAVE_REASONS.find(x=>x[0]===f.reason)||[0,"Not given"])[1]} · ${f.days??"?"} days in · Level ${f.level??0}${f.partnerActive?" · partner still active":""}`));
     if(f.text)c.append(el("p","msg",f.text));
     if(f.shot&&/^data:image\//.test(f.shot)){const i=el("img");i.src=f.shot;i.alt="Screenshot";i.onclick=()=>{const lb=$("lightbox");lb.textContent="";const w=el("div"),im=el("img");im.src=f.shot;im.alt="Screenshot";w.append(im);lb.append(w);lb.hidden=false};c.append(i)}
     c.append(el("span","meta",[deviceName(f.device),f.version?"app "+f.version:"",f.createdAt?new Date(f.createdAt).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"",f.space?"couple "+String(f.space).slice(0,6):""].filter(Boolean).join(" · ")));
@@ -3132,7 +3156,7 @@ function renderStats(){
   const tt=el("div","chartc");tt.append(el("b",null,"All-time totals"));
   [["Chat messages",tot("chat")],["Hugs, kisses and emojis",tot("touch")],["Photos",tot("photo")],["Videos",tot("video")],["Songs and links",tot("song")],["Date invites",tot("invite")],["Challenges",tot("challenge")],["Chat reactions",tot("react")]].forEach(([t,v])=>{const r=el("div","row between small");r.append(el("span",null,t),el("b",null,String(v)));tt.append(r)});
   box.append(tt);
-  renderQuestStats(box,S);renderHelpStats(box,S);
+  renderQuestStats(box,S);renderLeaveStats(box,S);renderHelpStats(box,S);
   box.append(el("p","small muted","Counts only. No messages, check-ins, photos or names are collected. Counting started Oct 17, 2026, so totals before then aren't included."));
 }
 function renderQuestStats(box,S){
@@ -3159,6 +3183,16 @@ function renderQuestStats(box,S){
     const desc=w=>{if(w===B&&!x.partnerJoined)return"partner not joined";const n=QSTEPS.filter(s=>has(x,s[0],w)).length,nx=QSTEPS.find(s=>!has(x,s[0],w));return `L${+((x.ql||{})[w])||0} · ${n}/${QSTEPS.length}${nx?` · next: ${nx[2]}`:" · done 🏅"}`};
     e.append(el("b",null,`Couple ${i+1}${x.createdAt?" · started "+new Date(+x.createdAt).toLocaleDateString(undefined,{month:"short",day:"numeric"}):""}`),el("span","small muted",`Partner 1: ${desc(A)}`),el("span","small muted",`Partner 2: ${desc(B)}`));c4.append(e)});
   box.append(c4);
+}
+function renderLeaveStats(box,S){
+  const c=el("div","chartc");c.append(el("b",null,"Why people left"),el("span","small muted","From the anonymous exit survey"));
+  const tot={};S.forEach(x=>Object.entries((x.lv&&x.lv.r)||{}).forEach(([k,v])=>tot[k]=(tot[k]||0)+(+v||0)));
+  const rows=Object.entries(tot).sort((a,b)=>b[1]-a[1]),n=rows.reduce((a,r)=>a+r[1],0);
+  if(!n)c.append(el("p","small muted","Nobody has left yet. 🎉"));
+  rows.forEach(([k,v])=>{const r=el("div","hb");r.append(el("span",null,(LEAVE_REASONS.find(x=>x[0]===k)||[0,k])[1]),el("span","v",`${v} · ${Math.round(v/n*100)}%`));const tr=el("div","tr"),fi=el("i");fi.style.width=Math.round(v/n*100)+"%";tr.append(fi);r.append(tr);c.append(r)});
+  const days=[];S.forEach(x=>Object.values(x.lvd||{}).forEach(d=>days.push(+d||0)));days.sort((a,b)=>a-b);
+  if(days.length)c.append(el("span","small muted",`Median time before leaving: ${days[Math.floor(days.length/2)]} days · full answers are in the Feedback inbox`));
+  box.append(c);
 }
 function renderHelpStats(box,S){
   const sum=(path)=>{const o={};S.forEach(x=>{const m=path.split(".").reduce((a,k)=>a&&a[k],x);if(m&&typeof m==="object")Object.entries(m).forEach(([k,v])=>{if(typeof v==="number")o[k]=(o[k]||0)+v})});return o};
@@ -3608,27 +3642,79 @@ function homeInstallBanner(){
   const go=el("button","primary small","Show me");go.onclick=openInstall;const x=el("button","x","×");x.setAttribute("aria-label","Not now");x.onclick=()=>{try{localStorage.setItem("ut_instsnooze",String(Date.now()+3*86400000))}catch(e){}b.remove()};b.append(go,x);return b;
 }
 
-/* ================= Delete our space ================= */
-async function deleteSpace(){
-  const t=prompt("This permanently deletes your space for BOTH of you: check-ins, chat, photos, videos, stories, dates, goals and answers. It can't be undone.\n\nType DELETE to confirm.");
-  if((t||"").trim().toUpperCase()!=="DELETE"){toast("Nothing was deleted");return}
-  if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
-  const btn=$("delSpace");btn.disabled=true;btn.textContent="Deleting…";
-  const delColl=async p=>{try{const q=await db.collection(p).get();await Promise.all(q.docs.map(d=>db.doc(p+"/"+d.id).delete().catch(()=>{})))}catch(e){}};
-  try{
-    if(partnerId)notify(partnerId,nm(me),"Deleted your Noudé space. Everything you shared there is gone.","");
-    for(const p of [A,B])for(const sub of ["days","sent","replies","messages"])await delColl(`${base(p)}/${sub}`);
-    try{const v=await db.collection("videos").get();for(const d of v.docs){const n=+(d.data()?.parts)||0;for(let i=0;i<n;i++)await db.doc(`videos/${d.id}/parts/${i}`).delete().catch(()=>{})}}catch(e){}
-    for(const c of ["photos","videos","stories","goals","q","ai","settings"])await delColl(c);
-    if(WORKER_URL&&spaceHash)for(const p of [A,B])fetch(WORKER_URL+"remind",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:spaceHash+"-"+p,sub:null,am:false,mid:false})}).catch(()=>{});
-    for(const p of [A,B])await db.doc(base(p)).delete().catch(()=>{});
-    await db.doc("lock/main").delete().catch(()=>{});await delColl("devices");
-    track({"n.spaceDeleted":1});
-    try{localStorage.removeItem("ut_space");localStorage.removeItem("ut_who");localStorage.removeItem("ut_known_"+spaceKey)}catch(e){}
-    alert("Your space has been deleted.");location.replace(location.origin+location.pathname);
-  }catch(e){console.error(e);toast("Couldn't finish deleting. Try again.");btn.disabled=false;btn.textContent="Delete our space"}
+/* ================= Leave & delete ================= */
+const LEAVE_REASONS=[["separated","We separated or broke up"],["break","Taking a break from the app"],["notused","We didn't use it enough"],["partner","My partner didn't use it"],["notifs","Too many notifications"],["feature","Missing something I wanted"],["privacy","Privacy concerns"],["bugs","Something wasn't working"],["fresh","Starting over with a new space"],["other","Other"]];
+let leaveReason="";
+const partnerLeft=()=>!!(partnerId&&members[partnerId]?.left);
+const partnerActive=()=>!!(partnerId&&members[partnerId]?.onboarded&&!members[partnerId]?.left);
+function openLeave(){
+  leaveReason="";$("leaveNote").value="";$("leaveConfirm").value="";$("leaveErr").textContent="";$("leaveCare").hidden=true;renderLeaveReasons();
+  const pn=partnerActive()?(nickOf(partnerId)||nm(partnerId)):"";
+  $("leaveWhat").textContent=pn?`Your profile, answers, check-ins, messages, photos, videos, stories and goals are deleted for good. ${pn} keeps only what they created and is told you left, never why. Your space stays open for them.`:"Your partner isn't here anymore, so the whole space is deleted for good: everything either of you shared.";
+  $("leaveSheet").hidden=false;$("leaveSheet").querySelector(".panel").scrollTop=0;
 }
-$("delSpace").onclick=deleteSpace;
+function renderLeaveReasons(){const b=$("leaveReasons");b.textContent="";LEAVE_REASONS.forEach(([k,t])=>{const o=el("button","opt",t);o.type="button";o.setAttribute("aria-pressed",String(leaveReason===k));o.onclick=()=>{leaveReason=leaveReason===k?"":k;renderLeaveReasons();
+  const care=$("leaveCare");care.hidden=leaveReason!=="separated"&&leaveReason!=="privacy";care.textContent=leaveReason==="separated"?"We're sorry. Take care of yourself 💛":leaveReason==="privacy"?"Thank you for telling us. You can also read Privacy & your data in About me before you go.":""};b.append(o)})}
+const closeLeave=()=>{$("leaveSheet").hidden=true};
+$("leaveX").onclick=closeLeave;$("leaveCancel").onclick=closeLeave;$("leaveSheet").addEventListener("click",e=>{if(e.target.id==="leaveSheet")closeLeave()});
+$("delSpace").onclick=openLeave;
+$("leaveGo").onclick=async()=>{
+  if(($("leaveConfirm").value||"").trim().toUpperCase()!=="DELETE"){$("leaveErr").textContent="Type DELETE to confirm.";return}
+  if(!leaveReason){$("leaveErr").textContent="Please pick a reason. It's anonymous.";return}
+  if(!signedIn()){$("leaveErr").textContent=saveErr({code:"signed_out"});return}
+  const btn=$("leaveGo");btn.disabled=true;btn.textContent="Deleting…";$("leaveErr").textContent="";
+  // anonymous exit survey: no names, no content
+  const days=Math.max(0,Math.round((Date.now()-(+members[me]?.joinedAt||Date.now()))/86400000));
+  try{await db.top.collection("feedback").add({kind:"leave",reason:leaveReason,text:$("leaveNote").value.trim().slice(0,600),from:"Anonymous",space:spaceHash||"",version:APP_VERSION,device:navigator.userAgent.slice(0,200),days,level:typeof qLevel==="function"?qLevel(me):0,partnerActive:partnerActive(),createdAt:Date.now()})}catch(e){}
+  track({["lv.r."+leaveReason]:1,"lv.n":1},{["left."+me]:Date.now(),["lvd."+me]:days});
+  try{if(partnerActive())await leaveMine();else await wipeSpace();
+    try{localStorage.removeItem("ut_space");localStorage.removeItem("ut_who");localStorage.removeItem("ut_known_"+spaceKey)}catch(e){}
+    alert(leaveReason==="separated"?"Your data has been deleted. Take care 💛":"Your data has been deleted. Thank you for trying Noudé.");location.replace(location.origin+location.pathname);
+  }catch(e){console.error(e);$("leaveErr").textContent="Couldn't finish deleting. Check your connection and try again.";btn.disabled=false;btn.textContent="Delete my data"}
+};
+const delColl=async(p,filter)=>{try{const q=await db.collection(p).get();await Promise.all(q.docs.filter(d=>!filter||filter(d.data()||{})).map(d=>db.doc(p+"/"+d.id).delete().catch(()=>{})))}catch(e){}};
+async function delAsset(kind,id){if(!id)return;if(kind==="photo"){await db.doc(`photos/${id}`).delete().catch(()=>{});return}
+  try{const m=await db.doc(`videos/${id}`).get();const n=+(m.data()?.parts)||0;for(let i=0;i<n;i++)await db.doc(`videos/${id}/parts/${i}`).delete().catch(()=>{})}catch(e){}await db.doc(`videos/${id}`).delete().catch(()=>{})}
+function remOff(p){if(WORKER_URL&&spaceHash)fetch(WORKER_URL+"remind",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:spaceHash+"-"+p,sub:null,am:false,mid:false})}).catch(()=>{})}
+// Delete only my data; the partner keeps what they created.
+async function leaveMine(){
+  const pn=partnerId;
+  // my photos/videos: from my sent items, my messages and my stories
+  const assets=[];
+  try{const q=await db.collection(`${base(me)}/sent`).get();q.docs.forEach(d=>{const x=d.data()||{};if((x.kind==="photo"||x.kind==="clip")&&x.asset)assets.push([x.kind,x.asset])})}catch(e){}
+  try{const q=await db.collection(`${base(me)}/messages`).get();q.docs.forEach(d=>{const x=d.data()||{};if((x.kind==="photo"||x.kind==="clip")&&x.asset)assets.push([x.kind,x.asset])})}catch(e){}
+  try{const q=await db.collection("stories").get();q.docs.forEach(d=>{const x=d.data()||{};if(x.by===me&&x.asset)assets.push([x.kind,x.asset])})}catch(e){}
+  for(const sub of ["days","sent","replies","messages"])await delColl(`${base(me)}/${sub}`);
+  await delColl("stories",x=>x.by===me);
+  for(const [k,id] of assets)await delAsset(k==="clip"?"clip":"photo",id);
+  await delColl("goals",x=>x.owner===me);
+  await delColl("ai"); // AI summaries mention both partners
+  try{const q=await db.collection("q").get();for(const d of q.docs){const x={...(d.data()||{})};if(x[me]){delete x[me];await db.doc("q/"+d.id).set(x).catch(()=>{})}}}catch(e){}
+  try{await db.doc("settings/couple").merge({["bday_"+me]:""})}catch(e){}
+  remOff(me);
+  // a minimal marker so the partner's app knows you left (no name, no content)
+  await db.doc(base(me)).set({left:true,leftAt:Date.now()});
+  try{await db.doc(`devices/${db.uid}`).delete()}catch(e){}
+  if(pn)notify(pn,"Noudé","Your partner has left Noudé and deleted their data. Your own check-ins and messages are still here.","");
+}
+// Nobody else is here: delete everything.
+async function wipeSpace(){
+  for(const p of [A,B])for(const sub of ["days","sent","replies","messages"])await delColl(`${base(p)}/${sub}`);
+  try{const v=await db.collection("videos").get();for(const d of v.docs){const n=+(d.data()?.parts)||0;for(let i=0;i<n;i++)await db.doc(`videos/${d.id}/parts/${i}`).delete().catch(()=>{})}}catch(e){}
+  for(const c of ["photos","videos","stories","goals","q","ai","settings"])await delColl(c);
+  for(const p of [A,B]){remOff(p);await db.doc(base(p)).delete().catch(()=>{})}
+  await db.doc("lock/main").delete().catch(()=>{});await delColl("devices");
+  track({"n.spaceDeleted":1});
+}
+// What the partner who stayed sees
+function partnerLeftCard(){
+  if(!partnerLeft())return null;let hid=false;try{hid=!!localStorage.getItem("ut_leftok_"+spaceKey+me)}catch(e){}if(hid)return null;
+  const c=el("div","leftcard");c.append(el("b",null,"💛 Your partner has left Noudé"),el("p","small",`They deleted their data. Your own check-ins, notes and what you sent are still here, private to you.`));
+  const r=el("div","row");const keep=el("button","secondary small","Keep my space");keep.onclick=()=>{try{localStorage.setItem("ut_leftok_"+spaceKey+me,"1")}catch(e){}renderAll()};
+  const del=el("button","link small","Delete my data too");del.onclick=()=>{goTo(["me","secPriv"]);setTimeout(openLeave,300)};r.append(keep,del);c.append(r);
+  c.append(el("p","small muted","To connect with someone new, start a fresh space with a new invite code so your history stays private."));
+  return c;
+}
 
 /* ================= Help, FAQ & setup check ================= */
 const HELP=[
@@ -3689,7 +3775,7 @@ const HELP=[
   ["lock","What does the privacy passcode do?","With the passcode on, no phone can see your space until it enters your shared 6-digit code, even with your link. Tell your partner the code in person.",["me","lockCard"],"Set a passcode"],
   ["lockstuck","I'm stuck on a passcode screen","If you never set a passcode, tap No passcode set? Try again. If you forgot it, your partner can change it in About me → Privacy lock, or turn it off."],
   ["autodel","How does auto-delete work?","In About me → Photos & videos, choose to delete after 15 or 30 days, or keep everything. It applies to both of you. Stories always disappear after 24 hours.",["me","secAd"],"Open storage settings"],
-  ["delspace","How do I delete everything?","About me → Privacy & your data → Delete our space. It permanently deletes everything for both of you and can't be undone.",["me","secPriv"],"Open"]]},
+  ["delspace","How do I delete my data?","About me → Privacy & your data → Leave and delete my data. It permanently deletes your profile, answers, check-ins, messages, photos, videos, stories and goals. Your partner keeps only what they created, and is told you left but never why. If your partner already left, the whole space is deleted.",["me","secPriv"],"Open"]]},
 
  {g:"phone",t:"Phone setup & notifications",ic:"📱",items:[
   ["iphoneinstall","How do I add the app to my iPhone Home Screen?","In Safari, tap Share ⬆︎ → Add to Home Screen → Add. Then always open Noudé from that icon. Notifications on iPhone only work from the icon.",null,"Show me how","install"],
@@ -4082,7 +4168,7 @@ function renderHome(){
   const pills=el("div","hpills"),st=streakDays();
   if(p){const sp=el("span","hpill streak");sp.append(svgI("flame",15),document.createTextNode(st?`${st}${st>=39?"+":""}-day streak`:"Start a streak: both check in today"));pills.append(sp)}
   const nx=nextItems();if(nx[0]&&nx[0].rt)pills.append(el("span","hpill",`Next: ${nx[0].t.replace(/^.*invited (you|[^:]+): /,"")} · ${nx[0].rt}`));
-  c.append(pills);hh.append(c);{const ib=homeInstallBanner();if(ib)hh.append(ib)}
+  c.append(pills);hh.append(c);{const lc=partnerLeftCard();if(lc)hh.append(lc)}{const ib=homeInstallBanner();if(ib)hh.append(ib)}
   // glance
   const g=$("homeGlance");g.textContent="";
   const mine=E(me)[k],theirs=p?E(p)[k]:null;
@@ -4679,6 +4765,7 @@ async function startSpace(firstTime){
     const [sa,sb]=await Promise.all([db.doc(base(A)).get(),db.doc(base(B)).get()]);
     members[A]=sa.exists?(sa.data()||{}):{};members[B]=sb.exists?(sb.data()||{}):{};
     if(!sa.exists&&me===A)await db.doc(base(A)).set({joinedAt:Date.now(),profile:{}});
+    if(members[me]?.left){done();try{localStorage.removeItem("ut_space");localStorage.removeItem("ut_who")}catch(x){}spaceKey=null;$("welcome").hidden=false;$("welcomeErr").textContent="This spot is closed: this person left Noudé and deleted their data. To use Noudé again, start a new space with a beta invite code.";return}
   }catch(e){console.error(e);done();if(isDenied(e)){showLock(()=>{$("loading").hidden=false;startSpace(false)});return}showNotice("Couldn't load your space. Check the security rules in Firebase, then reopen the app.");return}
   $("whoSwitch").hidden=false;
   syncUrl();
@@ -4736,7 +4823,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.15";
+const APP_VERSION="2026-10-18.16";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
