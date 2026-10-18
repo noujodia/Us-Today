@@ -446,6 +446,7 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .ibanner{display:flex;align-items:center;gap:10px;margin-top:10px;padding:12px;border-radius:14px;background:var(--accent-soft);text-align:left}.ibanner .iic{font-size:1.5rem}.ibanner .itx{flex:1;display:flex;flex-direction:column;gap:2px}.ibanner .x{position:static}
 @media (prefers-reduced-motion:reduce){.hcap.pulse{animation:none}}
 .brand{font-size:2.6rem;letter-spacing:-.02em;margin:0}.tagline{margin:-6px 0 0;font-style:italic;color:var(--accent);font-weight:600}
+.relh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.relnew{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--accent);color:#fff}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
 .gh2{display:flex;gap:12px;align-items:center}.gh2 .gt{display:flex;flex-direction:column;gap:2px;min-width:0}.gh2 .gt b{font-weight:650}
@@ -2762,62 +2763,62 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
-  {id:"2026-10-18c",date:"Oct 18, 2026",items:[
+  {id:"2026-10-18c",at:"2026-10-18T09:46:32-04:00",date:"Oct 18, 2026",items:[
     {em:"🏡",t:"Our new home: noudeapp.com",b:"Noudé now lives at noudeapp.com. Old links still work and bring you here. For the best experience, remove the old Home Screen icon and add Noudé again from this page, then turn notifications back on. If you set a passcode, you'll enter it once more.",go:["home","gsBox"]}
   ]},
-  {id:"2026-10-18b",date:"Oct 18, 2026",items:[
+  {id:"2026-10-18b",at:"2026-10-18T08:49:24-04:00",date:"Oct 18, 2026",items:[
     {em:"✨",t:"Meet Noudé",b:"Us, Today is now Noudé (from Haitian Creole nou de, \"the two of us\"). Everything you've shared is right where you left it. If you added the app to your Home Screen, remove the old icon and add it again to see the new name."}
   ]},
-  {id:"2026-10-18a",date:"Oct 18, 2026",items:[
+  {id:"2026-10-18a",at:"2026-10-18T08:08:18-04:00",date:"Oct 18, 2026",items:[
     {em:"🏆",t:"Couple Quest",b:"A short game on Home that walks you both through the app in 3 levels. See each other's progress, nudge your partner, and finish together to unlock the Founding Couple badge and gold story rings.",go:["home","gsBox"]}
   ]},
-  {id:"2026-10-17n",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17n",at:"2026-10-17T22:57:10-04:00",date:"Oct 17, 2026",items:[
     {em:"🎯",t:"Goals together",b:"Set short- or long-term goals, like the same bedtime, a new restaurant or paying off a debt. Couple goals count when you both check them off. Personal goals can be shared so your partner can cheer you on.",go:["connect","secGoals"]},
     {em:"🎁",t:"Rewards",b:"Add a reward to any goal, or pledge one for your partner's goal. Finished goals celebrate on Home."}
   ]},
-  {id:"2026-10-17m",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17m",at:"2026-10-17T18:13:10-04:00",date:"Oct 17, 2026",items:[
     {em:"❓",t:"Help & FAQ",b:"Answers for every part of the app, with search. Tap the ? on any section to jump straight to its answers.",go:["me","helpCard"]},
     {em:"🩺",t:"Check my setup",b:"One tap checks notifications, your Home Screen icon, updates, dates, wish list, AI and your passcode, with a fix button for anything that's off.",go:["me","helpCard"]}
   ]},
-  {id:"2026-10-17l",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17l",at:"2026-10-17T15:32:45-04:00",date:"Oct 17, 2026",items:[
     {em:"📅",t:"Dates to remember",b:"Add your partner's birthday, the day you met and your wedding anniversary in About me. You'll both get a reminder a week before and the day before.",go:["me","dtBday"]},
     {em:"🎁",t:"Gift reminders",b:"Two weeks before a birthday, anniversary, Valentine's Day or Christmas, a card on Home shows your partner's wish list and gift ideas from their favorites."},
     {em:"🗓️",t:"Add to calendar",b:"Accepted dates and your special days can go straight into Apple, Google or Outlook Calendar. You'll also get a nudge an hour before date night."}
   ]},
-  {id:"2026-10-17k",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17k",at:"2026-10-17T15:14:00-04:00",date:"Oct 17, 2026",items:[
     {em:"🎁",t:"Wish lists",b:"Paste your Amazon (or any store's) wish list in About me. Your partner sees a wish list button on your profile and on Home, so gifts are never a guess.",go:["me","avWish"]}
   ]},
-  {id:"2026-10-17j",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17j",at:"2026-10-17T14:24:47-04:00",date:"Oct 17, 2026",items:[
     {em:"🔒",t:"Privacy lock",b:"Protect your space with a 6-digit passcode you both share. Phones that haven't entered it can't see anything, even with your link. Turn it on in About me → Privacy lock.",go:["me","lockCard"]}
   ]},
-  {id:"2026-10-17i",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17i",at:"2026-10-17T13:42:07-04:00",date:"Oct 17, 2026",items:[
     {em:"📸",t:"Stories",b:"Share a photo or short video that disappears after 24 hours. Tap the + on your photo on Home. When your partner posts one, a colorful ring appears around their photo. Tap it to watch, react or reply.",go:["home","homeHead"]},
     {em:"🏷️",t:"Nicknames",b:"Add a nickname in About me. It shows on your profile and Home. You two can't pick the same one.",go:["me","avNick"]}
   ]},
-  {id:"2026-10-17h",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17h",at:"2026-10-17T13:26:07-04:00",date:"Oct 17, 2026",items:[
     {em:"👤",t:"A new About me",b:"Your profile now reads like a profile: your photo, caption and answers in easy cards. Tap your partner's name at the top to see what helps them feel loved. Settings fold up underneath.",go:["me","profileSummary"]},
     {em:"💬",t:"Captions on Home",b:"Your captions now show under your photos on the Home page.",go:["home","homeHead"]}
   ]},
-  {id:"2026-10-17g",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17g",at:"2026-10-17T13:09:59-04:00",date:"Oct 17, 2026",items:[
     {em:"🏠",t:"A new Home page",b:"See both of you at a glance: mood rings, your streak, today's question, what's next and your latest moments. Add the date you got together for a countdown to your anniversary.",go:["home","homeHead"]},
     {em:"💬",t:"Today's question",b:"One question a day for the two of you. Your partner's answer stays hidden until you answer too.",go:["home","homeQ"]},
     {em:"👤",t:"About me moved",b:"Tap your photo in the top corner to open About me.",go:["me","fbCard"]}
   ]},
-  {id:"2026-10-17f",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17f",at:"2026-10-17T12:41:16-04:00",date:"Oct 17, 2026",items:[
     {em:"🗂️",t:"Tidier Connect page",b:"Plan a date, Challenges and Everything you sent now fold up with a summary. Filter what you sent by photos and videos, hugs and emojis, songs, invites or challenges.",go:["connect","secSent"]}
   ]},
-  {id:"2026-10-17e",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17e",at:"2026-10-17T12:00:13-04:00",date:"Oct 17, 2026",items:[
     {em:"📲",t:"Get notifications on your phone",b:"Step-by-step help for adding Noudé to your Home Screen on iPhone and Android, so notifications and reminders reach you.",go:["me","notifCard"]}
   ]},
-  {id:"2026-10-17d",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17d",at:"2026-10-17T11:09:45-04:00",date:"Oct 17, 2026",items:[
     {em:"🌤️",t:"Midday check",b:"Checked in this morning? After 11 AM you'll get a quick “Anything changed?” with Update or Still the same. Your partner sees what changed.",go:["today","middayBox"]},
     {em:"⏰",t:"Weekday reminders",b:"A reminder at 9:00 AM if you haven't checked in, and a midday check at 12:30 PM. Turn either off in About me → Notifications.",go:["me","notifCard"]},
     {em:"📂",t:"Tidier Check-in page",b:"For you, For your partner, Your week and Worth a read now fold up, with a one-line summary on each.",go:["today","secFor"]}
   ]},
-  {id:"2026-10-17c",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17c",at:"2026-10-17T10:35:20-04:00",date:"Oct 17, 2026",items:[
     {em:"😍",t:"React to messages",b:"Tap any chat message to add a ❤️, 👍, 😂 or any emoji. Tap ＋ for the full set.",go:["chat","msgIn"]}
   ]},
-  {id:"2026-10-17b",date:"Oct 17, 2026",items:[
+  {id:"2026-10-17b",at:"2026-10-17T09:44:33-04:00",date:"Oct 17, 2026",items:[
     {em:"✨",t:"AI ideas for your partner",b:"Turn on AI ideas in About me. When your partner checks in, you get 3 ideas written just for them, plus a weekly summary of your week together.",go:["me","aiCard"],dot:"ai"},
     {em:"💬",t:"Chat, with photos and videos",b:"A private chat for the two of you. Tap ＋ to send a photo or a short video.",go:["chat","msgIn"],dot:"chat"},
     {em:"🎵",t:"Search songs and play previews",b:"Find a song, hear 30 seconds right in the app, and open the full song in Apple Music, Spotify or YouTube.",go:["connect","songCard"],dot:"song"},
@@ -2839,7 +2840,7 @@ function openWhatsNew(all){
   $("wnEyebrow").textContent=all?"Updates":"Just updated";$("wnTitle").textContent=all?"What's new":"New in Noudé";
   const box=$("wnList");box.textContent="";
   rels.forEach((r,ri)=>{
-    const sec=el("div","stack rel");sec.style.gap="10px";if(all||rels.length>1)sec.append(el("h4",null,r.date));
+    const sec=el("div","stack rel");sec.style.gap="10px";if(all||rels.length>1){const h=el("h4","relh");let lab=r.date;if(r.at){const d=new Date(r.at);if(!isNaN(d)){lab=d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})+" · "+d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});const ago=Date.now()-d.getTime();if(ago<7*86400000&&ago>=0)lab+=" · "+timeAgo(d.getTime())}}h.append(document.createTextNode(lab));if(ri===0)h.append(el("span","relnew","Latest"));sec.append(h)}
     r.items.forEach(it=>{const c=el("div","wn");c.append(el("span","em",it.em),el("b",null,it.t),el("p",null,it.b));if(it.go){const b=el("button","try","Try it →");b.onclick=()=>{closeWhatsNew();if(it.dot)useDot(it.dot);goTo(it.go)};c.append(b)}sec.append(c)});
     box.append(sec);
   });
@@ -4598,7 +4599,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.8";
+const APP_VERSION="2026-10-18.9";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
