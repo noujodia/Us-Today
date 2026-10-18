@@ -461,6 +461,7 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .mecoach[hidden]{display:none}
 .sreacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.sreact{font:inherit;font-size:13px;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}.sreact.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:600}
 .wlogo{display:block;border-radius:18px;box-shadow:0 6px 20px rgba(42,32,48,.25);margin-bottom:4px}
+.surep{max-width:420px;margin:auto;gap:12px}#sureSheet{align-items:center}
 .leftcard{margin-top:10px;padding:14px;border-radius:14px;background:var(--accent-soft);display:flex;flex-direction:column;gap:6px;text-align:left}.leftcard p{margin:0}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
@@ -1078,6 +1079,13 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="panel">
     <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="codesTitle">Beta invites</h2></div><button class="x" id="codesX" aria-label="Close">×</button></div>
     <div id="codesBody" class="stack" style="gap:12px"></div>
+  </div>
+</div>
+<div class="ov" id="sureSheet" hidden role="alertdialog" aria-modal="true" aria-labelledby="sureTitle" aria-describedby="sureBody">
+  <div class="panel surep">
+    <h2 id="sureTitle">Are you sure?</h2>
+    <p class="small muted" id="sureBody" style="margin:0"></p>
+    <div class="row"><button class="danger" id="sureOk">Delete</button><button class="secondary" id="sureNo">Cancel</button></div>
   </div>
 </div>
 <div class="ov" id="leaveSheet" hidden role="dialog" aria-modal="true" aria-labelledby="leaveTitle">
@@ -2506,7 +2514,7 @@ $("avFile").onchange=async e=>{
   catch(err){console.error(err);$("avMsg").textContent=err?.code==="signed_out"?saveErr(err):photoErr(err)}
   finally{$("avFile").value=""}
 };
-$("avRemove").onclick=async()=>{try{await setPhoto(null);$("avMsg").textContent="Removed"}catch(e){$("avMsg").textContent=saveErr(e)}};
+$("avRemove").onclick=async()=>{if(!(await sure("Your photo will be removed from your profile.","Remove photo")))return;try{await setPhoto(null);$("avMsg").textContent="Removed"}catch(e){$("avMsg").textContent=saveErr(e)}};
 const linkFor=who=>location.origin+location.pathname+"?space="+spaceKey+"&me="+who;
 const inviteLink=()=>linkFor(other(me)||B);
 $("copyInv").onclick=async()=>{try{await navigator.clipboard.writeText(inviteLink());$("copyMsg").textContent="Copied. Text it to your partner."}catch(e){const rg=document.createRange();rg.selectNodeContents($("invLink"));const sl=getSelection();sl.removeAllRanges();sl.addRange(rg);$("copyMsg").textContent="Selected. Copy it from here."}};
@@ -2645,6 +2653,7 @@ function renderChat(toBottom){
 }
 async function deleteMsg(id){
   const m=(msgs[me]||[]).find(x=>x.id===id);
+  if(!(await sure(m?.kind==="photo"?"This photo will be deleted for both of you.":m?.kind==="clip"?"This video will be deleted for both of you.":"This message will be deleted for both of you.")))return;
   try{await db.doc(`${base(me)}/messages/${id}`).delete();chatSel=null;toast("Message deleted");
     if(m?.kind==="photo"&&m.asset)db.doc(`photos/${m.asset}`).delete().catch(()=>{});
     if(m?.kind==="clip"&&m.asset){loadClipMeta(m.asset).then(x=>{for(let i=0;i<(x?.parts||0);i++)db.doc(`videos/${m.asset}/parts/${i}`).delete().catch(()=>{});db.doc(`videos/${m.asset}`).delete().catch(()=>{})}).catch(()=>{})}}catch(e){console.error(e);toast(saveErr(e))}
@@ -2717,7 +2726,7 @@ function renderAutoDel(){
 }
 async function setAutoDel(d){
   if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
-  if(d&&d!==(+mediaSettings.autoDelete||0)&&!confirm(`Delete photos and videos older than ${d} days? This can't be undone.`))return;
+  if(d&&d!==(+mediaSettings.autoDelete||0)&&!(await sure(`Photos and videos older than ${d} days will be deleted for both of you. This can't be undone.`,"Turn on auto-delete")))return;
   try{await db.doc("settings/media").set({autoDelete:d,by:me,at:Date.now()});mediaSettings={autoDelete:d,by:me,at:Date.now()};renderAutoDel();toast(d?`Photos and videos will be deleted after ${d} days`:"Keeping all photos and videos");try{localStorage.removeItem("ut_clean_"+spaceKey)}catch(e){}if(d)runCleanup(d)}
   catch(e){console.error(e);toast(saveErr(e))}
 }
@@ -3153,7 +3162,7 @@ function renderFbInbox(){
     c.append(el("span","meta",[deviceName(f.device),f.version?"app "+f.version:"",f.createdAt?new Date(f.createdAt).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"",f.space?"couple "+String(f.space).slice(0,6):""].filter(Boolean).join(" · ")));
     const a=el("div","acts");
     const d=el("button","link small",f.done?"Mark as new":"Mark done");d.onclick=()=>db.top.doc("feedback/"+f.id).update({done:!f.done}).catch(()=>toast("Couldn't update"));
-    const x=el("button","link small","Delete");x.style.color="var(--warn)";x.onclick=()=>{if(confirm("Delete this feedback?"))db.top.doc("feedback/"+f.id).delete().then(()=>toast("Deleted")).catch(()=>toast("Couldn't delete"))};
+    const x=el("button","link small","Delete");x.style.color="var(--warn)";x.onclick=async()=>{if(await sure("This feedback will be deleted for good."))db.top.doc("feedback/"+f.id).delete().then(()=>toast("Deleted")).catch(()=>toast("Couldn't delete"))};
     a.append(d,x);c.append(a);box.append(c);
   });
 }
@@ -3439,7 +3448,7 @@ async function goalCheer(g,e){
 async function goalPledge(g){const v=prompt(`What will you give ${nickOf(g.owner)||nm(g.owner)} when they reach this goal?`,"Dinner on me");if(!v||!v.trim())return;
   if(await gSave(g.id,{reward:v.trim().slice(0,80),rewardFrom:me})){notify(g.owner,nm(me),`Pledged a reward for “${g.title}”: ${v.trim().slice(0,80)} 🎁`,"goal");toast("Reward pledged 🎁")}}
 async function goalGiven(g){if(await gSave(g.id,{rewardGiven:Date.now()}))toast("Reward delivered 💝")}
-async function goalRemove(g){if(!confirm("Remove this goal?"))return;if(await gSave(g.id,{status:"deleted"}))toast("Goal removed")}
+async function goalRemove(g){if(!(await sure(`“${g.title}” will be removed${g.kind==="couple"?" for both of you":""}.`,"Remove goal")))return;if(await gSave(g.id,{status:"deleted"}))toast("Goal removed")}
 /* ---- rendering ---- */
 function goalCard(g){
   const pn=gPn(),mine=g.owner===me,partnerOwned=g.kind==="me"&&!mine,canAct=g.kind==="couple"||mine,c=el("div","goal"+(g.status==="done"?" gdone2":"")+(gOverdue(g)?" overdue":""));c.id="goal-"+g.id;
@@ -3737,6 +3746,11 @@ function homeInstallBanner(){
   const go=el("button","primary small","Show me");go.onclick=openInstall;const x=el("button","x","×");x.setAttribute("aria-label","Not now");x.onclick=()=>{try{localStorage.setItem("ut_instsnooze",String(Date.now()+3*86400000))}catch(e){}b.remove()};b.append(go,x);return b;
 }
 
+/* Ask before anything gets deleted or removed. Resolves true only if they confirm. */
+function sure(body,ok,title){return new Promise(res=>{const sh=$("sureSheet");$("sureTitle").textContent=title||"Are you sure?";$("sureBody").textContent=body||"";$("sureOk").textContent=ok||"Delete";sh.hidden=false;
+  const done=v=>{sh.hidden=true;$("sureOk").onclick=$("sureNo").onclick=null;sh.onclick=null;document.removeEventListener("keydown",esc);res(v)};
+  const esc=e=>{if(e.key==="Escape")done(false)};document.addEventListener("keydown",esc);
+  $("sureOk").onclick=()=>done(true);$("sureNo").onclick=()=>done(false);sh.onclick=e=>{if(e.target===sh)done(false)};setTimeout(()=>$("sureNo").focus(),30)})}
 /* ================= Leave & delete ================= */
 const LEAVE_REASONS=[["separated","We separated or broke up"],["break","Taking a break from the app"],["notused","We didn't use it enough"],["partner","My partner didn't use it"],["notifs","Too many notifications"],["feature","Missing something I wanted"],["privacy","Privacy concerns"],["bugs","Something wasn't working"],["fresh","Starting over with a new space"],["other","Other"]];
 let leaveReason="";
@@ -4234,8 +4248,8 @@ function inviteWhen(it){const t=inviteAt(it);if(t)return t;if(it.when==="This we
 const clearedBy=p=>{const c=p&&members[p]?.cleared;return c&&typeof c==="object"?c:{}};
 const isCleared=id=>!!clearedBy(me)[id];
 const invDone=it=>!!(it.doneAt||(replies[me]||{})[it.id]?.doneAt||(partnerId&&(replies[partnerId]||{})[it.id]?.doneAt));
-async function clearItem(id){try{if(!signedIn())throw{code:"signed_out"};const t=Date.now();await db.doc(base(me)).merge({cleared:{[id]:t}});members[me]={...(members[me]||{}),cleared:{...clearedBy(me),[id]:t}};toast("Cleared from Next up");renderAll()}catch(e){console.error(e);toast(saveErr(e))}}
-async function deleteSent(it){if(!confirm("Remove this for both of you?"))return;try{await db.doc(`${base(me)}/sent/${it.id}`).delete();toast("Removed")}catch(e){console.error(e);toast(saveErr(e))}}
+async function clearItem(id,ask){if(ask!==false&&!(await sure("It will be removed from Next up.","Remove")))return;try{if(!signedIn())throw{code:"signed_out"};const t=Date.now();await db.doc(base(me)).merge({cleared:{[id]:t}});members[me]={...(members[me]||{}),cleared:{...clearedBy(me),[id]:t}};toast("Cleared from Next up");renderAll()}catch(e){console.error(e);toast(saveErr(e))}}
+async function deleteSent(it){if(!(await sure("This will be removed for both of you.","Remove")))return;try{await db.doc(`${base(me)}/sent/${it.id}`).delete();toast("Removed")}catch(e){console.error(e);toast(saveErr(e))}}
 async function markInviteDone(it){try{if(!signedIn())throw{code:"signed_out"};const t=Date.now();if(it.dir==="out")await db.doc(`${base(me)}/sent/${it.id}`).merge({doneAt:t});else await reply(it.id,{doneAt:t});
   notify(partnerId,nm(me),`Marked “${invLabel(it)}” as done 💞`,"");toast("💞 Marked as done. It's in Moments now.");renderAll()}catch(e){console.error(e);toast(saveErr(e))}}
 function doneThisWeek(){const wk=Date.now()-7*86400000;let n=0;
@@ -4545,7 +4559,7 @@ function showStory(){
   const l=el("button","stap l");l.setAttribute("aria-label","Previous");l.onclick=prevStory;const r=el("button","stap r");r.setAttribute("aria-label","Next");r.onclick=nextStory;body.append(l,r);
   const foot=$("stFoot");foot.textContent="";
   if(mine){const seen=it.seenAt?`Seen by ${nickOf(partnerId)||nm(partnerId)} · ${timeAgo(it.seenAt)}`:"Not seen yet";foot.append(el("span","sseen",seen));
-    const d=el("button","sdel","Delete");d.onclick=()=>{if(confirm("Delete this story?"))deleteStory(it)};foot.append(d)}
+    const d=el("button","sdel","Delete");d.onclick=async()=>{if(await sure("This story will be deleted for both of you.","Delete story"))deleteStory(it)};foot.append(d)}
   else{
     if(!it.seenAt)db.doc(`stories/${it.id}`).update({seenAt:Date.now()}).catch(()=>{});
     markStorySeen(it.createdAt);
@@ -4651,7 +4665,7 @@ function renderCodes(){
     const r=el("div","fbi"+(c.used?" fdone":" isnew")),top=el("div","top");top.append(el("span","kind "+(c.used?"love":"idea"),c.used?"Used":"Unused"),el("span","who",c.id),el("span","when",c.used&&c.usedAt?timeAgo(c.usedAt):timeAgo(c.createdAt||Date.now())));r.append(top);
     if(c.note)r.append(el("p","msg",c.note));
     if(!c.used){const a=el("div","acts");const sh=el("button","primary small","📤 Share invite");sh.onclick=()=>shareCode(c);a.append(sh);const cp=el("button","link small","Copy");cp.onclick=async()=>{try{await navigator.clipboard.writeText(codeMsg(c));toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't copy")}};
-      const del=el("button","link small","Delete");del.style.color="var(--warn)";del.onclick=()=>{if(confirm("Delete this unused code?"))db.top.doc("betaCodes/"+c.id).delete().then(()=>toast("Deleted")).catch(()=>toast("Couldn't delete"))};a.append(cp,del);r.append(a)}
+      const del=el("button","link small","Delete");del.style.color="var(--warn)";del.onclick=async()=>{if(await sure("This unused invite code will stop working."))db.top.doc("betaCodes/"+c.id).delete().then(()=>toast("Deleted")).catch(()=>toast("Couldn't delete"))};a.append(cp,del);r.append(a)}
     box.append(r)})};
   sec(`Unused (${unused.length})`,unused);sec(`Used (${used.length})`,used);
   if(!codesList.length)box.append(el("p","muted small","No codes yet. Create one for each couple you invite."));
@@ -4717,7 +4731,7 @@ async function changeLock(pin,err){
     if(partnerId)notify(partnerId,nm(me),"Changed the passcode for your space 🔒 Ask them for the new one.","lock");lockFormOpen=false;toast("Passcode changed");renderLockCard(true)}
   catch(e){console.error(e);err.textContent="Couldn't change it. Try again."}
 }
-async function disableLock(){if(!confirm("Turn off the privacy lock? Anyone with your link could open your space again."))return;try{await db.doc("lock/main").delete();lockDoc=null;toast("Privacy lock off");renderLockCard(true)}catch(e){console.error(e);toast(saveErr(e))}}
+async function disableLock(){if(!(await sure("Anyone with your link could open your space again.","Turn off lock","Turn off the privacy lock?")))return;try{await db.doc("lock/main").delete();lockDoc=null;toast("Privacy lock off");renderLockCard(true)}catch(e){console.error(e);toast(saveErr(e))}}
 let lockFormOpen=false;
 function renderLockCard(force){
   const box=$("lockCard");if(!box)return;const pn=partnerId?(nickOf(partnerId)||nm(partnerId)):"your partner";
@@ -4734,7 +4748,7 @@ function renderLockCard(force){
   box.append(el("p","small",`On. New phones need the passcode. Tell ${pn} the passcode in person.`));
   const list=el("div","stack");list.style.gap="6px";list.append(el("b",null,"Unlocked phones"));
   devicesList.slice().sort((a,b)=>(b.at||0)-(a.at||0)).forEach(d=>{const r=el("div","row between");const t=el("div","stack");t.style.gap="0";t.append(el("span",null,`${d.who?nm(d.who):"Someone"} · ${d.ua||"Phone"}${d.id===db.uid?" (this phone)":""}`),el("span","small muted",d.at?"Last used "+timeAgo(d.at):""));r.append(t);
-    if(d.id!==db.uid){const x=el("button","link small","Sign out");x.style.color="var(--warn)";x.onclick=()=>{if(confirm("Sign out this phone? It will need the passcode again."))db.doc(`devices/${d.id}`).delete().then(()=>toast("Signed out")).catch(()=>toast("Couldn't sign out"))};r.append(x)}
+    if(d.id!==db.uid){const x=el("button","link small","Sign out");x.style.color="var(--warn)";x.onclick=async()=>{if(await sure("It will need the passcode again to open your space.","Sign out","Sign out this phone?"))db.doc(`devices/${d.id}`).delete().then(()=>toast("Signed out")).catch(()=>toast("Couldn't sign out"))};r.append(x)}
     list.append(r)});
   box.append(list);
   if(lockFormOpen)box.append(pinForm("New 6-digit passcode",changeLock));
@@ -4922,7 +4936,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.29";
+const APP_VERSION="2026-10-18.30";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
