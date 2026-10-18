@@ -463,7 +463,8 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .hempty{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:8px 2px}
 .helpq{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--muted);font-weight:700;font-size:.85rem;margin-right:6px;cursor:pointer;padding:0}
 .erow{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-top:1px solid var(--line)}.erow b{font-weight:600;font-size:.88rem;word-break:break-word}
-.datesbox{display:flex;flex-direction:column;gap:8px;text-align:left;align-self:stretch;width:100%;box-sizing:border-box;margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
+.datesec{align-self:stretch;width:100%;text-align:left;margin-top:8px}.datesec>summary{background:var(--soft);border-color:transparent}.datesec>summary .chev{background:var(--surface)}
+.datesbox{display:flex;flex-direction:column;gap:8px;text-align:left;width:100%;box-sizing:border-box;padding:12px 2px 0}
 .dgrid{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center}
 .dgrid input{min-width:0;width:100%;box-sizing:border-box}
 .calrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.88rem}
@@ -796,17 +797,19 @@ details.pl summary{cursor:pointer;font-weight:600}
       <label for="avWish" class="small" style="font-weight:600">🎁 Your wish list</label>
       <div class="cmt"><input type="text" id="avWish" inputmode="url" maxlength="400" placeholder="Paste your Amazon wish list link"><button class="secondary" id="avWishSave">Save</button></div>
       <p class="small muted" style="margin:0">In Amazon: Account → Your Lists → pick a list → Share → Copy link. Any store's list works.</p>
-      <div class="datesbox" id="datesBox">
-        <b class="small">📅 Dates to remember</b>
+      <details class="sec datesec" id="secDates">
+        <summary><div class="sh"><h2>📅 Dates to remember</h2><span class="ssum" id="sumDates"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+        <div class="datesbox" id="datesBox">
         <p class="small muted" style="margin:0">You both get a reminder a week before and the day before, with the wish list one tap away.</p>
         <div class="dgrid">
-          <label for="dtBday" class="small" id="dtBdayLab">Your partner's birthday</label><input type="date" id="dtBday">
-          <label for="dtMet" class="small">When you met</label><input type="date" id="dtMet">
-          <label for="dtWed" class="small">Wedding anniversary</label><input type="date" id="dtWed">
+          <label for="dtBday" class="small" id="dtBdayLab">🎂 Your partner's birthday</label><input type="date" id="dtBday">
+          <label for="dtMet" class="small">💞 When you met</label><input type="date" id="dtMet">
+          <label for="dtWed" class="small">💍 Wedding anniversary</label><input type="date" id="dtWed">
         </div>
         <div class="row"><button class="secondary" id="dtSave">Save dates</button><span class="small muted" id="dtMsg" role="status"></span></div>
         <div id="dtCal"></div>
-      </div>
+        </div>
+      </details>
     </div>
     <div class="phero" id="partnerHero" hidden></div>
     <details class="sec" id="secAnswers">
@@ -3587,7 +3590,7 @@ async function setRemind(k){
 $("remAm").onclick=()=>setRemind("am");$("remMid").onclick=()=>setRemind("mid");
 
 /* ---- Collapsible sections ---- */
-const SECS=["secAnswers","secSelf","secFor","secWeek","secRead","secInv","secCh","secGoals","secSent","secNotif","secAi","secLock","secAd","secLinks","secHelp"];
+const SECS=["secDates","secAnswers","secSelf","secFor","secWeek","secRead","secInv","secCh","secGoals","secSent","secNotif","secAi","secLock","secAd","secLinks","secHelp"];
 function initSecs(){SECS.forEach(id=>{const d=$(id);if(!d)return;let v=null;try{v=localStorage.getItem("ut_sec_"+id)}catch(x){}if(v!=null)d.open=v==="1";d.addEventListener("toggle",()=>{try{localStorage.setItem("ut_sec_"+id,d.open?"1":"0")}catch(x){}})})}
 initSecs();
 function setSum(id,t){const n=$(id);if(n)n.textContent=t||""}
@@ -3860,7 +3863,10 @@ function renderGift(){
 }
 function renderDates(){
   if(!$("dtBday"))return;const k=todayKey();
-  const op=other(me);$("dtBdayLab").textContent=op&&members[op]?.profile?.name?`${nickOf(op)||nm(op)}'s birthday`:"Your partner's birthday";
+  const op=other(me);$("dtBdayLab").textContent="🎂 "+(op&&members[op]?.profile?.name?`${nickOf(op)||nm(op)}'s birthday`:"Your partner's birthday");
+  {const fmt=v=>fromKey(v).toLocaleDateString(undefined,{month:"short",day:"numeric"}),parts=[];
+   if(bdayOf(op))parts.push("🎂 "+fmt(bdayOf(op)));if(isYmd(coupleSettings.since))parts.push("💞 "+fromKey(coupleSettings.since).toLocaleDateString(undefined,{month:"short",year:"numeric"}));if(isYmd(coupleSettings.wed))parts.push("💍 "+fmt(coupleSettings.wed));
+   const nx=occasions().find(o=>!o.holiday);setSum("sumDates",parts.length?parts.join(" · ")+(nx?` · next in ${nx.until===0?"today":nx.until===1?"1 day":nx.until+" days"}`:""):"🎂 Birthdays and 💍 anniversaries · tap to add")}
   [["dtBday",bdayOf(op)],["dtMet",isYmd(coupleSettings.since)?coupleSettings.since:""],["dtWed",isYmd(coupleSettings.wed)?coupleSettings.wed:""]].forEach(([id,v])=>{if(document.activeElement!==$(id))$(id).value=v});
   $("dtBday").max=k;$("dtMet").max=k;
   const cal=$("dtCal");cal.textContent="";
@@ -4385,7 +4391,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.36";
+const APP_VERSION="2026-10-18.1";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
