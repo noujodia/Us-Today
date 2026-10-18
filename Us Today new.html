@@ -4280,18 +4280,16 @@ async function ensureAccess(code,isNew){
 function genCode(){const A2="ABCDEFGHJKMNPQRSTUVWXYZ23456789",b=new Uint8Array(6);crypto.getRandomValues(b);return"US-"+[...b].map(x=>A2[x%A2.length]).join("")}
 let codesUnsub=null,codesList=[],codesErr=false;
 const appLink=()=>location.origin+location.pathname;
-function codeMsg(c){return `You're invited to the private beta of Us, Today 💞
+function codeMsg(c){return `💞 You're invited to Us, Today, a private, intimate social app just for the two of you.
 
-Us, Today is a private space just for the two of you. In 30 seconds a day, you each share how you're feeling and what you need, and get simple, specific ideas to show up for each other. It also has private chat, stories, songs, date invites, goals and birthday reminders.
+Check in on each other's mood in 30 seconds, swap songs, stories and sweet messages, plan date nights, set goals together, and never miss a birthday again. 🎶📸💌
 
-Your invite code: ${c.id}
-
+Your code: ${c.id} (works once)
 1. Open ${appLink()} on your phone
 2. Enter the code and tap Start our space
-3. Fill out About me, then send your partner their invite link
-4. Add it to your Home Screen and turn on notifications
+3. Send your partner their invite from About me
 
-It's a beta, so your feedback means a lot (tap Send feedback in the app). The code works once, so please don't share it.`}
+It's a beta, so tell us what you think!`}
 async function shareCode(c){
   const text=codeMsg(c);track({"n.codeShare":1});
   if(navigator.share){try{await navigator.share({title:"Your Us, Today invite",text});return}catch(e){if(e&&e.name==="AbortError")return}}
@@ -4592,7 +4590,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.3";
+const APP_VERSION="2026-10-18.4";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
