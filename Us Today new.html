@@ -889,7 +889,15 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="inner" style="justify-content:center">
     <div class="stack" style="gap:10px"><span class="eyebrow">Welcome</span><h1>Us, Today</h1>
     <p class="muted">A daily check-in for the two of you: how you're feeling, what you need, and little ways to show up for each other.</p></div>
-    <div class="card stack">
+    <div class="card stack unlockc" id="unlockCard" hidden>
+      <h3>🔑 Joining your partner?</h3>
+      <p class="small muted">This space hasn't been added to the beta yet. Enter a beta invite code to unlock it. Your partner keeps everything they've already set up.</p>
+      <label for="unlockCode" class="small" style="font-weight:600">Beta invite code</label>
+      <input type="text" id="unlockCode" placeholder="US-XXXXXX" autocapitalize="characters" autocomplete="off" spellcheck="false" maxlength="12">
+      <button class="primary" id="unlockBtn">Unlock and join</button>
+      <p class="small" id="unlockErr" style="color:var(--warn);margin:0" role="status"></p>
+    </div>
+    <div class="card stack" id="startCard">
       <h3>Start your space</h3>
       <p class="small muted">Us, Today is in private beta. Enter the invite code you were given.</p>
       <label for="betaCode" class="small" style="font-weight:600">Beta invite code</label>
@@ -3750,6 +3758,7 @@ $("stX").onclick=closeStory;
 document.addEventListener("keydown",e=>{if($("storyView").hidden)return;if(e.key==="Escape")closeStory();else if(e.key==="ArrowRight")nextStory();else if(e.key==="ArrowLeft")prevStory()});
 
 /* ================= Private beta: invite codes ================= */
+let lockedSpace=null;
 const PREV_SPACE=(()=>{try{return localStorage.getItem("ut_space")||""}catch(e){return""}})();
 let pendingCode="";
 const normCode=v=>{let c=String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(!c)return"";if(c.startsWith("US"))c=c.slice(2);return c?"US-"+c.slice(0,8):""};
@@ -4001,6 +4010,8 @@ async function startSpace(firstTime){
   if(acc!=="ok"&&acc!=="open"){
     done();const msg={badcode:"That invite code isn't valid. Check it and try again.",usedcode:"That invite code has already been used. Ask for a new one.",needcode:"Enter your beta invite code to start.",locked:"This space isn't part of the beta. If you were invited, ask for your link again.",error:"Couldn't check your invite. Check your connection and try again."}[acc]||"Couldn't start.";
     if(firstTime){spaceKey=null;$("welcome").hidden=false;$("welcomeErr").textContent=msg;return}
+    if(acc==="locked"){lockedSpace={key:spaceKey,href:location.href,db};$("unlockCard").hidden=false;$("unlockErr").textContent="";$("welcomeErr").textContent="";$("startCard").querySelector("h3").textContent="Or start a new space of your own";$("startSpace").className="secondary";
+      try{localStorage.removeItem("ut_space")}catch(e){}spaceKey=null;$("welcome").hidden=false;setTimeout(()=>$("unlockCode").focus(),100);return}
     try{localStorage.removeItem("ut_space")}catch(e){}spaceKey=null;$("welcome").hidden=false;$("welcomeErr").textContent=msg;return;
   }
   try{localStorage.setItem("ut_space",spaceKey);localStorage.setItem("ut_known_"+spaceKey,"1");if(firstTime)localStorage.setItem("ut_who",A)}catch(e){}
@@ -4029,6 +4040,18 @@ async function startSpace(firstTime){
   db.doc("settings/media").onSnapshot(s=>{mediaSettings=s.exists?(s.data()||{}):{autoDelete:0};if(tab==="me")renderAutoDel();maybeCleanup()},()=>{});
   [A,B].forEach(p=>{watch(p);db.doc(base(p)).onSnapshot(s=>{members[p]=s.exists?(s.data()||{}):{};renderAll()},()=>{})});
 }
+$("unlockBtn").onclick=async()=>{
+  const code=normCode($("unlockCode").value),btn=$("unlockBtn"),err=$("unlockErr");
+  if(!code){err.textContent="Enter the beta invite code you were given.";$("unlockCode").focus();return}
+  if(!lockedSpace){err.textContent="Open your invite link again, then enter the code.";return}
+  btn.disabled=true;btn.textContent="Unlocking…";err.textContent="";
+  const prevKey=spaceKey,prevDb=db;spaceKey=lockedSpace.key;db=lockedSpace.db;
+  let acc="error";try{acc=await ensureAccess(code,true)}catch(e){acc="error"}
+  if(acc==="ok"||acc==="open"){try{localStorage.setItem("ut_known_"+lockedSpace.key,"1")}catch(e){}btn.textContent="Unlocked 💞";location.replace(lockedSpace.href);return}
+  spaceKey=prevKey;db=prevDb;btn.disabled=false;btn.textContent="Unlock and join";
+  err.textContent={badcode:"That code isn't valid. Check it and try again.",usedcode:"That code has already been used. Ask for a new one.",error:"Couldn't check the code. Check your connection and try again."}[acc]||"Couldn't unlock. Try again.";
+};
+$("unlockCode").addEventListener("keydown",e=>{if(e.key==="Enter")$("unlockBtn").click()});
 $("startSpace").onclick=()=>{
   const code=normCode($("betaCode").value);
   if(!code){$("welcomeErr").textContent="Enter your beta invite code to start.";$("betaCode").focus();return}
@@ -4055,7 +4078,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-17.34";
+const APP_VERSION="2026-10-17.35";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
