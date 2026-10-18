@@ -2914,10 +2914,13 @@ const OWNER_LINK=/#owner\b/.test(location.hash);
 let isOwner=false,fbItems=[],fbFilter="new",fbUnsub=null;
 const FB_LABEL={bug:"🐞 Bug",idea:"💡 Idea",love:"❤️ Love it",other:"Other"};
 function deviceName(ua){ua=String(ua||"");let m=ua.match(/iPhone OS (\d+)_(\d+)/);if(m)return`iPhone · iOS ${m[1]}.${m[2]}`;m=ua.match(/iPad.*OS (\d+)_(\d+)/);if(m)return`iPad · iOS ${m[1]}.${m[2]}`;m=ua.match(/Android (\d+(\.\d+)?)/);if(m)return`Android ${m[1]}`;if(/Macintosh/.test(ua))return"Mac";if(/Windows/.test(ua))return"Windows";return"Unknown device"}
-function ownerRules(uid){return`rules_version = '2';
+// Phones that can see the owner tools. Each new phone or domain gets a new ID, so we keep the old ones and add the current one.
+const OWNER_UIDS=["WVQyIdy6C4dDqKsWGY9oILmbIok2"];
+const ownerList=uid=>[...new Set([...OWNER_UIDS,uid].filter(x=>/^[A-Za-z0-9]{10,}$/.test(x||"")))].map(x=>"'"+x+"'").join(", ");
+function ownerRules(uid){const L=ownerList(uid);return`rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isOwner() { return request.auth != null && request.auth.uid in ['${uid}']; }
+    function isOwner() { return request.auth != null && request.auth.uid in [${L}]; }
     function hasAccess(key) { return exists(/databases/$(database)/documents/betaAccess/$(key)); }
     function lockOn(key) { return exists(/databases/$(database)/documents/couples/$(key)/lock/main); }
     function onDevice(key) { return exists(/databases/$(database)/documents/couples/$(key)/devices/$(request.auth.uid)); }
@@ -2950,12 +2953,12 @@ service cloud.firestore {
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 2000;
       allow read, update, delete: if request.auth != null
-        && request.auth.uid in ['${uid}'];
+        && request.auth.uid in [${L}];
     }
     match /spaces/{id} {
       allow create, update: if request.auth != null && id.size() == 16;
       allow read: if request.auth != null
-        && request.auth.uid in ['${uid}'];
+        && request.auth.uid in [${L}];
     }
   }
 }`}
@@ -2972,7 +2975,7 @@ function renderFbInbox(){
   const box=$("inboxBody");box.textContent="";
   if(!isOwner){
     const uid=db?.uid||"";
-    box.append(el("p","small","To make this phone the owner, replace your Firestore rules with the text below and tap Publish. It adds this phone's ID to the feedback section, so only this phone can read feedback."));
+    box.append(el("p","small","To make this phone an owner, replace your Firestore rules with the text below and tap Publish. It adds this phone's ID next to your existing owner phones, so the owner tools (feedback, usage and beta invites) work here too."));
     box.append(el("p","small muted","This phone's ID: "+(uid||"(not connected)")));
     const pre=el("pre","code",ownerRules(uid));box.append(pre);
     const r=el("div","row");const c=el("button","primary","Copy rules");c.onclick=async()=>{try{await navigator.clipboard.writeText(ownerRules(uid));toast("Rules copied")}catch(e){toast("Couldn't copy. Select the text instead.")}};
@@ -4599,7 +4602,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.9";
+const APP_VERSION="2026-10-18.10";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
