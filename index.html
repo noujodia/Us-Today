@@ -1817,7 +1817,11 @@ $("notifOn").onclick=()=>enableNotifs();
 $("notifTest").onclick=()=>{notify(me,"Noudé","Notifications are working 🎉","test");toast("Test sent")};
 function notify(toId,title,body,tag,hash){
   const sub=members[toId]?.push;if(!WORKER_URL||!sub)return;
-  fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sub,title,body,url:linkFor(toId)+(hash||(tag==="chat"?"#chat":tag==="story"?"#story":"")),tag:tag||""})}).catch(()=>{});
+  fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sub,title,body,url:linkFor(toId)+(hash||(tag==="chat"?"#chat":tag==="story"?"#story":"")),tag:tag||""})})
+    .then(r=>r.json()).then(r=>{
+      // Their phone's notification address no longer works (app re-added, permission removed): clear it so their app asks again.
+      if(r&&r.gone&&members[toId]?.push?.endpoint===sub.endpoint){db.doc(base(toId)).merge({push:null}).catch(()=>{});members[toId]={...members[toId],push:null};track({"n.pushGone":1})}
+    }).catch(()=>{});
 }
 const TOUCH_TEXT={hug:"Sent you a hug 🤗",kiss:"Sent you a kiss 💋",grab:"Sent you a butt grab 🍑",five:"Sent you a high five ✋"};
 function notifyForItem(d,id){
@@ -3721,7 +3725,13 @@ function questRemEvents(){
 }
 // Home: nudges where the gap is
 function homeInstallBanner(){
-  const mobile=platformKey()!=="desktop";if(!mobile||isInstalled())return null;
+  const mobile=platformKey()!=="desktop";
+  // Installed, but notifications aren't on for this install (for example after re-adding the icon)
+  if(mobile&&isInstalled()&&pushSupported()&&typeof Notification!=="undefined"&&Notification.permission!=="granted"&&signedIn()&&partnerId){
+    let sn=0;try{sn=+localStorage.getItem("ut_notifsnooze")||0}catch(e){}if(Date.now()<sn)return null;
+    const pn=nickOf(partnerId)||nm(partnerId);const b=el("div","ibanner");b.append(el("span","iic","🔔"));const tx=el("div","itx");tx.append(el("b",null,"Notifications are off on this phone"),el("span","small",`Turn them on to know when ${pn} posts a story, sends something or checks in.`));b.append(tx);
+    const go=el("button","primary small","Turn on");go.onclick=()=>goTo(["me","notifCard"]);const x=el("button","x","×");x.setAttribute("aria-label","Not now");x.onclick=()=>{try{localStorage.setItem("ut_notifsnooze",String(Date.now()+2*86400000))}catch(e){}b.remove()};b.append(go,x);return b}
+  if(!mobile||isInstalled())return null;
   let snooze=0;try{snooze=+localStorage.getItem("ut_instsnooze")||0}catch(e){}if(Date.now()<snooze)return null;
   const b=el("div","ibanner");b.append(el("span","iic","📲"));const tx=el("div","itx");tx.append(el("b",null,"Add Noudé to your Home Screen"),el("span","small",isIOS?"It's the only way to get notifications on iPhone.":"Faster to open, and notifications just work."));b.append(tx);
   const go=el("button","primary small","Show me");go.onclick=openInstall;const x=el("button","x","×");x.setAttribute("aria-label","Not now");x.onclick=()=>{try{localStorage.setItem("ut_instsnooze",String(Date.now()+3*86400000))}catch(e){}b.remove()};b.append(go,x);return b;
@@ -4912,7 +4922,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.28";
+const APP_VERSION="2026-10-18.29";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
