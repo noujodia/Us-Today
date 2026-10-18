@@ -1813,12 +1813,12 @@ function renderNotifCard(){
 }
 $("notifOn").onclick=()=>enableNotifs();
 $("notifTest").onclick=()=>{notify(me,"Noudé","Notifications are working 🎉","test");toast("Test sent")};
-function notify(toId,title,body,tag){
+function notify(toId,title,body,tag,hash){
   const sub=members[toId]?.push;if(!WORKER_URL||!sub)return;
-  fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sub,title,body,url:linkFor(toId)+(tag==="chat"?"#chat":tag==="story"?"#story":""),tag:tag||""})}).catch(()=>{});
+  fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sub,title,body,url:linkFor(toId)+(hash||(tag==="chat"?"#chat":tag==="story"?"#story":"")),tag:tag||""})}).catch(()=>{});
 }
 const TOUCH_TEXT={hug:"Sent you a hug 🤗",kiss:"Sent you a kiss 💋",grab:"Sent you a butt grab 🍑",five:"Sent you a high five ✋"};
-function notifyForItem(d){
+function notifyForItem(d,id){
   const n=nm(me);let body="";
   if(d.kind==="touch"&&d.type==="emoji")body="Sent you "+[...String(d.em||"💌")].slice(0,12).join("");
   else if(d.kind==="touch")body=TOUCH_TEXT[d.type]||"Sent you something";
@@ -1828,7 +1828,7 @@ function notifyForItem(d){
   else if(d.kind==="clip")body="Sent you a video 🎬"+(d.caption?`: “${d.caption}”`:"");
   else if(d.kind==="invite")body=`Invited you: ${d.type==="date"&&d.dateKind?"Date night, "+label("datestyle",d.dateKind).toLowerCase():invLabel(d)} · ${d.when} 💌`;
   else if(d.kind==="challenge")body=`Challenged you: ${d.text} 🏁`;
-  if(body)notify(partnerId,n,body,d.kind);
+  if(body)notify(partnerId,n,body,d.kind,id&&/^[\w-]{4,40}$/.test(id)?"#item="+id:"");
 }
 function notifyForReply(id,data){
   const it=incoming().find(x=>x.id===id);if(!it)return;const n=nm(me),prev=(replies[me]||{})[id]||{};
@@ -1957,8 +1957,8 @@ async function sendItem(data,msg){
   try{
     if(!signedIn())throw{code:"signed_out"};
     if(!partnerId){toast("Your partner hasn't joined yet");return false}
-    await db.collection(`${base(me)}/sent`).add({...data,to:partnerId,createdAt:Date.now()});
-    notifyForItem(data);trackItem(data.kind);toast(msg);return true;
+    const ref=await db.collection(`${base(me)}/sent`).add({...data,to:partnerId,createdAt:Date.now()});
+    notifyForItem(data,ref&&ref.id);trackItem(data.kind);toast(msg);return true;
   }catch(e){console.error(e);toast(saveErr(e));return false}
 }
 $("sendInv").onclick=async()=>{
@@ -1997,8 +1997,18 @@ function renderBanner(){
   const simple=it.kind==="touch"||it.kind==="photo"||it.kind==="clip"||it.kind==="media";
   const head=simple?d.title:it.kind==="invite"?`${pn} invited you on a date`:`${pn} sent you a challenge`;
   t.append(el("h3",null,head),el("p","small muted",simple?(it.caption||it.note||timeAgo(it.createdAt)):d.title.replace(/^[^:]+: /,"")));
-  const go=el("button","secondary",it.kind==="touch"?"Send one back":it.kind==="photo"?"View":it.kind==="clip"?"Watch":it.kind==="media"?"Listen":"See it");go.onclick=()=>setTab("connect");
+  const go=el("button","secondary",it.kind==="touch"?"Send one back":it.kind==="photo"?"View":it.kind==="clip"?"Watch":it.kind==="media"?"Listen":"See it");go.onclick=()=>openItem(it.id);
   b.append(el("span","big",d.em),t,go);box.append(b);
+}
+// Open Connect right at one item from your partner (banner tap or notification)
+function openItem(id,tries){
+  setTab("connect");
+  setTimeout(()=>{const n=$("in-"+id);
+    if(!n){if((tries||0)<8)return openItem(id,(tries||0)+1);return}
+    let d=n.parentElement;while(d){if(d.tagName==="DETAILS")d.open=true;d=d.parentElement}
+    n.scrollIntoView({behavior:"smooth",block:"center"});n.classList.remove("pulse");void n.offsetWidth;n.classList.add("pulse");setTimeout(()=>n.classList.remove("pulse"),3400);
+    const a=n.querySelector("audio");if(a&&a.paused)a.play().catch(()=>{});
+  },(tries?400:250));
 }
 async function reply(id,data){
   try{if(!signedIn())throw{code:"signed_out"};const prev=(replies[me]||{})[id]||{};const merged={...prev,...data};delete merged.updatedAt;if(merged.reaction==null)delete merged.reaction;await db.doc(`${base(me)}/replies/${id}`).set({...merged,updatedAt:Date.now()});notifyForReply(id,data);(replies[me]=replies[me]||{})[id]=merged;renderConnect();return true}
@@ -2023,7 +2033,7 @@ function renderInbox(){
   const list=incoming().slice(0,25);
   if(!list.length){box.append(el("p","muted small empty-msg",p?`Nothing yet. Hugs, invites and challenges from ${nm(p)} show up here.`:"Once your partner joins, what they send shows up here."));return}
   list.forEach(it=>{
-    const rep=(replies[me]||{})[it.id],row=el("div","item");
+    const rep=(replies[me]||{})[it.id],row=el("div","item");row.id="in-"+it.id;
     row.append(itemHead(it,"in",it.createdAt>lastSeen?el("span","pill new","New"):null));
     if(it.note)row.append(el("p","need","“"+it.note+"”"));
     if(isPicLike(it)){
@@ -4772,6 +4782,7 @@ async function startSpace(firstTime){
   syncUrl();
   loadSeen();renderAll();
   if(!members[me]?.onboarded)openSheet(true);
+  else if(START_ITEM)openItem(START_ITEM);
   else if(START_CHAT)setTab("chat");
   else if(START_MIDDAY){setTab("today");try{localStorage.removeItem("ut_mid_"+spaceKey+me)}catch(x){}setTimeout(()=>{const c=$("middayCard");if(c){c.scrollIntoView({behavior:"smooth",block:"center"});c.classList.add("pulse")}},400)}
   else if(!OWNER_LINK)maybeWhatsNew();
@@ -4822,9 +4833,10 @@ $("joinBtn").onclick=()=>{
   useLink(L);$("welcome").hidden=true;$("loading").hidden=false;startSpace(false);
 };
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
+const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.17";
+const APP_VERSION="2026-10-18.18";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
@@ -4834,7 +4846,7 @@ async function checkUpdate(){
 $("updBtn").onclick=()=>{if(dirty&&!confirm("You have an unsaved check-in. Refresh anyway?"))return;$("updBtn").textContent="Refreshing…";location.replace(spaceKey?linkFor(me)+"&r="+Date.now():location.pathname+"?r="+Date.now())};
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkUpdate()});
 setTimeout(checkUpdate,4000);setInterval(checkUpdate,10*60000);
-if("serviceWorker" in navigator)navigator.serviceWorker.addEventListener("message",e=>{if(!e.data||!spaceKey)return;if(e.data.open==="chat")setTab("chat");if(e.data.open==="story"){setTab("home");if(partnerId&&activeStories(partnerId).length)openStory(partnerId);else pendingStory=true}});
+if("serviceWorker" in navigator)navigator.serviceWorker.addEventListener("message",e=>{if(!e.data||!spaceKey)return;if(e.data.open==="chat")setTab("chat");if(e.data.open==="item"&&/^[\w-]{4,40}$/.test(e.data.id||""))openItem(e.data.id);if(e.data.open==="story"){setTab("home");if(partnerId&&activeStories(partnerId).length)openStory(partnerId);else pendingStory=true}});
 (function boot(){
   const L=parseLink(location.href);
   if(L)useLink(L);else{try{spaceKey=localStorage.getItem("ut_space")}catch(e){}}

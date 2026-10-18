@@ -16,7 +16,7 @@ self.addEventListener("notificationclick", (e) => {
   e.notification.close();
   const url = (e.notification.data && e.notification.data.url) || "./Us%20Today%20new.html";
   e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
-    for (const c of list) { if ("focus" in c) { if (/#chat\b/.test(url)) { try { c.postMessage({ open: "chat" }); } catch (_) {} } if (/#story\b/.test(url)) { try { c.postMessage({ open: "story" }); } catch (_) {} } return c.focus(); } }
+    for (const c of list) { if ("focus" in c) { if (/#chat\b/.test(url)) { try { c.postMessage({ open: "chat" }); } catch (_) {} } if (/#story\b/.test(url)) { try { c.postMessage({ open: "story" }); } catch (_) {} } { const m = url.match(/#item=([\w-]{4,40})/); if (m) { try { c.postMessage({ open: "item", id: m[1] }); } catch (_) {} } } return c.focus(); } }
     return self.clients.openWindow(url);
   }));
 });
