@@ -477,8 +477,9 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .hempty{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:8px 2px}
 .helpq{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--muted);font-weight:700;font-size:.85rem;margin-right:6px;cursor:pointer;padding:0}
 .erow{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-top:1px solid var(--line)}.erow b{font-weight:600;font-size:.88rem;word-break:break-word}
-.datesec{align-self:stretch;width:100%;text-align:left;margin-top:8px}.datesec>summary{background:var(--soft);border-color:transparent}.datesec>summary .chev{background:var(--surface)}
-.datesbox{display:flex;flex-direction:column;gap:8px;text-align:left;width:100%;box-sizing:border-box;padding:12px 2px 0}
+.pfield{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;max-width:100%}.pfield .pfl{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.pfield .pfv{font-weight:600;overflow-wrap:anywhere}.pfield .pfv.empty{color:var(--muted);font-weight:400}
+.pform{display:flex;flex-direction:column;gap:6px;align-self:stretch;text-align:left}.pform>.link{align-self:flex-start}
+.datesbox{display:flex;flex-direction:column;gap:8px;text-align:left}
 .dgrid{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center}
 .dgrid input{min-width:0;width:100%;box-sizing:border-box}
 .calrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.88rem}
@@ -804,16 +805,14 @@ details.pl summary{cursor:pointer;font-weight:600}
       <input type="file" id="avFile" accept="image/*" hidden>
       <div class="row"><button class="secondary" id="avChange">Upload photo</button><button class="link small" id="avRemove" hidden>Remove</button></div>
       <p class="small muted" id="avMsg"></p>
-      <label for="avNick" class="small" style="font-weight:600">Your nickname</label>
-      <div class="cmt"><input type="text" id="avNick" maxlength="24" placeholder="Babe, Hun, Papi…"><button class="secondary" id="avNickSave">Save</button></div>
-      <label for="avCap" class="small" style="font-weight:600">Caption under your photo</label>
-      <div class="cmt"><input type="text" id="avCap" maxlength="80" placeholder="Missing you already · Gym then home · Date night soon?"><button class="secondary" id="avCapSave">Save</button></div>
-      <label for="avWish" class="small" style="font-weight:600">🎁 Your wish list</label>
-      <div class="cmt"><input type="text" id="avWish" inputmode="url" maxlength="400" placeholder="Paste your Amazon wish list link"><button class="secondary" id="avWishSave">Save</button></div>
-      <p class="small muted" style="margin:0">In Amazon: Account → Your Lists → pick a list → Share → Copy link. Any store's list works.</p>
-      <details class="sec datesec" id="secDates">
-        <summary><div class="sh"><h2>📅 Dates to remember</h2><span class="ssum" id="sumDates"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
-        <div class="datesbox" id="datesBox">
+      <div class="pfield" id="nickRow"><span class="pfl">Nickname</span><span class="pfv" id="nickView"></span><button class="link small" id="nickEdit" aria-label="Edit nickname">✏️ Edit</button></div>
+      <div class="pform" id="nickForm" hidden><label for="avNick" class="small" style="font-weight:600">Your nickname</label><div class="cmt"><input type="text" id="avNick" maxlength="24" placeholder="Babe, Hun, Papi…"><button class="primary" id="avNickSave">Save</button></div><button class="link small" id="nickCancel">Cancel</button></div>
+      <div class="pfield" id="capRow"><span class="pfl">Caption</span><span class="pfv" id="capView"></span><button class="link small" id="capEdit" aria-label="Edit caption">✏️ Edit</button></div>
+      <div class="pform" id="capForm" hidden><label for="avCap" class="small" style="font-weight:600">Caption under your photo</label><div class="cmt"><input type="text" id="avCap" maxlength="80" placeholder="Missing you already · Gym then home · Date night soon?"><button class="primary" id="avCapSave">Save</button></div><button class="link small" id="capCancel">Cancel</button></div>
+    </div>
+    <details class="sec" id="secDates">
+      <summary><div class="sh"><h2>📅 Dates to remember</h2><span class="ssum" id="sumDates"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody"><div class="card datesbox" id="datesBox">
         <p class="small muted" style="margin:0">You both get a reminder a week before and the day before, with the wish list one tap away.</p>
         <div class="dgrid">
           <label for="dtBday" class="small" id="dtBdayLab">🎂 Your partner's birthday</label><input type="date" id="dtBday">
@@ -822,9 +821,17 @@ details.pl summary{cursor:pointer;font-weight:600}
         </div>
         <div class="row"><button class="secondary" id="dtSave">Save dates</button><span class="small muted" id="dtMsg" role="status"></span></div>
         <div id="dtCal"></div>
-        </div>
-      </details>
-    </div>
+      </div></div>
+    </details>
+    <details class="sec" id="secWish">
+      <summary><div class="sh"><h2>🎁 Wish list</h2><span class="ssum" id="sumWish"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody"><div class="card stack">
+        <label for="avWish" class="small" style="font-weight:600">Your wish list link</label>
+        <div class="cmt"><input type="text" id="avWish" inputmode="url" maxlength="400" placeholder="Paste your Amazon wish list link"><button class="secondary" id="avWishSave">Save</button></div>
+        <p class="small muted" style="margin:0">In Amazon: Account → Your Lists → pick a list → Share → Copy link. Any store's list works. Your partner sees a wish list button on your profile and before birthdays and holidays.</p>
+        <p class="small muted" id="wishMsg" role="status" style="margin:0"></p>
+      </div></div>
+    </details>
     <div class="phero" id="partnerHero" hidden></div>
     <details class="sec" id="secAnswers">
       <summary><div class="sh"><h2 id="answersTitle">About you</h2><span class="ssum" id="sumAnswers"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
@@ -2342,6 +2349,8 @@ function renderPhotoBox(){
   if(document.activeElement!==$("avNick"))$("avNick").value=nk;
   if(document.activeElement!==$("avWish"))$("avWish").value=wishOf(me);
   if(document.activeElement!==$("avCap"))$("avCap").value=capOf(me);
+  {const nv=$("nickView");nv.textContent=nk||"Add a nickname";nv.className="pfv"+(nk?"":" empty");const cv=$("capView"),c=capOf(me);cv.textContent=c?"“"+c+"”":"Add a caption";cv.className="pfv"+(c?"":" empty");
+   const w=wishOf(me);setSum("sumWish",w?"Added · "+(()=>{try{return new URL(w).hostname.replace(/^www\./,"")}catch(e){return"link"}})()+" · tap to change":"Add your wish list so your partner never has to guess")}
   renderDates();
   const has=!!P(me).photo;$("avChange").textContent=has?"Change photo":"Upload photo";$("avRemove").hidden=!has;
 }
@@ -2354,20 +2363,20 @@ async function setPhoto(id){
 $("avChange").onclick=()=>$("avFile").click();
 $("avWishSave").onclick=async()=>{
   const raw=$("avWish").value.trim(),btn=$("avWishSave");let v="";
-  if(raw){const m=raw.match(/https?:\/\/\S+/i);v=m?safeUrl(m[0].replace(/[).,]+$/,"")):null;if(!v){$("avMsg").textContent="That doesn't look like a link. Copy the whole link from Amazon's Share button.";return}}
-  btn.disabled=true;$("avMsg").textContent="Saving…";
+  if(raw){const m=raw.match(/https?:\/\/\S+/i);v=m?safeUrl(m[0].replace(/[).,]+$/,"")):null;if(!v){$("wishMsg").textContent="That doesn't look like a link. Copy the whole link from Amazon's Share button.";return}}
+  btn.disabled=true;$("wishMsg").textContent="Saving…";
   try{if(!signedIn())throw{code:"signed_out"};const prof={...P(me)};if(v)prof.wish=v;else delete prof.wish;
     await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),profile:prof});
-    members[me]={...(members[me]||{}),profile:prof};$("avMsg").textContent=v?"Wish list saved 🎁":"Wish list removed";$("avWish").value=v||"";renderAll();
+    members[me]={...(members[me]||{}),profile:prof};$("wishMsg").textContent=v?"Wish list saved 🎁":"Wish list removed";$("avWish").value=v||"";renderAll();
     if(v&&partnerId)notify(partnerId,nm(me),"Added a wish list 🎁 See it on their profile.","wish")}
-  catch(e){console.error(e);$("avMsg").textContent=saveErr(e)}finally{btn.disabled=false}
+  catch(e){console.error(e);$("wishMsg").textContent=saveErr(e)}finally{btn.disabled=false}
 };
 $("avNickSave").onclick=async()=>{
   const v=$("avNick").value.trim().slice(0,24),btn=$("avNickSave");const clash=nickClash(v);if(clash){$("avMsg").textContent=clash;return}
   btn.disabled=true;$("avMsg").textContent="Saving…";
   try{if(!signedIn())throw{code:"signed_out"};const prof={...P(me)};if(v)prof.nick=v;else delete prof.nick;
     await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),profile:prof});
-    members[me]={...(members[me]||{}),profile:prof};$("avMsg").textContent=v?"Nickname saved":"Nickname removed";renderAll()}
+    members[me]={...(members[me]||{}),profile:prof};$("avMsg").textContent=v?"Nickname saved":"Nickname removed";closeEdit("nick");renderAll()}
   catch(e){console.error(e);$("avMsg").textContent=saveErr(e)}finally{btn.disabled=false}
 };
 $("avCapSave").onclick=async()=>{
@@ -2376,11 +2385,14 @@ $("avCapSave").onclick=async()=>{
     if(!signedIn())throw{code:"signed_out"};
     const prof={...P(me)};if(v){prof.caption=v;prof.captionAt=Date.now()}else{delete prof.caption;delete prof.captionAt}
     await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),profile:prof});
-    members[me]={...(members[me]||{}),profile:prof};$("avMsg").textContent=v?"Caption saved":"Caption removed";renderAll();
+    members[me]={...(members[me]||{}),profile:prof};$("avMsg").textContent=v?"Caption saved":"Caption removed";closeEdit("cap");renderAll();
   }catch(e){console.error(e);$("avMsg").textContent=saveErr(e)}
   finally{btn.disabled=false}
 };
 $("avCap").addEventListener("keydown",e=>{if(e.key==="Enter")$("avCapSave").click()});
+function openEdit(k){setTab("me");const row=$(k+"Row"),form=$(k+"Form");if(!row||!form)return;row.hidden=true;form.hidden=false;$("avMsg").textContent="";setTimeout(()=>{const i=$(k==="nick"?"avNick":"avCap");i.focus();i.setSelectionRange(i.value.length,i.value.length);form.scrollIntoView({behavior:"smooth",block:"center"})},60)}
+function closeEdit(k){const row=$(k+"Row"),form=$(k+"Form");if(row)row.hidden=false;if(form)form.hidden=true;$(k==="nick"?"avNick":"avCap").value=k==="nick"?nickOf(me):capOf(me)}
+$("nickEdit").onclick=()=>openEdit("nick");$("capEdit").onclick=()=>openEdit("cap");$("nickCancel").onclick=()=>closeEdit("nick");$("capCancel").onclick=()=>closeEdit("cap");
 $("avFile").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;$("avMsg").textContent="Uploading…";
   try{const id=await uploadPhoto(f,480);await setPhoto(id);$("avMsg").textContent="Saved"}
@@ -2428,7 +2440,7 @@ function chipsFor(pr,qid){
 function renderProfileView(){
   const p=other(me),isP=profView==="partner"&&!!p,who=isP?p:me,pr=P(who),pn=p?nm(p):"Partner";
   $("profView").hidden=!p;$("pvPartner").textContent=nickOf(p)||pn;$("pvMe").setAttribute("aria-pressed",String(!isP));$("pvPartner").setAttribute("aria-pressed",String(isP));
-  $("photoBox").hidden=isP;$("settingsBox").hidden=isP;$("editProfile").hidden=isP;
+  $("photoBox").hidden=isP;$("secDates").hidden=isP;$("secWish").hidden=isP;$("settingsBox").hidden=isP;$("editProfile").hidden=isP;
   const ph=$("partnerHero");ph.hidden=!isP;ph.textContent="";
   if(isP){ph.append(storyRing(p,avatar(p,"av-l"),true));const nk=nickOf(p);ph.append(el("span","pname",nk||pn));if(nk)ph.append(el("span","pnick",pn));const c=capOf(p);if(c)ph.append(el("span","pcap","“"+c+"”"));
     if(bdayOf(p))ph.append(el("span","pbday","🎂 Birthday · "+fromKey(bdayOf(p)).toLocaleDateString(undefined,{month:"long",day:"numeric"})));
@@ -2832,7 +2844,7 @@ function relSeen(){try{return localStorage.getItem(relKey())||""}catch(e){return
 function markRelSeen(){try{localStorage.setItem(relKey(),RELEASES[0].id)}catch(e){}}
 function unseenReleases(){const s=relSeen();const i=RELEASES.findIndex(r=>r.id===s);return i<0?RELEASES:RELEASES.slice(0,i)}
 function goTo(go){
-  const [t,id]=go;setTab(t);
+  const [t,id]=go;if(id==="avNick"||id==="avCap"){openEdit(id==="avNick"?"nick":"cap");return}setTab(t);
   setTimeout(()=>{const n=$(id);if(!n)return;let d=n.parentElement;while(d){if(d.tagName==="DETAILS")d.open=true;d=d.parentElement}if(n.tagName==="DETAILS")n.open=true;n.scrollIntoView({behavior:"smooth",block:"center"});const card=n.closest(".card,.chat,.aic")||n;card.classList.remove("pulse");void card.offsetWidth;card.classList.add("pulse");setTimeout(()=>card.classList.remove("pulse"),3400);if(n.tagName==="INPUT"||n.tagName==="TEXTAREA")setTimeout(()=>n.focus(),400)},120);
 }
 function openWhatsNew(all){
@@ -4602,7 +4614,7 @@ $("joinBtn").onclick=()=>{
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.10";
+const APP_VERSION="2026-10-18.11";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
