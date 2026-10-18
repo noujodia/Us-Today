@@ -910,7 +910,7 @@ details.pl summary{cursor:pointer;font-weight:600}
           <h3>Good to know</h3>
           <ul class="small">
             <li><b>Your personal link is your key.</b> Keep it private, and turn on the Privacy lock.</li>
-            <li><b>We never look at your content.</b> It's against our policy to open or view your photos, videos, messages or check-ins. The only data we look at is anonymous: usage counts, error reports and feedback you choose to send.</li><li><b>Not end-to-end encrypted yet.</b> Your data is stored securely on Google's servers, but it isn't end-to-end encrypted, so during the beta please don't share anything too intimate, like explicit photos.</li>
+            <li><b>We never look at your content.</b> It's against our policy to open or view your photos, videos, messages or check-ins. The only data we look at is anonymous: usage counts, error reports and feedback you choose to send.</li><li><b>A note for the beta.</b> Your data is stored securely on Google's servers. While we're in beta, we recommend not sending explicit photos or videos.</li>
           </ul>
           <div class="pdel">
             <h3>Leave Noudé and delete my data</h3>
@@ -3792,7 +3792,7 @@ const HELP=[
   ["aiboth","Why do we both have to turn it on?","AI ideas read both of your check-ins, so each person decides for themselves. Until you both turn it on, it stays off.",["me","aiCard"],"Open AI settings"],
   ["week","When is the weekly summary written?","On Sundays, once you've had at least 3 check-ins that week. You can also tap to write it early."]]},
  {g:"privacy",t:"Privacy & your data",ic:"🔒",items:[
-  ["seedata","Can anyone see our stuff?","The app never shows what you write or share to anyone but you two. The owner's dashboard only shows anonymous counts, like how many couples checked in today. It isn't end-to-end encrypted, so whoever runs the servers could technically access stored data. We don't look, and during the beta please don't share anything too intimate, like explicit photos.",["me","secPriv"],"Privacy & your data"],
+  ["seedata","Can anyone see our stuff?","The app never shows what you write or share to anyone but you two. Your data is never shared or sold, and it's against our policy to open or view your photos, messages or check-ins. The only data we look at is anonymous, like how many couples checked in today. While we're in beta, we recommend not sending explicit photos or videos.",["me","secPriv"],"Privacy & your data"],
   ["wherestored","Where is our data stored?","On Google's Firebase cloud, encrypted in transit and at rest. Noudé never collects your email, phone number, location, contacts or payment details."],
   ["linkkey","Who else can get into our space?","Only someone with your personal link. Keep it private, and turn on the Privacy lock so even someone with the link needs your 6-digit code.",["me","lockCard"],"Set a passcode"],
   ["aiprivacy","Does AI read our messages?","No. AI ideas are off unless you both turn them on. Even then it only uses check-ins and About me answers, never chat or photos, and the AI provider doesn't train on it."],
@@ -3861,7 +3861,7 @@ async function setupChecks(live){
   const add=(id,label,ok,fixT,fix,why)=>{if(ok==null)return;out.push({id,label,ok:!!ok,fixT,fix,why})};
   let online=navigator.onLine&&signedIn(),latest=null,server=null;
   if(live){
-    try{const r=await fetch(location.pathname+"?vcheck="+Date.now(),{cache:"no-store"});const m=(await r.text()).match(/const APP_VERSION="(\d[^"]*)"/);latest=m?m[1]===APP_VERSION:null}catch(e){latest=null}
+    try{const r=await fetch(location.pathname+"?vcheck="+Date.now(),{cache:"no-store"});const m=(await r.text()).match(/const APP_VERSION="2026-10-18.24"]*)"/);latest=m?m[1]===APP_VERSION:null}catch(e){latest=null}
     if(WORKER_URL)try{const r=await fetch(WORKER_URL,{cache:"no-store"});server=r.ok}catch(e){server=false}
   }
   add("online","Connected to your space",online,"Reload",()=>location.reload(),"Check your Wi-Fi or data, then reopen the app.");
