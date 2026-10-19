@@ -4718,7 +4718,7 @@ function renderCodes(){
       {const tb=el("div","textit"),lab=el("label",null,"Text it to");lab.htmlFor="tx-"+c.id;const row=el("div","row");const inp=el("input");inp.type="tel";inp.id="tx-"+c.id;inp.inputMode="tel";inp.autocomplete="tel";inp.placeholder="Phone number";
         const go=el("button","primary","💬 Text it");go.type="button";const msg=el("span","small");msg.setAttribute("role","status");
         const upd=()=>{go.disabled=phoneDigits(inp.value).length<10};inp.oninput=upd;upd();
-        go.onclick=()=>{const n=smsNumber(inp.value);if(!n){msg.textContent="Enter a full phone number, like (617) 555-0142.";return}track({"n.codeText":1});location.href=smsLink(n,codeMsg(c))};
+        go.onclick=()=>{const n=smsNumber(inp.value);if(!n){msg.textContent="Enter a full phone number, like (617) 555-0142.";return}track({"n.codeText":1});location.href=smsLink(n,codeMsg(c)+"\n\n"+appLink())};
         inp.onkeydown=e=>{if(e.key==="Enter"&&!go.disabled)go.click()};
         row.append(inp,go);tb.append(lab,row,el("span","small hint","Opens Messages with the invite filled in. The number isn't saved."),msg);r.append(tb)}
       const a=el("div","acts");const sh=el("button","link small","📤 Share instead");sh.onclick=()=>shareCode(c);a.append(sh);const cp=el("button","link small","Copy");cp.onclick=async()=>{try{await navigator.clipboard.writeText(codeMsg(c));toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't copy")}};
@@ -4995,7 +4995,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.37";
+const APP_VERSION="2026-10-18.38";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
