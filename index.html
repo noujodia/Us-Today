@@ -3210,13 +3210,18 @@ function trackItem(kind){const k=KIND_STAT[kind];if(k)track({["n."+k]:1})}
 let statsData=null;
 async function openStats(){
   $("statsSheet").hidden=false;const box=$("statsBody");box.textContent="";box.append(el("p","muted small","Loading…"));
-  try{const q=await db.top.collection("spaces").get();statsData=q.docs.map(d=>({id:d.id,...(d.data()||{})}));renderStats()}
+  try{if(spaceHash)track({},{internal:true}); // the owner's own space is marked as yours and left out by default
+    const q=await db.top.collection("spaces").get();statsData=q.docs.map(d=>({id:d.id,...(d.data()||{}),...(d.id===spaceHash?{internal:true}:{})}));renderStats()}
   catch(e){box.textContent="";box.append(el("p","small","Usage needs one more rules update. Copy the rules below, paste them over your Firestore rules and tap Publish. Then reopen Usage."));
     const pre=el("pre","code",ownerRules(db?.uid||""));box.append(pre);const r=el("div","row");const c=el("button","primary","Copy rules");c.onclick=async()=>{try{await navigator.clipboard.writeText(ownerRules(db?.uid||""));toast("Rules copied")}catch(x){toast("Couldn't copy. Select the text instead.")}};
     const l=el("a","secondary","Open Firebase rules");l.href="https://console.firebase.google.com/project/us-today-e354e/firestore/rules";l.target="_blank";l.rel="noopener";l.style.cssText="text-decoration:none;display:inline-flex;align-items:center;border-radius:12px;padding:12px 16px;font-weight:600";r.append(c,l);box.append(r)}
 }
 function renderStats(){
-  const box=$("statsBody");box.textContent="";const S=statsData||[];
+  const box=$("statsBody");box.textContent="";
+  let incOwn=false;try{incOwn=!!localStorage.getItem("ut_statsown")}catch(e){}
+  const all=statsData||[],own=all.filter(x=>x.internal).length,S=incOwn?all:all.filter(x=>!x.internal);
+  if(own){const r=el("div","row between small");r.style.cssText="background:var(--soft);border-radius:12px;padding:10px 12px";r.append(el("span",null,incOwn?"Including your own space (you and your partner).":"Your own space is left out, so these numbers are other couples only."));
+    const t=el("button","link small",incOwn?"Leave it out":"Include it");t.onclick=()=>{try{incOwn?localStorage.removeItem("ut_statsown"):localStorage.setItem("ut_statsown","1")}catch(e){}renderStats()};r.append(t);box.append(r)}
   const dayKeys=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dayKeys.push(key(d))}
   const last7=dayKeys.slice(7);
   const activeWeek=S.filter(x=>last7.some(k=>x.a&&x.a[k])).length;
@@ -4936,7 +4941,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.30";
+const APP_VERSION="2026-10-18.31";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
