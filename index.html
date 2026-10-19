@@ -486,6 +486,8 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .mpick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.mpick button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:78px;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:16px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}.mpick button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}.mpick button:disabled{opacity:.45}
 .gifgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:104px;gap:6px;max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch;border-radius:12px}.gifgrid>p{grid-column:1/-1}.gifgrid button{position:relative;display:block;width:100%;height:104px;padding:0;margin:0;border:2px solid transparent;border-radius:10px;overflow:hidden;background:var(--soft);cursor:pointer}.gifgrid button[aria-pressed="true"]{border-color:var(--accent)}.gifgrid img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}.gifby{text-align:right}.gifimg{max-width:100%;border-radius:14px;display:block}
 .ig .ill{grid-column:2;margin:2px 0 6px}
+.spot{background:var(--accent-soft);border:1px solid var(--accent);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left}.spot b{font-size:15px;line-height:1.4}.spot .spot-k{font-weight:700;color:var(--accent)}.spot .row{gap:14px;align-items:center}.btnlike{background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:6px 12px;font-size:13px;font-weight:700}
+.tog2{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.35}.tog2 input{width:18px;height:18px;margin:1px 0 0;flex:none}
 .leftcard{margin-top:10px;padding:14px;border-radius:14px;background:var(--accent-soft);display:flex;flex-direction:column;gap:6px;text-align:left}.leftcard p{margin:0}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
@@ -675,6 +677,7 @@ details.pl summary{cursor:pointer;font-weight:600}
     <div id="homeHead"></div>
     <div id="gsBox"></div>
     <div class="stack" style="gap:10px"><h2>Today at a glance</h2><div class="glance" id="homeGlance"></div></div>
+    <div id="homeSpot"></div>
     <div id="homeWins"></div>
     <div id="homeGift"></div>
     <div class="qa" id="homeActions"></div>
@@ -1000,7 +1003,7 @@ details.pl summary{cursor:pointer;font-weight:600}
       <h3>Help us improve</h3>
       <p class="small muted">Found a bug or have an idea? Tell us. It goes straight to the person who built this app.</p>
       <div class="row"><button class="primary" id="fbOpen">Send feedback</button><button class="secondary" id="wnOpen">What's new</button></div>
-      <div class="row"><button class="secondary" id="inboxOpen" hidden>📥 Feedback inbox<span class="badge" id="inboxBadge" hidden></span></button><button class="secondary" id="statsOpen" hidden>📊 Usage</button><button class="secondary" id="codesOpen" hidden>🎟️ Beta invites</button></div>
+      <div class="row"><button class="secondary" id="inboxOpen" hidden>📥 Feedback inbox<span class="badge" id="inboxBadge" hidden></span></button><button class="secondary" id="statsOpen" hidden>📊 Usage</button><button class="secondary" id="codesOpen" hidden>🎟️ Beta invites</button><button class="secondary" id="spotOpen" hidden>📣 Spotlight</button></div>
       <span class="small muted" id="verTap" style="user-select:none;-webkit-user-select:none"></span>
     </div>
         </div>
@@ -1109,6 +1112,12 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="sfoot" id="stFoot"></div>
 </div>
 <input type="file" id="storyFile" accept="image/*,video/*" hidden>
+<div class="ov" id="spotSheet" hidden role="dialog" aria-modal="true" aria-labelledby="spotTitle">
+  <div class="panel">
+    <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="spotTitle">Spotlight a feature</h2></div><button class="x" id="spotX" aria-label="Close">×</button></div>
+    <div id="spotBody" class="stack" style="gap:12px"></div>
+  </div>
+</div>
 <div class="ov" id="codesSheet" hidden role="dialog" aria-modal="true" aria-labelledby="codesTitle">
   <div class="panel">
     <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="codesTitle">Beta invites</h2></div><button class="x" id="codesX" aria-label="Close">×</button></div>
@@ -2956,6 +2965,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-19d",at:"2026-10-19T19:45:00-04:00",date:"Oct 19, 2026",items:[
+    {em:"📣",t:"Owner: Spotlight and nudges",b:"Owners can spotlight a feature for couples who haven't tried it (a Home card, plus an optional notification), and send ready-made nudge texts to people they invited."}
+  ]},
   {id:"2026-10-19c",at:"2026-10-19T19:20:00-04:00",date:"Oct 19, 2026",items:[
     {em:"📲",t:"Picture guide for notifications",b:"Adding Noudé to your Home Screen now has a picture for every step, on iPhone and Android, so turning on notifications is easy."}
   ]},
@@ -3189,6 +3201,13 @@ service cloud.firestore {
     match /config/owner {
       allow create, update: if isOwner();
     }
+    match /config/spotlight {
+      allow get: if request.auth != null;
+      allow create, update, delete: if isOwner();
+    }
+    match /contacts/{code} {
+      allow read, write: if isOwner();
+    }
     match /owners/{uid} {
       allow get: if request.auth != null && request.auth.uid == uid;
       allow create, update: if request.auth != null && request.auth.uid == uid
@@ -3203,7 +3222,7 @@ function watchInbox(){
   try{fbUnsub=db.top.collection("feedback").orderBy("createdAt","desc").limit(200).onSnapshot(q=>{
     if(!isOwner){isOwner=true;setTimeout(()=>{registerOwnerAlerts();watchCodeUses()},500)}try{localStorage.setItem("ut_owner","1")}catch(e){}
     fbItems=q.docs.map(d=>({id:d.id,...(d.data()||{})}));
-    $("inboxOpen").hidden=false;$("statsOpen").hidden=false;$("codesOpen").hidden=false;const n=fbItems.filter(x=>!x.done).length;$("inboxBadge").hidden=!n;$("inboxBadge").textContent=n;
+    $("inboxOpen").hidden=false;$("statsOpen").hidden=false;$("codesOpen").hidden=false;$("spotOpen").hidden=false;const n=fbItems.filter(x=>!x.done).length;$("inboxBadge").hidden=!n;$("inboxBadge").textContent=n;
     if(!$("inboxSheet").hidden)renderFbInbox();
   },()=>{isOwner=false;fbUnsub=null;$("inboxOpen").hidden=true;if(!$("inboxSheet").hidden)renderFbInbox()})}catch(e){fbUnsub=null}
 }
@@ -3893,6 +3912,93 @@ function homeInstallBanner(){
   const go=el("button","primary small","Show me");go.onclick=openInstall;const x=el("button","x","×");x.setAttribute("aria-label","Not now");x.onclick=()=>{try{localStorage.setItem("ut_instsnooze",String(Date.now()+3*86400000))}catch(e){}b.remove()};b.append(go,x);return b;
 }
 
+/* ================= Spotlight (owner nudges) ================= */
+// Each phone decides for itself whether it has used a feature. The owner never sees who.
+const SPOT_FEATS=[
+  ["gif","✨ GIFs","Send your partner a GIF ✨ Tap GIF, search anything and send it with a caption.",()=>outgoing().some(x=>x.kind==="gif"),()=>{goTo(["connect","picCard"]);setTimeout(()=>$("pkGif").click(),500)},"#c-gif"],
+  ["win","🏆 Daily wins","Log a win today 🏆 A quiet morning, a workout or a great day at work. Your partner can cheer you on.",()=>Object.values(wins[me]||{}).some(d=>winCount(d)),()=>{try{localStorage.setItem("ut_winsopen","1")}catch(e){}goTo(["today","secWins"])},"#c-win"],
+  ["goal","🎯 Goals together","Set a goal together 🎯 Same bedtime, a new restaurant, saving for a trip. Check it off together.",()=>goals.some(g=>g.owner===me),()=>goTo(["connect","secGoals"]),"#c-goal"],
+  ["photo","📷 Photos","Send a photo today 📷 Something you saw, your lunch, your smile.",()=>outgoing().some(x=>x.kind==="photo"),()=>goTo(["connect","picCard"]),"#c-photo"],
+  ["video","🎬 Videos","Send a quick video 🎬 Up to 15 seconds, just for your partner.",()=>outgoing().some(x=>x.kind==="clip"),()=>goTo(["connect","picCard"]),"#c-video"],
+  ["story","📸 Stories","Add to your story 📸 It disappears after 24 hours and only your partner sees it.",()=>stories.some(x=>x.by===me),()=>{setTab("home");setTimeout(()=>{try{pickStory()}catch(e){}},300)},"#c-story"],
+  ["song","🎵 Songs","Send a song that reminds you of them 🎵",()=>outgoing().some(x=>x.kind==="media"),()=>goTo(["connect","songCard"]),"#c-song"],
+  ["invite","💌 Date invites","Plan a date 💌 Send an invite and add it to your calendar.",()=>outgoing().some(x=>x.kind==="invite"),()=>goTo(["connect","secInv"]),"#c-invite"],
+  ["challenge","🏁 Challenges","Send a playful challenge 🏁 Like 3 compliments today.",()=>outgoing().some(x=>x.kind==="challenge"),()=>goTo(["connect","secCh"]),"#c-challenge"],
+  ["question","💬 Today's question","Answer today's question 💬 and see what your partner said.",()=>!!qDoc[me],()=>goTo(["home","homeQ"]),"#c-question"],
+  ["notif","🔔 Notifications","Turn on notifications 🔔 so you know when your partner checks in or sends something.",()=>!!members[me]?.push,()=>{if(isIOS&&!isStandalone())openInstall();else goTo(["me","notifCard"])},"#c-notif"]
+];
+const spotFeat=k=>SPOT_FEATS.find(f=>f[0]===k);
+let spotDoc=null;
+function watchSpot(){try{db.top.doc("config/spotlight").onSnapshot(sn=>{spotDoc=sn.exists?(sn.data()||null):null;if(tab==="home")renderHome()},()=>{})}catch(e){}}
+function spotSeenKey(id){return"ut_spot_"+id+"_"+(spaceKey||"")+me}
+function homeSpotEl(){
+  const d=spotDoc;if(!d||!d.active||!d.id||!signedIn())return null;const f=spotFeat(d.feature);if(!f)return null;
+  try{if(localStorage.getItem(spotSeenKey(d.id))==="x")return null}catch(e){}
+  let used=false;try{used=f[3]()}catch(e){}if(used)return null;
+  try{if(!localStorage.getItem(spotSeenKey(d.id))){localStorage.setItem(spotSeenKey(d.id),"v");track({["sp."+d.id+".v"]:1})}}catch(e){}
+  const c=el("div","spot");c.append(el("span","small spot-k","✨ Try something new"),el("b",null,String(d.text||f[2]).slice(0,200)));
+  const r=el("div","row");const go=el("button","primary small","Try it");go.onclick=()=>{try{localStorage.setItem(spotSeenKey(d.id),"x")}catch(e){}track({["sp."+d.id+".c"]:1});f[4]();renderHome()};
+  const x=el("button","link small","Not now");x.onclick=()=>{try{localStorage.setItem(spotSeenKey(d.id),"x")}catch(e){}renderHome()};r.append(go,x);c.append(r);return c;
+}
+// deep link from a spotlight notification (#c-gif etc.)
+const START_SPOT=(location.hash.match(/#c-(\w+)/)||[])[1]||"";
+async function openSpotAdmin(){
+  $("spotSheet").hidden=false;const box=$("spotBody");box.textContent="";box.append(el("p","muted small","Loading…"));
+  let S=[];try{const q=await db.top.collection("spaces").get();S=q.docs.map(d=>({id:d.id,...(d.data()||{})})).filter(x=>!x.internal&&x.id!==spaceHash)}catch(e){}
+  renderSpotAdmin(S);
+}
+let spotPick="";
+function renderSpotAdmin(S){
+  const box=$("spotBody");box.textContent="";
+  box.append(el("p","small muted","Pick a feature to highlight. Couples who haven't used it see a card on Home with a Try it button. Each phone checks this for itself, so you never see who has or hasn't used it."));
+  const cur=spotDoc&&spotDoc.active?spotDoc:null;
+  if(cur){const f=spotFeat(cur.feature);const v=S.reduce((n,x)=>n+(+(x.sp?.[cur.id]?.v)||0),0),c=S.reduce((n,x)=>n+(+(x.sp?.[cur.id]?.c)||0),0);
+    const k=el("div","spot");k.append(el("span","small spot-k","Live now · "+(f?f[1]:cur.feature)),el("b",null,cur.text||""),el("span","small",`${v} people saw it · ${c} tapped Try it${cur.at?" · since "+new Date(cur.at).toLocaleDateString(undefined,{month:"short",day:"numeric"}):""}`));
+    const off=el("button","link small","Turn off this spotlight");off.onclick=async()=>{if(!(await sure("The card disappears from everyone's Home screen.","Turn off","Turn off spotlight?")))return;try{await db.top.doc("config/spotlight").set({...cur,active:false});spotDoc={...cur,active:false};toast("Spotlight turned off");renderSpotAdmin(S)}catch(e){toast(isDenied(e)?"Publish the latest Firebase rules first (Beta invites → Latest Firebase rules).":"Couldn't save")}};k.append(off);box.append(k)}
+  const n=Math.max(1,S.length),used=k2=>S.filter(x=>x.n&&x.n[k2]>0).length;
+  const statKey={gif:"gif",win:"win",goal:"goal",photo:"photo",video:"video",story:"story",song:"song",invite:"invite",challenge:"challenge",question:"question"};
+  const chooser=el("div","chartc");chooser.append(el("b",null,"1. Choose a feature"),el("span","small muted","Least used first. The share shows how many couples have tried it."));
+  const list=SPOT_FEATS.map(f=>{const k2=statKey[f[0]];const u=f[0]==="notif"?S.filter(x=>x.notifOn>0).length:k2?used(k2):0;return{f,u}}).sort((a,b)=>a.u-b.u);
+  const opts=el("div","opts");list.forEach(({f,u})=>{const b=el("button","opt",`${f[1]} · ${Math.round(u/n*100)}%`);b.setAttribute("aria-pressed",String(spotPick===f[0]));b.onclick=()=>{spotPick=f[0];renderSpotAdmin(S)};opts.append(b)});chooser.append(opts);box.append(chooser);
+  if(!spotPick){return}
+  const f=spotFeat(spotPick),k2=statKey[spotPick];const targets=S.filter(x=>spotPick==="notif"?!(x.notifOn>0):!(x.n&&x.n[k2]>0)).map(x=>x.id);
+  const fm=el("div","chartc");fm.append(el("b",null,"2. Write the message"));
+  const lab=el("label","small","Message on the card");lab.htmlFor="spotTxt";lab.style.fontWeight="600";const ta=el("textarea");ta.id="spotTxt";ta.maxLength=200;ta.rows=3;ta.value=f[2];fm.append(lab,ta);
+  const pr=el("label","tog2");const cb=el("input");cb.type="checkbox";cb.id="spotPush";pr.append(cb,el("span",null,` Also send it as a notification to the ${targets.length} couple${targets.length===1?"":"s"} who haven't used it`));fm.append(pr);
+  fm.append(el("span","small muted","Notifications reach phones that have them on. You can send one every 2 days at most, so it never feels like spam."));
+  const msg=el("p","small");msg.setAttribute("role","status");msg.style.margin="0";
+  const pub=el("button","primary","Publish spotlight");pub.onclick=async()=>{const text=ta.value.trim();if(!text){ta.focus();return}pub.disabled=true;msg.textContent="Publishing…";
+    const id=Date.now().toString(36);
+    try{await db.top.doc("config/spotlight").set({id,feature:spotPick,text,active:true,at:Date.now()});spotDoc={id,feature:spotPick,text,active:true,at:Date.now()};track({"n.spotlight":1})}
+    catch(e){pub.disabled=false;msg.textContent=isDenied(e)?"Publish the latest Firebase rules first: Beta invites → Latest Firebase rules → Copy rules, then paste them in Firebase and tap Publish.":"Couldn't publish. Check your connection.";return}
+    if(cb.checked){let k="";try{k=localStorage.getItem("ut_ownerk")||""}catch(e){}
+      if(!k){msg.textContent="Spotlight is live. To also send notifications, set your owner key first (Feedback inbox).";pub.disabled=false;renderHome();return}
+      try{const r=await fetch(WORKER_URL+"broadcast",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({k,title:"Noudé",body:text,hash:f[5],targets})}).then(x=>x.json());
+        msg.textContent=r.ok?`Spotlight is live, and ${r.sent} notification${r.sent===1?"":"s"} went out.`:r.error==="too soon"?`Spotlight is live. Notifications were sent recently; you can send again after ${new Date(r.next).toLocaleString(undefined,{weekday:"short",hour:"numeric",minute:"2-digit"})}.`:r.error==="key"?"Spotlight is live. Notifications need your owner key on this phone (Feedback inbox).":"Spotlight is live, but the notifications didn't send. Try again later."}
+      catch(e){msg.textContent="Spotlight is live, but the notifications didn't send. Try again later."}}
+    else msg.textContent="Spotlight is live. Couples who haven't used it will see it on Home.";
+    pub.disabled=false;renderHome();renderSpotAdmin(S);$("spotBody").append(msg)};
+  fm.append(pub,msg);box.append(fm);
+  const pv=el("div","chartc");pv.append(el("b",null,"Preview"));const c=el("div","spot");c.append(el("span","small spot-k","✨ Try something new"),el("b",null,ta.value));ta.oninput=()=>{c.querySelector("b").textContent=ta.value};const r=el("div","row");r.append(el("span","btnlike","Try it"),el("span","small muted","Not now"));c.append(r);pv.append(c);box.append(pv);
+}
+$("spotOpen").onclick=openSpotAdmin;$("spotX").onclick=()=>{$("spotSheet").hidden=true};$("spotSheet").addEventListener("click",e=>{if(e.target.id==="spotSheet")$("spotSheet").hidden=true});
+
+/* ================= Owner contacts + nudge texts ================= */
+let contacts={},contactsUnsub=null;
+function watchContacts(){if(contactsUnsub||!isOwner)return;try{contactsUnsub=db.top.collection("contacts").onSnapshot(q=>{const m={};q.docs.forEach(d=>m[d.id]=d.data()||{});contacts=m;if(!$("codesSheet").hidden)renderCodes()},()=>{contactsUnsub=null})}catch(e){}}
+async function saveContact(code,phone,note){try{await db.top.doc("contacts/"+code).set({phone,note:String(note||"").slice(0,60),at:Date.now()});contacts[code]={phone,note,at:Date.now()};return true}catch(e){toast(isDenied(e)?"To save numbers, publish the latest Firebase rules first.":"Couldn't save the number");return false}}
+async function forgetContact(code){if(!(await sure("This number will be removed from your nudge list.","Remove number")))return;try{await db.top.doc("contacts/"+code).delete();delete contacts[code];renderCodes()}catch(e){toast("Couldn't remove")}}
+const NUDGES=[
+  ["back","Come back",n=>`Hey! It's ${n} from Noudé 💞 Haven't seen you two in a bit. Open the app and send each other a quick check-in today: https://noudeapp.com/`],
+  ["notif","Turn on notifications",n=>`Quick tip from ${n} at Noudé: turn on notifications so you know when your partner checks in or sends something 🔔 Open Noudé from your Home Screen icon, then About me → Notifications. https://noudeapp.com/`],
+  ["new","Try what's new",n=>`New in Noudé ✨ You can now send GIFs and log daily wins, and your partner can cheer you on. Open the app to try it: https://noudeapp.com/`],
+  ["partner","Partner hasn't joined",n=>`Hey! It's ${n} from Noudé 💞 Did your partner get their invite? In the app, go to About me → Invite your partner and send them the link. https://noudeapp.com/`]
+];
+const fmtPhone=p=>{const d=phoneDigits(p);return d.length===11&&d[0]==="1"?`(${d.slice(1,4)}) ${d.slice(4,7)}-${d.slice(7)}`:p};
+function nudgeBox(code,phone){const w=el("div","textit");w.style.opacity="1";w.append(el("label",null,"Nudge by text · "+fmtPhone(phone)));const o=el("div","opts");
+  NUDGES.forEach(([k,t,fn])=>{const b=el("button","opt",t);b.type="button";b.onclick=()=>{track({["n.nudge."+k]:1});location.href=smsLink(phone,fn(nm(me)))};o.append(b)});w.append(o);
+  const rm=el("button","link small","Remove saved number");rm.type="button";rm.style.alignSelf="flex-start";rm.onclick=()=>forgetContact(code);w.append(rm);return w}
+
 /* ================= Daily wins ================= */
 const WIN_P=[["workout","🏋️","Worked out"],["quiet","🌅","Quiet morning"],["prayer","🙏","Prayed"],["meditate","🧘","Meditated"],["read","📖","Read"],["walk","🚶","Took a walk"],["water","💧","Drank enough water"],["ate","🥗","Ate well"],["sleep","😴","Slept well"],["journal","✍️","Journaled"],["nophone","📵","Phone-free time"],["home","🧹","Got the house in order"],["family","👨‍👩‍👧","Quality time with family"],["kind","💛","Did something kind"]];
 const WIN_W=[["ontime","⏰","On time to work"],["productive","⚡","Very productive"],["recognized","🏅","Got recognized"],["bigtask","✅","Finished a big task"],["goal","🎯","Hit a goal"],["meeting","🤝","Great meeting"],["idea","💡","New idea"],["learned","📚","Learned something"],["helped","🧑‍🏫","Helped a coworker"],["deal","📈","Closed a deal or sale"],["inbox","📥","Cleared my inbox"],["boundary","🚪","Left work on time"]];
@@ -4540,6 +4646,7 @@ function renderHome(){
       const b=el("button","act","See how to help");b.onclick=()=>{markCiSeen();setTab("today");setTimeout(()=>$("forBox").scrollIntoView({behavior:"smooth",block:"start"}),80)};card.append(b)}
     else{card.append(el("span","who",pn),el("span","feel","Hasn't checked in yet"));const b=el("button","act","Send a hug");b.onclick=()=>sendItem({kind:"touch",type:"hug"},"Hug sent 🤗");card.append(b)}
     g.append(card)}
+  {const hs=$("homeSpot");if(hs){hs.textContent="";const x=homeSpotEl();if(x)hs.append(x)}}
   {const hw=$("homeWins");if(hw){hw.textContent="";const x=homeWinsEl();if(x)hw.append(x)}}
   renderGift();
   // quick actions
@@ -4919,14 +5026,16 @@ function renderCodes(){
   const sec=(title,list)=>{if(!list.length)return;box.append(el("h4",null,title));list.forEach(c=>{
     const r=el("div","fbi"+(c.used?" fdone":" isnew")),top=el("div","top");top.append(el("span","kind "+(c.used?"love":"idea"),c.used?"Used":"Unused"),el("span","who",c.id),el("span","when",c.used&&c.usedAt?timeAgo(c.usedAt):timeAgo(c.createdAt||Date.now())));r.append(top);
     if(c.note)r.append(el("p","msg",c.note));
+    if(c.used&&contacts[c.id]?.phone)r.append(nudgeBox(c.id,contacts[c.id].phone));
     if(!c.used){
       // Text it: type a number, Messages opens with the invite filled in. The number is never saved.
       {const tb=el("div","textit"),lab=el("label",null,"Text it to");lab.htmlFor="tx-"+c.id;const row=el("div","row");const inp=el("input");inp.type="tel";inp.id="tx-"+c.id;inp.inputMode="tel";inp.autocomplete="tel";inp.placeholder="Phone number";
         const go=el("button","primary","💬 Text it");go.type="button";const msg=el("span","small");msg.setAttribute("role","status");
         const upd=()=>{go.disabled=phoneDigits(inp.value).length<10};inp.oninput=upd;upd();
-        go.onclick=()=>{const n=smsNumber(inp.value);if(!n){msg.textContent="Enter a full phone number, like (617) 555-0142.";return}track({"n.codeText":1});location.href=smsLink(n,codeMsg(c)+"\n\n"+appLink())};
+        const sv=el("label","tog2");const svc=el("input");svc.type="checkbox";svc.checked=true;svc.id="sv-"+c.id;sv.append(svc,el("span",null," Save number so I can nudge them later (only you can see it)"));
+        go.onclick=async()=>{const n=smsNumber(inp.value);if(!n){msg.textContent="Enter a full phone number, like (617) 555-0142.";return}track({"n.codeText":1});if(svc.checked)await saveContact(c.id,n,c.note);location.href=smsLink(n,codeMsg(c)+"\n\n"+appLink())};
         inp.onkeydown=e=>{if(e.key==="Enter"&&!go.disabled)go.click()};
-        row.append(inp,go);tb.append(lab,row,el("span","small hint","Opens Messages with the invite filled in. The number isn't saved."),msg);r.append(tb)}
+        row.append(inp,go);tb.append(lab,row,sv,el("span","small hint","Opens Messages with the invite filled in."),msg);if(contacts[c.id]?.phone){inp.value=contacts[c.id].phone;upd()}r.append(tb)}
       const a=el("div","acts");const sh=el("button","link small","📤 Share instead");sh.onclick=()=>shareCode(c);a.append(sh);const cp=el("button","link small","Copy");cp.onclick=async()=>{try{await navigator.clipboard.writeText(codeMsg(c));toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't copy")}};
       const del=el("button","link small","Delete");del.style.color="var(--warn)";del.onclick=async()=>{if(await sure("This unused invite code will stop working."))db.top.doc("betaCodes/"+c.id).delete().then(()=>toast("Deleted")).catch(()=>toast("Couldn't delete"))};a.append(cp,del);r.append(a)}
     box.append(r)})};
@@ -4935,7 +5044,7 @@ function renderCodes(){
   const rr=el("details");rr.append(el("summary","small muted","Latest Firebase rules (copy after app updates that need them)"));const pre=el("pre","code",ownerRules(db?.uid||""));const cb=el("button","secondary","Copy rules");cb.onclick=async()=>{try{await navigator.clipboard.writeText(ownerRules(db?.uid||""));toast("Rules copied")}catch(x){toast("Couldn't copy")}};
   const lk=el("a","link small","Open Firebase rules");lk.href="https://console.firebase.google.com/project/us-today-e354e/firestore/rules";lk.target="_blank";lk.rel="noopener";rr.append(pre,cb,lk);box.append(rr);
 }
-$("codesOpen").onclick=()=>{watchCodes();renderCodes();$("codesSheet").hidden=false};
+$("codesOpen").onclick=()=>{watchCodes();watchContacts();renderCodes();$("codesSheet").hidden=false};
 $("codesX").onclick=()=>{$("codesSheet").hidden=true};$("codesSheet").addEventListener("click",e=>{if(e.target.id==="codesSheet")$("codesSheet").hidden=true});
 
 /* ================= Privacy lock (shared 6-digit passcode, enforced by the server) ================= */
@@ -5158,7 +5267,8 @@ async function startSpace(firstTime){
   setTimeout(maybeMeCoach,2500);setTimeout(maybeMeCoach,12000);hashSpace(spaceKey).then(h=>{spaceHash=h;trackOpen();sessStart();setTimeout(syncReminder,1500);setTimeout(dailySetupPing,8000)});
   refreshPushSub();
   db.doc("settings/couple").onSnapshot(s=>{coupleSettings=s.exists?(s.data()||{}):{};if(tab==="home")renderHome();if(tab==="me")renderDates();remSoon()},()=>{});
-  watchQuestion();
+  watchQuestion();watchSpot();
+  if(START_SPOT){const f=spotFeat(START_SPOT);if(f)setTimeout(()=>{try{f[4]()}catch(e){}},900)}
   watchStories();watchGoals();
   watchLock();
   db.doc("settings/media").onSnapshot(s=>{mediaSettings=s.exists?(s.data()||{}):{autoDelete:0};if(tab==="me")renderAutoDel();maybeCleanup()},()=>{});
@@ -5204,7 +5314,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-19.7";
+const APP_VERSION="2026-10-19.8";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();

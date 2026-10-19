@@ -73,7 +73,7 @@ async function saveReminder(env, d) {
   const now = Date.now();
   const ev = (Array.isArray(d.ev) ? d.ev : []).filter((e) => e && Number.isFinite(+e.at) && +e.at > now && +e.at < now + 50 * 86400000)
     .slice(0, 16).map((e) => ({ at: +e.at, t: String(e.t || "").slice(0, 80), b: String(e.b || "").slice(0, 140), g: String(e.g || "").slice(0, 40) }));
-  if ((!am && !mid && !ev.length) || !validSub(d.sub)) { await env.REMIND.delete(d.id); return { ok: true, off: true }; }
+  if (!validSub(d.sub)) { await env.REMIND.delete(d.id); return { ok: true, off: true }; }
   const old = (await env.REMIND.getWithMetadata(d.id)).metadata || {};
   const st = d.state || {};
   const meta = { tz: String(d.tz || "America/New_York").slice(0, 40), am, mid, d: String(st.date || old.d || "").slice(0, 10),
@@ -221,6 +221,33 @@ async function ownerRegister(env, d) {
   await env.REMIND.put(OWNER_REC, JSON.stringify(rec));
   return { ok: true, phones: rec.subs.length };
 }
+// Owner spotlight push: owner key required, at most once every 2 days, only to the chosen anonymous couples.
+async function ownerBroadcast(env, d) {
+  const rec = await env.REMIND.get(OWNER_REC, "json");
+  if (!rec || !rec.k || !/^[0-9a-f]{64}$/.test(d.k || "") || rec.k !== d.k) return { error: "key" };
+  const last = +(await env.REMIND.get("bc:last")) || 0, now = Date.now();
+  if (now - last < 2 * 86400000 && !d.dry) return { error: "too soon", next: last + 2 * 86400000 };
+  const title = String(d.title || "Noudé").slice(0, 60), body = String(d.body || "").slice(0, 200), hash = /^#[\w=-]{1,40}$/.test(d.hash || "") ? d.hash : "";
+  if (!body) return { error: "empty" };
+  const targets = Array.isArray(d.targets) ? new Set(d.targets.filter((t) => /^[0-9a-f]{16}$/.test(t))) : null;
+  let cursor, sent = 0, reach = 0;
+  do {
+    const page = await env.REMIND.list({ cursor });
+    for (const k of page.keys) {
+      if (!REMIND_ID.test(k.name)) continue;
+      if (targets && !targets.has(k.name.slice(0, 16))) continue;
+      reach++; if (d.dry) continue;
+      const r0 = await env.REMIND.get(k.name, "json");
+      if (!r0 || !r0.sub) continue;
+      const r = await sendPush(env, r0.sub, { title, body, tag: "spot", url: (r0.url || "") + hash }).catch(() => ({ ok: false }));
+      if (r.ok) sent++;
+      if (r.gone) await env.REMIND.delete(k.name);
+    }
+    cursor = page.list_complete ? null : page.cursor;
+  } while (cursor);
+  if (!d.dry) await env.REMIND.put("bc:last", String(now));
+  return { ok: true, sent, reach };
+}
 async function ownerCodeUsed(env, d) {
   const code = String(d.code || "").toUpperCase();
   if (!CODE_RE.test(code)) return { error: "bad code" };
@@ -286,6 +313,12 @@ export default {
       if (!env.REMIND) return reply({ error: "reminders off" }, 503, origin);
       let d; try { d = await req.json(); } catch { return reply({ error: "bad json" }, 400, origin); }
       try { const out = await saveReminder(env, d || {}); return reply(out, out.error ? 400 : 200, origin); } catch (_) { return reply({ error: "failed" }, 500, origin); }
+    }
+    if (req.method === "POST" && path === "/broadcast") {
+      if (!ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
+      if (!env.REMIND || !env.VAPID_D) return reply({ error: "off" }, 503, origin);
+      let d; try { d = await req.json(); } catch { return reply({ error: "bad json" }, 400, origin); }
+      try { const out = await ownerBroadcast(env, d || {}); return reply(out, out.error ? 400 : 200, origin); } catch (_) { return reply({ error: "failed" }, 500, origin); }
     }
     if (req.method === "POST" && (path === "/owner" || path === "/code-used")) {
       if (!ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
