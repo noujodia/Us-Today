@@ -483,6 +483,8 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .wins{display:flex;flex-direction:column;gap:12px}.wgrp{display:flex;flex-direction:column;gap:8px}.wgrp h3{margin:0;font-size:15px}.wchips{display:flex;flex-wrap:wrap;gap:6px}.wchip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer;min-height:40px}.wchip[aria-pressed="true"]{background:var(--soft);border-color:transparent;color:var(--muted);filter:grayscale(1);opacity:.75}.wchip[aria-pressed="true"]::before{content:"✓ ";font-weight:700}.wchip .x{margin-left:6px;opacity:.6}.wown{display:flex;gap:8px}.wown input{flex:1;min-width:0;font:inherit;font-size:16px;height:42px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}
 .wseg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--soft);border-radius:12px;padding:4px;gap:4px}.wseg button{border:0;background:none;border-radius:9px;padding:10px;font:inherit;font-size:15px;font-weight:600;color:var(--muted);min-height:44px;cursor:pointer}.wseg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}.wcheer{background:var(--accent-soft);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left}.wcheer b{font-size:17px}.wcheer .row{gap:14px;margin-top:4px}
 .hwins{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hwin{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}.hwin .who{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}.hwin ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:14px}.hwin .act{align-self:flex-start;border:0;background:none;padding:4px 0;font:inherit;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer}.hwin .cheered{font-size:13px;color:var(--muted)}
+.mpick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.mpick button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:78px;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:16px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}.mpick button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}.mpick button:disabled{opacity:.45}
+.gifgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:330px;overflow-y:auto;border-radius:12px}.gifgrid button{padding:0;border:2px solid transparent;border-radius:10px;overflow:hidden;background:var(--soft);aspect-ratio:1/1;cursor:pointer}.gifgrid button[aria-pressed="true"]{border-color:var(--accent)}.gifgrid img{width:100%;height:100%;object-fit:cover;display:block}.gifby{text-align:right}.gifimg{max-width:100%;border-radius:14px;display:block}
 .leftcard{margin-top:10px;padding:14px;border-radius:14px;background:var(--accent-soft);display:flex;flex-direction:column;gap:6px;text-align:left}.leftcard p{margin:0}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
@@ -759,13 +761,20 @@ details.pl summary{cursor:pointer;font-weight:600}
       </div>
     </div>
     <div class="card stack" id="picCard">
-      <div class="stack" style="gap:2px"><h2>Send a photo or video</h2><span class="small muted" id="picLeft"></span></div>
+      <div class="stack" style="gap:2px"><h2>Send a photo, video or GIF</h2><span class="small muted" id="picLeft"></span></div>
+      <div class="mpick" role="group" aria-label="What to send"><button type="button" id="pkPhoto"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.8"/></svg><span>Photo</span></button><button type="button" id="pkVideo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="13.5" height="12" rx="2.5"/><path d="M16 10.5l5-3v9l-5-3z"/></svg><span>Video</span></button><button type="button" id="pkGif"><svg width="30" height="26" viewBox="0 0 30 24" fill="none" aria-hidden="true"><rect x="1.5" y="3" width="27" height="18" rx="4" stroke="currentColor" stroke-width="1.8"/><text x="15" y="16.3" text-anchor="middle" font-family="inherit" font-size="9.5" font-weight="800" fill="currentColor" letter-spacing=".5">GIF</text></svg><span>GIF</span></button></div>
       <input type="file" id="picFile" accept="image/*,video/*" hidden>
+      <div id="gifBox" class="stack" style="gap:8px" hidden>
+        <label for="gifQ" class="small" style="font-weight:600">Search GIFs</label>
+        <input type="search" id="gifQ" maxlength="50" placeholder="Search: love, hug, miss you, lol…" enterkeyhint="search">
+        <div class="gifgrid" id="gifRes" aria-live="polite"></div>
+        <span class="small muted gifby">Powered by GIPHY</span>
+      </div>
       <div id="picPreview"></div>
       <div class="prog" id="clipProg" hidden><i></i></div>
       <label for="picCap" style="font-weight:600">Caption</label>
       <input type="text" id="picCap" maxlength="150" placeholder="Write something to go with it…">
-      <div class="row"><button class="secondary" id="picChoose">Choose photo or video</button><button class="primary" id="picSend" disabled>Send photo</button></div>
+      <div class="row"><button class="secondary" id="picChoose" hidden>Choose photo or video</button><button class="primary" id="picSend" disabled>Send photo</button></div>
       <p class="small muted" id="picNote" hidden></p>
     </div>
     <div class="card stack" id="songCard">
@@ -1427,8 +1436,11 @@ function clipEl(id,cap,dur){
   return w;
 }
 const goneEl=k=>el("div","gone",k==="clip"?"🎬 This video was auto-deleted":"📷 This photo was auto-deleted");
-const itemMedia=it=>it.gone?goneEl(it.kind):it.kind==="clip"?clipEl(it.asset,it.caption,it.dur):picEl(it.asset,it.caption);
-const isPicLike=it=>(it.kind==="photo"||it.kind==="clip")&&it.asset;
+const GIF_RE=/^https:\/\/media\d*\.giphy\.com\/[\w\/.?=&%-]+$/;
+function gifEl(g,cap){const i=el("img","pic gifimg");i.alt=cap||g?.title||"GIF";i.loading="lazy";if(g&&GIF_RE.test(g.url||""))i.src=g.url;return i}
+const itemMedia=it=>it.gone?goneEl(it.kind):it.kind==="gif"?gifEl(it.gif,it.caption):it.kind==="clip"?clipEl(it.asset,it.caption,it.dur):picEl(it.asset,it.caption);
+const isPicLike=it=>((it.kind==="photo"||it.kind==="clip")&&it.asset)||(it.kind==="gif"&&it.gif&&GIF_RE.test(it.gif.url||""));
+const mediaWord=k=>k==="clip"?"video":k==="gif"?"GIF":"photo";
 
 /* ================= Rings ================= */
 function ringBg(levels){
@@ -1864,6 +1876,7 @@ function notifyForItem(d,id){
   else if(d.kind==="media")body="Sent you "+platformOf(d.url).noun+" 🎵"+(d.note?`: “${d.note}”`:"");
   else if(d.kind==="photo")body="Sent you a photo 📷"+(d.caption?`: “${d.caption}”`:"");
   else if(d.kind==="clip")body="Sent you a video 🎬"+(d.caption?`: “${d.caption}”`:"");
+  else if(d.kind==="gif")body="Sent you a GIF ✨"+(d.caption?`: “${d.caption}”`:"");
   else if(d.kind==="invite")body=`Invited you: ${d.type==="date"&&d.dateKind?"Date night, "+label("datestyle",d.dateKind).toLowerCase():invLabel(d)} · ${d.when} 💌`;
   else if(d.kind==="challenge")body=`Challenged you: ${d.text} 🏁`;
   if(body)notify(partnerId,n,body,d.kind,id&&/^[\w-]{4,40}$/.test(id)?"#item="+id:"");
@@ -1871,7 +1884,7 @@ function notifyForItem(d,id){
 function notifyForReply(id,data){
   const it=incoming().find(x=>x.id===id);if(!it)return;const n=nm(me),prev=(replies[me]||{})[id]||{};
   let body="";
-  const what=it.kind==="clip"?"video":"photo";
+  const what=mediaWord(it.kind);
   if(isPicLike(it)&&data.reaction&&data.reaction!==prev.reaction)body=`Reacted ${data.reaction} to your ${what}`;
   else if(isPicLike(it)&&data.comment)body=`Replied to your ${what}: “${data.comment}”`;
   else if(it.kind==="media"&&data.status&&data.status!==prev.status){const r=songReact(data.status),what=it.track?`“${it.track.name}”`:`the ${platformOf(it.url).noun.replace(/^an? /,"")} you sent`;body=r?(r[0]==="loved"?`Loved ${what} ♥`:`${r[2]} ${r[1]} · ${what}`):""}
@@ -2018,6 +2031,7 @@ function itemTitle(it,dir){
   if(it.kind==="touch"){const t=TOUCHMAP[it.type]||["","💌","Something"];return{em:t[1],title:dir==="in"?`${pn} sent you a ${t[2].toLowerCase()}`:`You sent a ${t[2].toLowerCase()}`}}
   if(it.kind==="photo")return{em:"📷",title:dir==="in"?`${pn} sent you a photo`:"You sent a photo"};
   if(it.kind==="clip")return{em:"🎬",title:dir==="in"?`${pn} sent you a video`:"You sent a video"};
+  if(it.kind==="gif")return{em:"✨",title:dir==="in"?`${pn} sent you a GIF`:"You sent a GIF"};
   if(it.kind==="invite"){const what=it.type==="date"&&it.dateKind?`Date night, ${label("datestyle",it.dateKind).toLowerCase()}`:(invLabel(it));return{em:"💌",title:`${dir==="in"?"Invite":"You invited"}: ${what} · ${it.when}`}}
   if(it.kind==="media"){const m=it.track?{noun:"a song"}:platformOf(it.url);return{em:"🎵",title:dir==="in"?`${pn} sent you ${m.noun}`:`You sent ${m.noun}`}}
   return{em:"🏁",title:`${dir==="in"?"Challenge":"You challenged"}: ${it.text}`};
@@ -2032,10 +2046,10 @@ function renderBanner(){
   const it=unseen()[0];if(!it||tab==="connect")return;
   const pn=nm(partnerId),d=itemTitle(it,"in");
   const b=el("div","banner"),t=el("div","txt");
-  const simple=it.kind==="touch"||it.kind==="photo"||it.kind==="clip"||it.kind==="media";
+  const simple=it.kind==="touch"||it.kind==="photo"||it.kind==="clip"||it.kind==="gif"||it.kind==="media";
   const head=simple?d.title:it.kind==="invite"?`${pn} invited you on a date`:`${pn} sent you a challenge`;
   t.append(el("h3",null,head),el("p","small muted",simple?(it.caption||it.note||timeAgo(it.createdAt)):d.title.replace(/^[^:]+: /,"")));
-  const go=el("button","secondary",it.kind==="touch"?"Send one back":it.kind==="photo"?"View":it.kind==="clip"?"Watch":it.kind==="media"?"Listen":"See it");go.onclick=()=>openItem(it.id);
+  const go=el("button","secondary",it.kind==="touch"?"Send one back":it.kind==="photo"||it.kind==="gif"?"View":it.kind==="clip"?"Watch":it.kind==="media"?"Listen":"See it");go.onclick=()=>openItem(it.id);
   b.append(el("span","big",d.em),t,go);box.append(b);
 }
 // Rule: tapping something on Home (or a banner/notification) lands right on that exact thing.
@@ -2061,7 +2075,7 @@ function statusPill(it,rep){
   if(it.kind==="invite")return rep?.status==="yes"?["Accepted","ok"]:rep?.status==="later"?["Not this time","no"]:["Waiting",""];
   if(it.kind==="challenge"){const c=rep?.count||0,t=it.target||1;return c>=t?["Done","ok"]:[c?`${c} of ${t}`:"Not started",""]}
   if(it.kind==="media"){const r=songReact(rep?.status);return r?[`${r[1]} ${r[2]}`,"ok"]:null}
-  if(it.kind==="photo"||it.kind==="clip")return rep?.comment?["Replied","ok"]:null;
+  if(it.kind==="photo"||it.kind==="clip"||it.kind==="gif")return rep?.comment?["Replied","ok"]:null;
   return null;
 }
 function itemHead(it,dir,extra){
@@ -2081,7 +2095,7 @@ function renderInbox(){
     if(it.note)row.append(el("p","need","“"+it.note+"”"));
     if(isPicLike(it)){
       row.append(itemMedia(it));if(it.caption)row.append(el("p",null,it.caption));
-      const rs=el("div","reacts");rs.setAttribute("role","group");rs.setAttribute("aria-label","React to this "+(it.kind==="clip"?"video":"photo"));
+      const rs=el("div","reacts");rs.setAttribute("role","group");rs.setAttribute("aria-label","React to this "+mediaWord(it.kind));
       REACTIONS.forEach(em=>{const b=el("button","react",em);b.setAttribute("aria-pressed",String(rep?.reaction===em));b.setAttribute("aria-label","React "+em);
         b.onclick=()=>reply(it.id,{reaction:rep?.reaction===em?null:em}).then(ok=>{if(ok&&rep?.reaction!==em)toast("Reacted "+em)});rs.append(b)});
       row.append(rs);
@@ -2114,7 +2128,7 @@ function renderInbox(){
     box.append(row);
   });
 }
-const SENT_GROUPS=[["all","All",()=>true],["media","Photos & videos",x=>x.kind==="photo"||x.kind==="clip"],["touch","Hugs & emojis",x=>x.kind==="touch"],["song","Songs & links",x=>x.kind==="media"],["invite","Invites",x=>x.kind==="invite"],["challenge","Challenges",x=>x.kind==="challenge"]];
+const SENT_GROUPS=[["all","All",()=>true],["media","Photos, videos & GIFs",x=>x.kind==="photo"||x.kind==="clip"||x.kind==="gif"],["touch","Hugs & emojis",x=>x.kind==="touch"],["song","Songs & links",x=>x.kind==="media"],["invite","Invites",x=>x.kind==="invite"],["challenge","Challenges",x=>x.kind==="challenge"]];
 let sentFilter="all";
 function renderConnectSums(){
   const out=outgoing(),wk=Date.now()-7*86400000,recent=out.filter(x=>x.createdAt>wk);
@@ -2154,7 +2168,9 @@ function renderPicCard(){
   const pl=Math.max(0,PIC_LIMIT-picsToday()),cl=Math.max(0,CLIP_LIMIT-clipsToday());
   $("picLeft").textContent=`Today: ${pl} of ${PIC_LIMIT} photos · ${cl} of ${CLIP_LIMIT} videos left (up to ${CLIP_MAX_SEC} sec)`;
   const selFull=picFileSel?(picKind==="clip"?cl===0:pl===0):false;
-  $("picChoose").disabled=(pl===0&&cl===0)||picBusy;$("picSend").disabled=picBusy||!picFileSel||selFull;
+  $("picChoose").disabled=(pl===0&&cl===0)||picBusy;$("pkPhoto").disabled=pl===0||picBusy;$("pkVideo").disabled=cl===0||picBusy;$("pkGif").disabled=picBusy;
+  if(picKind==="gif"){$("picSend").disabled=picBusy||!gifSel;$("picSend").textContent=picBusy?"Sending…":"Send GIF";$("picSend").hidden=!gifSel;$("picNote").hidden=true;return}
+  $("picSend").hidden=!picFileSel&&!picBusy;$("picSend").disabled=picBusy||!picFileSel||selFull;
   if(!picBusy){$("picSend").textContent=picKind==="clip"&&picFileSel?"Send video":"Send photo"}
   const n=$("picNote");
   if(picBusy&&picKind==="clip"){n.hidden=false;n.textContent="Getting your video ready… keep the app open."}
@@ -2164,8 +2180,30 @@ function renderPicCard(){
   else{n.hidden=true;n.textContent=""}
 }
 $("picChoose").onclick=()=>$("picFile").click();
+let gifSel=null,gifTimer=0,gifQSeq=0;
+function setPick(k){[["photo","pkPhoto"],["clip","pkVideo"],["gif","pkGif"]].forEach(([kk,id])=>$(id).setAttribute("aria-pressed",String(k===kk)))}
+$("pkPhoto").onclick=()=>{closeGif();$("picFile").accept="image/*";$("picFile").click()};
+$("pkVideo").onclick=()=>{closeGif();$("picFile").accept="video/*";$("picFile").click()};
+$("pkGif").onclick=()=>{if(!$("gifBox").hidden&&!gifSel){closeGif();return}resetPic();picKind="gif";setPick("gif");$("gifBox").hidden=false;gifSearch("");renderPicCard();setTimeout(()=>$("gifQ").focus(),50)};
+function closeGif(){$("gifBox").hidden=true;if(picKind==="gif"){gifSel=null;picKind="photo";$("picPreview").textContent=""}setPick("")}
+$("gifQ").addEventListener("input",()=>{clearTimeout(gifTimer);gifTimer=setTimeout(()=>gifSearch($("gifQ").value.trim()),350)});
+$("gifQ").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();clearTimeout(gifTimer);gifSearch($("gifQ").value.trim())}});
+async function gifSearch(q){
+  const box=$("gifRes"),seq=++gifQSeq;box.textContent="";box.append(el("p","small muted","Loading GIFs…"));
+  if(!WORKER_URL){box.textContent="";box.append(el("p","small muted","GIF search isn't set up yet."));return}
+  try{const r=await fetch(WORKER_URL+"gif?q="+encodeURIComponent(q));const d=await r.json().catch(()=>({}));if(seq!==gifQSeq)return;box.textContent="";
+    if(r.status===503||d.error==="gif off"){box.append(el("p","small muted","GIF search is almost ready. It turns on once the GIPHY key is added."));return}
+    const res=(d.results||[]).filter(g=>GIF_RE.test(g.url)&&GIF_RE.test(g.thumb));
+    if(!res.length){box.append(el("p","small muted",q?`No GIFs for “${q}”. Try another word.`:"No GIFs right now."));return}
+    res.forEach(g=>{const b=el("button");b.type="button";b.setAttribute("aria-label",g.title||"GIF");b.setAttribute("aria-pressed",String(gifSel?.id===g.id));const im=el("img");im.src=g.thumb;im.alt="";im.loading="lazy";b.append(im);b.onclick=()=>pickGif(g);box.append(b)});
+    track({"n.gifSearch":1});
+  }catch(e){if(seq!==gifQSeq)return;box.textContent="";box.append(el("p","small muted","Couldn't load GIFs. Check your connection."))}
+}
+function pickGif(g){gifSel={id:g.id,url:g.url,thumb:g.thumb,w:g.w||0,h:g.h||0,title:String(g.title||"").slice(0,80)};picKind="gif";
+  const pv=$("picPreview");pv.textContent="";pv.append(gifEl(gifSel,"Selected GIF"));const ch=el("button","link small","Change GIF");ch.type="button";ch.onclick=()=>{$("gifBox").hidden=false;$("gifQ").focus()};pv.append(ch);
+  $("gifBox").hidden=true;renderPicCard();setTimeout(()=>$("picCap").focus(),50)}
 $("picFile").onchange=e=>{
-  const f=e.target.files[0];if(!f)return;picFileSel=f;picKind=isVideoFile(f)?"clip":"photo";
+  const f=e.target.files[0];$("picFile").accept="image/*,video/*";if(!f)return;gifSel=null;$("gifBox").hidden=true;picFileSel=f;picKind=isVideoFile(f)?"clip":"photo";setPick(picKind);
   const pv=$("picPreview");pv.textContent="";const u=URL.createObjectURL(f);
   if(picKind==="clip"){
     const pvv=el("video","pic pic-preview");pvv.src=u;pvv.controls=true;pvv.playsInline=true;pvv.setAttribute("playsinline","");pvv.muted=true;pvv.style.objectFit="contain";pvv.style.background="#000";pvv.style.cursor="default";pv.append(pvv);
@@ -2175,8 +2213,10 @@ $("picFile").onchange=e=>{
   }else{if(procVid){procVid.remove();procVid=null}const i=el("img","pic pic-preview");i.src=u;i.alt="Selected photo";pv.append(i)}
   renderPicCard();
 };
-function resetPic(){picFileSel=null;$("picFile").value="";$("picCap").value="";$("picPreview").textContent="";if(procVid){procVid.remove();procVid=null}picKind="photo";$("clipProg").hidden=true}
+function resetPic(){gifSel=null;$("gifBox").hidden=true;setPick("");picFileSel=null;$("picFile").value="";$("picCap").value="";$("picPreview").textContent="";if(procVid){procVid.remove();procVid=null}picKind="photo";$("clipProg").hidden=true}
 $("picSend").onclick=()=>{
+  if(picKind==="gif"&&gifSel&&!picBusy){if(!signedIn()){toast(saveErr({code:"signed_out"}));return}if(!partnerId){toast("Your partner hasn't joined yet");return}
+    picBusy=true;renderPicCard();sendItem({kind:"gif",gif:gifSel,caption:$("picCap").value.trim().slice(0,150)},"GIF sent ✨").then(ok=>{picBusy=false;if(ok)resetPic();renderPicCard()});return}
   if(!picFileSel||picBusy)return;
   if(!signedIn()){toast(saveErr({code:"signed_out"}));return}
   if(!partnerId){toast("Your partner hasn't joined yet");return}
@@ -2915,6 +2955,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-19b",at:"2026-10-19T17:30:00-04:00",date:"Oct 19, 2026",items:[
+    {em:"✨",t:"Send GIFs",b:"In Connect, tap GIF to search and send one with a caption. Photo, Video and GIF now sit side by side.",go:["connect","picCard"]}
+  ]},
   {id:"2026-10-19a",at:"2026-10-19T08:15:00-04:00",date:"Oct 19, 2026",items:[
     {em:"🏆",t:"Today's wins",b:"Log a personal win and a work win each day: worked out, quiet morning, prayed, on time, very productive, got recognized, or add your own. Your partner sees them on Home and can cheer you on 👏",go:["today","secWins"]}
   ]},
@@ -3252,7 +3295,7 @@ function sessStart(){if(sessT0||document.visibilityState!=="visible"||!spaceHash
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")sessStart();else{sessFlush();sessT0=0;clearInterval(sessTimer)}});
 addEventListener("pagehide",()=>{sessFlush();sessT0=0});
 const fmtTime=secs=>{secs=Math.round(secs||0);if(secs<60)return secs+"s";const m=Math.floor(secs/60);if(m<60)return m+"m "+String(secs%60).padStart(2,"0")+"s";return Math.floor(m/60)+"h "+(m%60)+"m"};
-const KIND_STAT={touch:"touch",photo:"photo",clip:"video",media:"song",invite:"invite",challenge:"challenge"};
+const KIND_STAT={touch:"touch",photo:"photo",clip:"video",gif:"gif",media:"song",invite:"invite",challenge:"challenge"};
 function trackItem(kind){const k=KIND_STAT[kind];if(k)track({["n."+k]:1})}
 
 let statsData=null;
@@ -3345,7 +3388,7 @@ function renderStats(){
   if(statsTab==="features"){
     const n=Math.max(1,S.length),used=k2=>S.filter(x=>x.n&&x.n[k2]>0).length,tot=k2=>S.reduce((a2,x)=>a2+(+(x.n&&x.n[k2])||0),0);
     const fa=el("div","chartc");fa.append(el("b",null,"What couples use"),el("span","small muted","All time: share of couples who have tried each feature, and total uses. Most used first."));
-    [["Daily check-in",S.filter(x=>x.d&&Object.keys(x.d).length).length,tot("checkin")],["Chat",used("chat"),tot("chat")],["Hugs, kisses and emojis",used("touch"),tot("touch")],["Photos",used("photo"),tot("photo")],["Videos",used("video"),tot("video")],["Stories",used("story"),tot("story")],["Songs and links",used("song"),tot("song")],["Date invites",used("invite"),tot("invite")],["Challenges",used("challenge"),tot("challenge")],["Goals",used("goal"),tot("goal")],["Daily wins",used("win"),tot("win")],["Today's question",used("question"),tot("question")]]
+    [["Daily check-in",S.filter(x=>x.d&&Object.keys(x.d).length).length,tot("checkin")],["Chat",used("chat"),tot("chat")],["Hugs, kisses and emojis",used("touch"),tot("touch")],["Photos",used("photo"),tot("photo")],["Videos",used("video"),tot("video")],["GIFs",used("gif"),tot("gif")],["Stories",used("story"),tot("story")],["Songs and links",used("song"),tot("song")],["Date invites",used("invite"),tot("invite")],["Challenges",used("challenge"),tot("challenge")],["Goals",used("goal"),tot("goal")],["Daily wins",used("win"),tot("win")],["Today's question",used("question"),tot("question")]]
       .sort((p,q)=>q[1]-p[1]).forEach(([t,c,tt])=>{const pct=Math.round(c/n*100),r=el("div","hb");r.append(el("span",null,t),el("span","v",`${pct}% · ${tt} use${tt===1?"":"s"}`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);fa.append(r)});
     box.append(fa);
     const st=el("div","chartc");st.append(el("b",null,"Settings couples turned on"));[["Notifications (either partner)",S.filter(x=>x.notifOn>0).length],["AI ideas (both partners)",S.filter(x=>x.aiOn>=2).length],["Both partners joined",S.filter(x=>x.partnerJoined).length]].forEach(([t,c])=>{const pct=Math.round(c/n*100),r=el("div","hb");r.append(el("span",null,t),el("span","v",`${c} of ${S.length}`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);st.append(r)});box.append(st);
@@ -4493,7 +4536,7 @@ function renderHome(){
   const mb=$("homeMoments");mb.textContent="";
   const all=[...incoming().map(x=>({...x,dir:"in"})),...outgoing().map(x=>({...x,dir:"out"}))];
   const moments=all.filter(it=>{
-    if(it.kind==="photo"||it.kind==="clip"||it.kind==="media")return true;
+    if(it.kind==="photo"||it.kind==="clip"||it.kind==="gif"||it.kind==="media")return true;
     const rep=it.dir==="out"?(replies[partnerId]||{})[it.id]:(replies[me]||{})[it.id];
     if(it.kind==="challenge")return (rep?.count||0)>=(it.target||1);
     if(it.kind==="invite")return invDone(it);
@@ -5123,7 +5166,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-19.4";
+const APP_VERSION="2026-10-19.5";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();

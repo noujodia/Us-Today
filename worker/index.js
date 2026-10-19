@@ -241,6 +241,20 @@ async function ownerCodeUsed(env, d) {
   return { ok: true, sent };
 }
 
+// GIF search through GIPHY. Needs a GIPHY_KEY secret in Cloudflare (Settings → Variables and secrets).
+async function searchGifs(env, q, offset) {
+  const params = new URLSearchParams({ api_key: env.GIPHY_KEY, limit: "24", offset: String(Math.max(0, Math.min(+offset || 0, 200))), rating: "pg-13", bundle: "messaging_non_clips" });
+  const url = q ? "https://api.giphy.com/v1/gifs/search?" + params + "&q=" + encodeURIComponent(q.slice(0, 50)) : "https://api.giphy.com/v1/gifs/trending?" + params;
+  const r = await fetch(url);
+  if (!r.ok) return { error: "giphy " + r.status };
+  const d = await r.json();
+  const ok = (u) => typeof u === "string" && /^https:\/\/media\d*\.giphy\.com\//.test(u);
+  return { results: (d.data || []).map((g) => {
+    const im = g.images || {}, sm = im.fixed_width || {}, md = im.downsized_medium || im.downsized || im.original || {};
+    return { id: String(g.id || "").slice(0, 40), title: String(g.title || "").slice(0, 80), thumb: ok(sm.url) ? sm.url : "", url: ok(md.url) ? md.url : (ok(sm.url) ? sm.url : ""), w: +md.width || +sm.width || 0, h: +md.height || +sm.height || 0 };
+  }).filter((g) => g.id && g.url && g.thumb) };
+}
+
 export default {
   async fetch(req, env) {
     const origin = req.headers.get("Origin") || "";
@@ -259,7 +273,14 @@ export default {
       const results = await searchSongs(new URL(req.url).searchParams.get("term") || "");
       return new Response(JSON.stringify({ results }), { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600", ...cors(origin) } });
     }
-    if (req.method === "GET") return reply({ ok: true, service: "us-today-push", ready: !!env.VAPID_D, ai: !!env.ANTHROPIC_API_KEY, reminders: !!env.REMIND }, 200, origin);
+    if (req.method === "GET" && path === "/gif") {
+      if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
+      if (!env.GIPHY_KEY) return reply({ error: "gif off" }, 503, origin);
+      const sp = new URL(req.url).searchParams;
+      try { const out = await searchGifs(env, (sp.get("q") || "").trim(), sp.get("offset")); return new Response(JSON.stringify(out), { status: out.error ? 502 : 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=600", ...cors(origin) } }); }
+      catch (_) { return reply({ error: "gif failed" }, 502, origin); }
+    }
+    if (req.method === "GET") return reply({ ok: true, gif: !!env.GIPHY_KEY, service: "us-today-push", ready: !!env.VAPID_D, ai: !!env.ANTHROPIC_API_KEY, reminders: !!env.REMIND }, 200, origin);
     if (req.method === "POST" && path === "/remind") {
       if (!ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
       if (!env.REMIND) return reply({ error: "reminders off" }, 503, origin);
