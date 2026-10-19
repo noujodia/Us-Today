@@ -89,6 +89,7 @@ async function runReminders(env) {
   do {
     const page = await env.REMIND.list({ cursor });
     for (const k of page.keys) {
+      if (!REMIND_ID.test(k.name)) continue; // owner alerts and other keys live here too
       let m = k.metadata || {}; const t = localParts(m.tz);
       if (m.nx && Date.now() >= m.nx) {
         const rec = await env.REMIND.get(k.name, "json");
@@ -207,6 +208,39 @@ async function searchSongs(term) {
   return [];
 }
 
+// Owner alerts: the owner's phones register here (guarded by the owner key's hash, trust on first use),
+// and any app can report that a beta invite code was used. Each code alerts once.
+const OWNER_REC = "owner:subs";
+const CODE_RE = /^US-[A-Z0-9]{6}$/;
+async function ownerRegister(env, d) {
+  if (!/^[0-9a-f]{64}$/.test(d.k || "") || !validSub(d.sub)) return { error: "bad request" };
+  const rec = (await env.REMIND.get(OWNER_REC, "json")) || { k: "", subs: [] };
+  if (rec.k && rec.k !== d.k) return { error: "key" };
+  rec.k = d.k;
+  rec.subs = [{ sub: d.sub, url: String(d.url || "").slice(0, 400) }, ...(rec.subs || []).filter((x) => x.sub && x.sub.endpoint !== d.sub.endpoint)].slice(0, 6);
+  await env.REMIND.put(OWNER_REC, JSON.stringify(rec));
+  return { ok: true, phones: rec.subs.length };
+}
+async function ownerCodeUsed(env, d) {
+  const code = String(d.code || "").toUpperCase();
+  if (!CODE_RE.test(code)) return { error: "bad code" };
+  const seen = "used:" + code;
+  if (await env.REMIND.get(seen)) return { ok: true, dup: true };
+  await env.REMIND.put(seen, "1", { expirationTtl: 60 * 60 * 24 * 60 });
+  const rec = await env.REMIND.get(OWNER_REC, "json");
+  if (!rec || !rec.subs || !rec.subs.length) return { ok: true, sent: 0 };
+  const note = String(d.note || "").replace(/[\u0000-\u001f]/g, "").slice(0, 40);
+  const msg = { title: "🎉 A beta invite was used", body: note ? `${note}'s code (${code}) just started a new space.` : `Code ${code} just started a new space.`, tag: "owner-code" };
+  let sent = 0; const keep = [];
+  for (const x of rec.subs) {
+    const r = await sendPush(env, x.sub, { ...msg, url: x.url || "" }).catch(() => ({ ok: false }));
+    if (r.ok) sent++;
+    if (!r.gone) keep.push(x);
+  }
+  if (keep.length !== rec.subs.length) { rec.subs = keep; await env.REMIND.put(OWNER_REC, JSON.stringify(rec)); }
+  return { ok: true, sent };
+}
+
 export default {
   async fetch(req, env) {
     const origin = req.headers.get("Origin") || "";
@@ -231,6 +265,13 @@ export default {
       if (!env.REMIND) return reply({ error: "reminders off" }, 503, origin);
       let d; try { d = await req.json(); } catch { return reply({ error: "bad json" }, 400, origin); }
       try { const out = await saveReminder(env, d || {}); return reply(out, out.error ? 400 : 200, origin); } catch (_) { return reply({ error: "failed" }, 500, origin); }
+    }
+    if (req.method === "POST" && (path === "/owner" || path === "/code-used")) {
+      if (!ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
+      if (!env.REMIND || !env.VAPID_D) return reply({ error: "off" }, 503, origin);
+      let d; try { d = await req.json(); } catch { return reply({ error: "bad json" }, 400, origin); }
+      try { const out = path === "/owner" ? await ownerRegister(env, d || {}) : await ownerCodeUsed(env, d || {}); return reply(out, out.error ? 400 : 200, origin); }
+      catch (_) { return reply({ error: "failed" }, 500, origin); }
     }
     if (req.method === "POST" && path === "/ai") {
       if (!ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);

@@ -1812,7 +1812,7 @@ async function enableNotifs(){
     msg.textContent="Turning on…";
     const reg=await getReg();
     const sub=(await reg.pushManager.getSubscription())||(await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID_PUBLIC)}));
-    await savePushSub(sub);
+    await savePushSub(sub);ownerAlertsReg=false;registerOwnerAlerts();
     toast("Notifications on");renderNotifCard();renderRemind();syncReminder();
   }catch(e){console.error(e);msg.textContent="Couldn't turn on notifications. Close the app fully, reopen it from the Home Screen icon, and try again."}
 }
@@ -2903,6 +2903,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-18i",at:"2026-10-18T21:50:00-04:00",date:"Oct 18, 2026",items:[
+    {em:"🎉",t:"Owner: invite alerts",b:"The owner's phone now gets a notification the moment a beta invite code is used, and a pop-up if the app is open."}
+  ]},
   {id:"2026-10-18h",at:"2026-10-18T16:45:00-04:00",date:"Oct 18, 2026",items:[
     {em:"💞",t:"A new look for Noudé",b:"Our new icon: two halves turned toward each other, with a heart in the middle. To see it on your Home Screen, remove the old icon and add Noudé again from your browser."}
   ]},
@@ -3133,7 +3136,7 @@ service cloud.firestore {
 function watchInbox(){
   if(fbUnsub||!db?.top)return;
   try{fbUnsub=db.top.collection("feedback").orderBy("createdAt","desc").limit(200).onSnapshot(q=>{
-    isOwner=true;try{localStorage.setItem("ut_owner","1")}catch(e){}
+    if(!isOwner){isOwner=true;setTimeout(()=>{registerOwnerAlerts();watchCodeUses()},500)}try{localStorage.setItem("ut_owner","1")}catch(e){}
     fbItems=q.docs.map(d=>({id:d.id,...(d.data()||{})}));
     $("inboxOpen").hidden=false;$("statsOpen").hidden=false;$("codesOpen").hidden=false;const n=fbItems.filter(x=>!x.done).length;$("inboxBadge").hidden=!n;$("inboxBadge").textContent=n;
     if(!$("inboxSheet").hidden)renderFbInbox();
@@ -3179,19 +3182,34 @@ function renderFbInbox(){
   });
 }
 function openInbox(){renderFbInbox();$("inboxSheet").hidden=false}
+// Owner alerts: this phone gets a notification whenever a beta invite code is used.
+let ownerAlertsReg=false;
+async function registerOwnerAlerts(){
+  if(ownerAlertsReg||!isOwner||!WORKER_URL||!pushSupported()||Notification.permission!=="granted")return;
+  let k="";try{k=localStorage.getItem("ut_ownerk")||""}catch(e){}if(!k)return;
+  try{const reg=await getReg();const sub=await reg.pushManager.getSubscription();if(!sub)return;
+    const r=await fetch(WORKER_URL+"owner",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({k,sub:sub.toJSON(),url:linkFor(me)+"#codes"})}).then(x=>x.json());
+    if(r&&r.ok)ownerAlertsReg=true}catch(e){}
+}
+function ownerAlertsLine(){let k="";try{k=localStorage.getItem("ut_ownerk")||""}catch(e){}
+  if(!k)return"Set an owner key (in the Feedback inbox) to get a notification when a code is used.";
+  if(typeof Notification==="undefined"||Notification.permission!=="granted")return"Turn on notifications on this phone to get an alert when a code is used.";
+  return"🔔 This phone gets a notification when a code is used."}
+let codesSeenAt=0;
+function watchCodeUses(){try{codesSeenAt=+localStorage.getItem("ut_codeseen")||Date.now()}catch(e){codesSeenAt=Date.now()}watchCodes()}
 // Owner key: any phone that enters it becomes an owner phone, no rules editing needed.
 async function ownerKeyHash(k){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("noude-owner:"+String(k).trim()));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 async function unlockOwner(k,msg){
   if(!db?.top||!db.uid){msg.textContent="Open your space first, then try again.";return}
   if(String(k).trim().length<10){msg.textContent="The owner key is at least 10 characters.";return}
   msg.textContent="Checking…";
-  try{await db.top.doc("owners/"+db.uid).set({k:await ownerKeyHash(k),at:Date.now(),device:deviceName(navigator.userAgent)});try{localStorage.setItem("ut_owner","1")}catch(e){}fbUnsub=null;watchInbox();msg.textContent="Unlocked 🎉";setTimeout(renderFbInbox,1200)}
+  try{const h=await ownerKeyHash(k);await db.top.doc("owners/"+db.uid).set({k:h,at:Date.now(),device:deviceName(navigator.userAgent)});try{localStorage.setItem("ut_owner","1");localStorage.setItem("ut_ownerk",h)}catch(e){}ownerAlertsReg=false;registerOwnerAlerts();fbUnsub=null;watchInbox();msg.textContent="Unlocked 🎉";setTimeout(renderFbInbox,1200)}
   catch(e){msg.textContent=isDenied(e)?"That key didn't work. Check it and try again.":"Couldn't check. Check your connection and try again."}
 }
 async function setOwnerKey(k,msg){
   if(String(k).trim().length<10){msg.textContent="Use at least 10 characters. A short phrase works well.";return}
   msg.textContent="Saving…";
-  try{const h=await ownerKeyHash(k);await db.top.doc("config/owner").set({k:h,at:Date.now()});await db.top.doc("owners/"+db.uid).set({k:h,at:Date.now(),device:deviceName(navigator.userAgent)});try{localStorage.setItem("ut_ownerkey","1")}catch(e){}msg.textContent="Owner key saved. On any new phone, tap the version number 5 times and enter it.";renderFbInbox()}
+  try{const h=await ownerKeyHash(k);await db.top.doc("config/owner").set({k:h,at:Date.now()});await db.top.doc("owners/"+db.uid).set({k:h,at:Date.now(),device:deviceName(navigator.userAgent)});try{localStorage.setItem("ut_ownerkey","1");localStorage.setItem("ut_ownerk",h)}catch(e){}ownerAlertsReg=false;registerOwnerAlerts();msg.textContent="Owner key saved. On any new phone, tap the version number 5 times and enter it.";renderFbInbox()}
   catch(e){msg.textContent=isDenied(e)?"Publish the latest rules first (below), then try again.":"Couldn't save. Check your connection and try again."}
 }
 let verTaps=0,verTimer=0;
@@ -4626,7 +4644,9 @@ async function ensureAccess(code,isNew){
     if(!code)return"needcode";
     let c;try{c=await db.top.doc("betaCodes/"+code).get()}catch(e){return isDenied(e)?"open":"error"}
     if(!c.exists)return"badcode";if((c.data()||{}).used)return"usedcode";
-    try{await db.top.doc("betaCodes/"+code).update({used:true,usedAt:Date.now(),usedBy:spaceKey});await ref.set({code,at:Date.now()});return"ok"}
+    try{await db.top.doc("betaCodes/"+code).update({used:true,usedAt:Date.now(),usedBy:spaceKey});await ref.set({code,at:Date.now()});
+      if(WORKER_URL)fetch(WORKER_URL+"code-used",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code,note:(c.data()||{}).note||""})}).catch(()=>{});
+      return"ok"}
     catch(e){console.error(e);return isDenied(e)?"usedcode":"error"}
   }
   if(knownSpace(spaceKey)){try{await ref.set({code:"legacy",at:Date.now()});return"ok"}catch(e){return isDenied(e)?"locked":"error"}}
@@ -4658,7 +4678,8 @@ async function shareCode(c){
 }
 function watchCodes(){
   if(codesUnsub)return;
-  try{codesUnsub=db.top.collection("betaCodes").orderBy("createdAt","desc").limit(200).onSnapshot(q=>{codesErr=false;codesList=q.docs.map(d=>({id:d.id,...(d.data()||{})}));if(!$("codesSheet").hidden)renderCodes()},()=>{codesErr=true;codesUnsub=null;if(!$("codesSheet").hidden)renderCodes()})}catch(e){codesErr=true}
+  try{codesUnsub=db.top.collection("betaCodes").orderBy("createdAt","desc").limit(200).onSnapshot(q=>{codesErr=false;codesList=q.docs.map(d=>({id:d.id,...(d.data()||{})}));
+    {const fresh=codesList.filter(c=>c.used&&+c.usedAt>codesSeenAt);if(fresh.length&&codesSeenAt){const c=fresh[0];toast(`🎉 ${c.note?c.note+"'s code":"Invite "+c.id} was just used`);codesSeenAt=Math.max(...fresh.map(c=>+c.usedAt));try{localStorage.setItem("ut_codeseen",String(codesSeenAt))}catch(e){}}}if(!$("codesSheet").hidden)renderCodes()},()=>{codesErr=true;codesUnsub=null;if(!$("codesSheet").hidden)renderCodes()})}catch(e){codesErr=true}
 }
 async function newCode(note){
   const id=genCode();
@@ -4666,7 +4687,7 @@ async function newCode(note){
   catch(e){console.error(e);toast("Couldn't create a code. Your rules may need the update below.");codesErr=true;renderCodes()}
 }
 function renderCodes(){
-  const box=$("codesBody");box.textContent="";
+  const box=$("codesBody");box.textContent="";if(!codesErr)box.append(el("p","small muted",ownerAlertsLine()));
   if(codesErr){
     box.append(el("p","small","Invite codes need one more rules update. Copy the rules below, paste them over your Firestore rules and tap Publish. Then reopen this panel."));
     box.append(el("p","small muted","Existing couples (including you) are let in automatically the next time they open the app, through Oct 24. After that, only invite codes can start a new space."));
@@ -4904,6 +4925,7 @@ async function startSpace(firstTime){
   loadSeen();renderAll();
   if(!members[me]?.onboarded)openSheet(true);
   else if(START_ITEM)openItem(START_ITEM);
+  else if(START_CODES)setTimeout(()=>{if(isOwner){watchCodes();renderCodes();$("codesSheet").hidden=false}},2000);
   else if(START_CHAT)setTab("chat");
   else if(START_MIDDAY){setTab("today");try{localStorage.removeItem("ut_mid_"+spaceKey+me)}catch(x){}setTimeout(()=>{const c=$("middayCard");if(c){c.scrollIntoView({behavior:"smooth",block:"center"});c.classList.add("pulse")}},400)}
   else if(!OWNER_LINK)maybeWhatsNew();
@@ -4955,9 +4977,10 @@ $("joinBtn").onclick=()=>{
 };
 window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))location.reload()});
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
+const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.35";
+const APP_VERSION="2026-10-18.36";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
