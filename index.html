@@ -4,6 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Noudé</title>
+<meta name="description" content="Noudé · just the two of us. A private, intimate app for couples: check in on each other's mood, swap songs, stories and sweet messages, plan dates and set goals together.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Noudé">
+<meta property="og:title" content="Noudé · just the two of us">
+<meta property="og:description" content="A private, intimate app for couples. Invite only, in private beta.">
+<meta property="og:url" content="https://noudeapp.com/">
+<meta property="og:image" content="https://noudeapp.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Noudé logo: two halves turned toward each other with a heart in the middle">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://noudeapp.com/og-image.png">
 <meta name="theme-color" content="#c23d68">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4637,7 +4649,11 @@ Your code: ${c.id} (works once)
 Tell us what you think!`}
 async function shareCode(c){
   const text=codeMsg(c);track({"n.codeShare":1});
-  if(navigator.share){try{await navigator.share({title:"Your Noudé invite",text});return}catch(e){if(e&&e.name==="AbortError")return}}
+  if(navigator.share){
+    // Send the Noudé logo with the invite when the phone can share pictures
+    try{const r=await fetch("og-image.png",{cache:"force-cache"});if(r.ok){const f=new File([await r.blob()],"Noude-invite.png",{type:"image/png"});
+      if(navigator.canShare&&navigator.canShare({files:[f],text})){await navigator.share({files:[f],title:"Your Noudé invite",text});return}}}catch(e){if(e&&e.name==="AbortError")return}
+    try{await navigator.share({title:"Your Noudé invite",text});return}catch(e){if(e&&e.name==="AbortError")return}}
   try{await navigator.clipboard.writeText(text);toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't share. Use Copy instead.")}
 }
 function watchCodes(){
@@ -4941,7 +4957,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.31";
+const APP_VERSION="2026-10-18.32";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
