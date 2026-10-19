@@ -282,6 +282,11 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .fbi img{max-height:220px;width:auto;max-width:100%;border-radius:10px;align-self:flex-start;cursor:zoom-in;border:1px solid var(--line)}
 .fbi .acts{display:flex;gap:14px}
 .code{max-width:100%;box-sizing:border-box;font-family:ui-monospace,Menlo,monospace;font-size:.75rem;background:var(--soft);border-radius:10px;padding:10px;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.stabs{display:flex;gap:4px;overflow-x:auto;background:var(--soft);border-radius:12px;padding:4px;scrollbar-width:none}.stabs button{flex:1 1 auto;border:0;background:none;border-radius:9px;padding:9px 6px;font:inherit;font-size:13px;font-weight:600;color:var(--muted);min-height:40px;cursor:pointer;white-space:nowrap}.stabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}.srange{display:flex;gap:6px}
+.ssum2{background:var(--accent-soft);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}.ssum2 p{margin:0;font-size:15px;line-height:1.45}
+.kpis{display:grid;grid-template-columns:1fr;gap:10px}@media(min-width:620px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"t t" "v d" "w w";column-gap:12px;row-gap:2px;align-items:baseline}.kpi .kt{grid-area:t}.kpi b{grid-area:v}.kpi .dl{grid-area:d}.kpi .kw{grid-area:w;margin-top:2px}.kpi .kt{font-size:13px;font-weight:600;color:var(--muted)}.kpi b{font-size:28px;line-height:1.1}.kpi .kw{font-size:12px;color:var(--muted);line-height:1.35}.dl{font-size:13px;font-weight:700}.dl.up{color:#1f8a4c}.dl.down{color:#c0392b}.dl.flat{color:var(--muted);font-weight:600}
+.tips{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.4}
+.crow{display:flex;flex-direction:column;gap:3px;padding:10px 0;border-top:1px solid var(--line)}.cst{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px}.cst.ok{background:#e3f4ea;color:#1f6b3e}.cst.risk{background:#fde8e6;color:#a1271b}.cst.wait{background:#fff1d6;color:#8a5a00}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
 .tile b{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}.tile span{font-size:.8rem;color:var(--muted)}
@@ -3259,51 +3264,98 @@ async function openStats(){
     const pre=el("pre","code",ownerRules(db?.uid||""));box.append(pre);const r=el("div","row");const c=el("button","primary","Copy rules");c.onclick=async()=>{try{await navigator.clipboard.writeText(ownerRules(db?.uid||""));toast("Rules copied")}catch(x){toast("Couldn't copy. Select the text instead.")}};
     const l=el("a","secondary","Open Firebase rules");l.href="https://console.firebase.google.com/project/us-today-e354e/firestore/rules";l.target="_blank";l.rel="noopener";l.style.cssText="text-decoration:none;display:inline-flex;align-items:center;border-radius:12px;padding:12px 16px;font-weight:600";r.append(c,l);box.append(r)}
 }
+let statsTab=(()=>{try{return localStorage.getItem("ut_statstab")||"overview"}catch(e){return"overview"}})(),statsRange=(()=>{try{return +localStorage.getItem("ut_statsrange")||7}catch(e){return 7}})();
+function statsBars(title,sub,keys,vals,fmt,unit){
+  const c=el("div","chartc");c.append(el("b",null,title));if(sub)c.append(el("span","small muted",sub));
+  const tip=el("span","ctip");tip.hidden=true;c.append(tip);const mx=Math.max(1,...vals),bars=el("div","bars");bars.setAttribute("role","img");
+  bars.setAttribute("aria-label",title+": "+keys.map((k,i)=>`${fromKey(k).toLocaleDateString(undefined,{month:"short",day:"numeric"})} ${fmt(vals[i])}`).join(", "));
+  keys.forEach((k,i)=>{const v=vals[i],bt=el("button",v?null:"zero"),bar=el("i");bar.style.height=(v/mx*100)+"%";bt.append(bar);const lab=`${fromKey(k).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}: ${fmt(v)}${unit||""}`;bt.setAttribute("aria-label",lab);bt.title=lab;
+    const show=()=>{tip.textContent=lab;tip.hidden=false};bt.onmouseenter=show;bt.onfocus=show;bt.onclick=show;bt.onmouseleave=()=>{tip.hidden=true};bars.append(bt)});
+  c.append(bars);const xl=el("div","xlab");xl.append(el("span",null,fromKey(keys[0]).toLocaleDateString(undefined,{month:"short",day:"numeric"})),el("span",null,"Today"));c.append(xl);return c}
 function renderStats(){
   const box=$("statsBody");box.textContent="";
   let incOwn=false;try{incOwn=!!localStorage.getItem("ut_statsown")}catch(e){}
   const all=statsData||[],own=all.filter(x=>x.internal).length,S=incOwn?all:all.filter(x=>!x.internal);
   if(own){const r=el("div","row between small");r.style.cssText="background:var(--soft);border-radius:12px;padding:10px 12px";r.append(el("span",null,incOwn?"Including your own space (you and your partner).":"Your own space is left out, so these numbers are other couples only."));
     const t=el("button","link small",incOwn?"Leave it out":"Include it");t.onclick=()=>{try{incOwn?localStorage.removeItem("ut_statsown"):localStorage.setItem("ut_statsown","1")}catch(e){}renderStats()};r.append(t);box.append(r)}
-  const dayKeys=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dayKeys.push(key(d))}
-  const last7=dayKeys.slice(7);
-  const activeWeek=S.filter(x=>last7.some(k=>x.a&&x.a[k])).length;
-  const ciByDay=dayKeys.map(k=>S.reduce((n,x)=>n+(+(x.d&&x.d[k])||0),0));
-  const ciWeek=ciByDay.slice(7).reduce((a,b)=>a+b,0);
-  const tiles=el("div","tiles");
-  [[S.length,"Couples"],[S.filter(x=>x.partnerJoined).length,"Both partners joined"],[activeWeek,"Active this week"],[ciWeek,"Check-ins this week"]].forEach(([v,t])=>{const c=el("div","tile");c.append(el("b",null,String(v)),el("span",null,t));tiles.append(c)});
-  box.append(tiles);
-  // time in app
-  {const secByDay=dayKeys.map(k=>S.reduce((n,x)=>n+(+(x.t&&x.t[k])||0),0)),visByDay=dayKeys.map(k=>S.reduce((n,x)=>n+(+(x.sn&&x.sn[k])||0),0));
-   const sec7=secByDay.slice(7).reduce((a,b)=>a+b,0),vis7=visByDay.slice(7).reduce((a,b)=>a+b,0);
-   const coupleDays=S.reduce((n,x)=>n+last7.filter(k=>x.t&&+x.t[k]>0).length,0);
-   const tc=el("div","chartc");tc.append(el("b",null,"Time in the app"),el("span","small muted","Time Noudé is open on screen, all couples. Started Oct 18, 2026."));
-   const t2=el("div","tiles");[[fmtTime(coupleDays?sec7/coupleDays:0),"Per couple, per active day"],[fmtTime(vis7?sec7/vis7:0),"Average visit"],[String(vis7),"Visits this week"],[fmtTime(sec7),"Total this week"]].forEach(([v,t])=>{const c=el("div","tile");c.append(el("b",null,v),el("span",null,t));t2.append(c)});tc.append(t2);
-   const tip2=el("span","ctip");tip2.hidden=true;tc.append(tip2);
-   const mx=Math.max(1,...secByDay),bars2=el("div","bars");bars2.setAttribute("role","img");bars2.setAttribute("aria-label","Minutes in the app per day: "+dayKeys.map((k,i)=>`${fromKey(k).toLocaleDateString(undefined,{month:"short",day:"numeric"})} ${Math.round(secByDay[i]/60)}`).join(", "));
-   dayKeys.forEach((k,i)=>{const v=secByDay[i],b=el("button",v?null:"zero"),bar=el("i");bar.style.height=(v/mx*100)+"%";b.append(bar);const lab=`${fromKey(k).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}: ${fmtTime(v)} · ${visByDay[i]} visit${visByDay[i]===1?"":"s"}`;b.setAttribute("aria-label",lab);b.title=lab;const show=()=>{tip2.textContent=lab;tip2.hidden=false};b.onmouseenter=show;b.onfocus=show;b.onclick=show;b.onmouseleave=()=>{tip2.hidden=true};bars2.append(b)});
-   tc.append(bars2);const xl2=el("div","xlab");xl2.append(el("span",null,fromKey(dayKeys[0]).toLocaleDateString(undefined,{month:"short",day:"numeric"})),el("span",null,"Today"));tc.append(xl2);box.append(tc)}
-  // check-ins per day
-  const cc=el("div","chartc");cc.append(el("b",null,"Check-ins per day"),el("span","small muted","Last 14 days, all couples"));
-  const tip=el("span","ctip");tip.hidden=true;cc.append(tip);
-  const max=Math.max(1,...ciByDay),bars=el("div","bars");bars.setAttribute("role","img");bars.setAttribute("aria-label","Check-ins per day: "+dayKeys.map((k,i)=>`${fromKey(k).toLocaleDateString(undefined,{month:"short",day:"numeric"})} ${ciByDay[i]}`).join(", "));
-  dayKeys.forEach((k,i)=>{const v=ciByDay[i],b=el("button",v?null:"zero"),bar=el("i");bar.style.height=(v/max*100)+"%";b.append(bar);const lab=`${fromKey(k).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}: ${v} check-in${v===1?"":"s"}`;b.setAttribute("aria-label",lab);b.title=lab;
-    const show=()=>{tip.textContent=lab;tip.hidden=false};b.onmouseenter=show;b.onfocus=show;b.onclick=show;b.onmouseleave=()=>{tip.hidden=true};bars.append(b)});
-  cc.append(bars);const xl=el("div","xlab");xl.append(el("span",null,fromKey(dayKeys[0]).toLocaleDateString(undefined,{month:"short",day:"numeric"})),el("span",null,"Today"));cc.append(xl);
-  const det=el("details");det.append(el("summary","small muted","See as a table"));const tb=el("div","stack");tb.style.gap="2px";dayKeys.forEach((k,i)=>{const r=el("div","row between small");r.append(el("span",null,fromKey(k).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})),el("span",null,String(ciByDay[i])));tb.append(r)});det.append(tb);cc.append(det);
-  box.append(cc);
-  // feature adoption
-  const fa=el("div","chartc");fa.append(el("b",null,"What couples use"),el("span","small muted","Share of couples who have used each feature"));
-  const n=Math.max(1,S.length),used=k=>S.filter(x=>x.n&&x.n[k]>0).length;
-  [["Daily check-in",S.filter(x=>x.d&&Object.keys(x.d).length).length],["Chat",used("chat")],["Hugs, kisses and emojis",used("touch")],["Photos",used("photo")],["Videos",used("video")],["Songs and links",used("song")],["Date invites",used("invite")],["Challenges",used("challenge")],["Goals",used("goal")],["Daily wins",used("win")],["Notifications on (either partner)",S.filter(x=>x.notifOn>0).length],["AI ideas on (both partners)",S.filter(x=>x.aiOn>=2).length]]
-   .forEach(([t,c])=>{const pct=Math.round(c/n*100),r=el("div","hb");r.append(el("span",null,t),el("span","v",`${c} · ${pct}%`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);fa.append(r)});
-  box.append(fa);
-  const tot=k=>S.reduce((a,x)=>a+(+(x.n&&x.n[k])||0),0);
-  const tt=el("div","chartc");tt.append(el("b",null,"All-time totals"));
-  [["Chat messages",tot("chat")],["Hugs, kisses and emojis",tot("touch")],["Photos",tot("photo")],["Videos",tot("video")],["Songs and links",tot("song")],["Date invites",tot("invite")],["Challenges",tot("challenge")],["Chat reactions",tot("react")]].forEach(([t,v])=>{const r=el("div","row between small");r.append(el("span",null,t),el("b",null,String(v)));tt.append(r)});
-  box.append(tt);
-  renderQuestStats(box,S);renderLeaveStats(box,S);renderHelpStats(box,S);
-  box.append(el("p","small muted","Counts and time only. No messages, check-ins, photos or names are collected. Counting started Oct 17, 2026, so totals before then aren't included."));
+  // tabs + range
+  const R=statsRange,keysFor=(off,len)=>{const o=[];for(let i=off+len-1;i>=off;i--){const d=new Date();d.setDate(d.getDate()-i);o.push(key(d))}return o};
+  const cur=keysFor(0,R),prev=keysFor(R,R),chartKeys=keysFor(0,Math.max(14,R));
+  const tabs=el("div","stabs");tabs.setAttribute("role","tablist");tabs.setAttribute("aria-label","Usage sections");
+  [["overview","Overview"],["couples","Couples"],["features","Features"],["setup","Setup"],["feedback","Feedback"]].forEach(([k,t])=>{const bt=el("button",null,t);bt.type="button";bt.setAttribute("role","tab");bt.setAttribute("aria-selected",String(statsTab===k));bt.onclick=()=>{statsTab=k;try{localStorage.setItem("ut_statstab",k)}catch(e){}renderStats()};tabs.append(bt)});
+  box.append(tabs);
+  const rg=el("div","srange");rg.setAttribute("role","group");rg.setAttribute("aria-label","Time range");[[7,"Last 7 days"],[30,"Last 30 days"]].forEach(([n,t])=>{const bt=el("button","opt",t);bt.type="button";bt.setAttribute("aria-pressed",String(R===n));bt.onclick=()=>{statsRange=n;try{localStorage.setItem("ut_statsrange",String(n))}catch(e){}renderStats()};rg.append(bt)});
+  if(statsTab==="overview"||statsTab==="couples")box.append(rg);
+  // shared math
+  const sumK=(x,f,ks)=>ks.reduce((n,k)=>n+(+(x[f]&&x[f][k])||0),0),act=(x,ks)=>ks.some(k=>x.a&&x.a[k]);
+  const lastSeen=x=>{const ks=Object.keys(x.a||{}).filter(k=>x.a[k]).sort();return ks.length?fromKey(ks[ks.length-1]):(x.lastActive?new Date(+x.lastActive):null)};
+  const daysAgo=d=>d?Math.floor((new Date().setHours(0,0,0,0)-new Date(d).setHours(0,0,0,0))/864e5):null;
+  const ageDays=x=>x.createdAt?Math.floor((Date.now()-+x.createdAt)/864e5):0;
+  const atRisk=x=>{const dA=daysAgo(lastSeen(x));return ageDays(x)>=3&&(dA==null||dA>=3)};
+  const m=ks=>{const a=S.filter(x=>act(x,ks)).length,ci=S.reduce((n,x)=>n+sumK(x,"d",ks),0),sec=S.reduce((n,x)=>n+sumK(x,"t",ks),0),cd=S.reduce((n,x)=>n+ks.filter(k=>x.t&&+x.t[k]>0).length,0);return{a,ci,cipc:a?ci/a:0,tpd:cd?sec/cd:0}};
+  const M=m(cur),P=m(prev);const rangeWord=R===7?"this week":"the last 30 days",prevWord=R===7?"last week":"the 30 days before";
+  const delta=(now,was,fmt,goodUp=true)=>{if(!was&&!now)return el("span","dl flat","No change");if(!was)return el("span","dl up","New");const d=now-was;if(Math.abs(d)<1e-9)return el("span","dl flat","Same as "+prevWord);const up=d>0,good=up===goodUp;return el("span","dl "+(good?"up":"down"),`${up?"▲":"▼"} ${fmt(Math.abs(d))} vs ${prevWord}`)};
+  if(!S.length){box.append(el("p","small muted","No couples to show yet. Once other couples start using Noudé, their anonymous numbers show up here."));return}
+
+  if(statsTab==="overview"){
+    const waiting=S.filter(x=>!x.partnerJoined).length,risk=S.filter(atRisk).length,newC=S.filter(x=>x.createdAt&&+x.createdAt>=fromKey(cur[0]).getTime()).length;
+    const sum=el("div","ssum2");
+    const lines=[`${M.a} of ${S.length} couple${S.length===1?"":"s"} ${M.a===1?"was":"were"} active ${rangeWord}${P.a||M.a?(M.a>P.a?` (up from ${P.a})`:M.a<P.a?` (down from ${P.a})`:` (same as ${prevWord})`):""}.`,
+      M.ci?`They checked in ${M.ci} time${M.ci===1?"":"s"}, about ${M.cipc.toFixed(1)} per active couple, and spent around ${fmtTime(M.tpd)} a day in Noudé.`:"No check-ins yet in this period.",
+      newC?`${newC} new couple${newC===1?"":"s"} joined ${rangeWord}.`:"",
+      waiting?`${waiting} couple${waiting===1?" is":"s are"} still waiting on a partner to join.`:"Every couple has both partners in.",
+      risk?`${risk} couple${risk===1?" hasn't":"s haven't"} opened Noudé in 3+ days.`:""].filter(Boolean);
+    lines.forEach(t=>sum.append(el("p",null,t)));box.append(sum);
+    const k=el("div","kpis");
+    const kpi=(title,val,dl,what)=>{const c=el("div","kpi");c.append(el("span","kt",title),el("b",null,val),dl,el("span","kw",what));k.append(c)};
+    kpi("Active couples",String(M.a),delta(M.a,P.a,v=>String(Math.round(v))),"Opened Noudé at least once in this period. The best sign of a healthy app.");
+    kpi("Check-ins per couple",M.cipc.toFixed(1),delta(M.cipc,P.cipc,v=>v.toFixed(1)),`Average check-ins for each active couple. ${R===7?"7 or more a week":"25 or more a month"} means it's a daily habit.`);
+    kpi("Time per day",fmtTime(M.tpd),delta(M.tpd,P.tpd,v=>fmtTime(v)),"How long a couple spends in Noudé on days they open it.");
+    box.append(k);
+    // next steps
+    const ns=el("div","chartc");ns.append(el("b",null,"💡 Suggested next steps"));const tips=[];
+    if(waiting)tips.push(`${waiting} couple${waiting===1?" is":"s are"} waiting on a partner. Check in with ${waiting===1?"them":"them"} and make sure the partner got the invite link.`);
+    if(risk)tips.push(`${risk} couple${risk===1?" has":"s have"} gone quiet for 3+ days. A quick personal text often brings people back. See the Couples tab.`);
+    const usedF=key=>S.filter(x=>x.n&&x.n[key]>0).length;
+    const unused=[["photo","Photos"],["story","Stories"],["goal","Goals"],["win","Daily wins"],["song","Songs"],["invite","Date invites"]].filter(([k2])=>!usedF(k2)).map(x=>x[1]);
+    if(S.length>=2&&unused.length)tips.push(`No one has tried ${unused.slice(0,3).join(", ")} yet. Consider mentioning ${unused.length===1?"it":"them"} in your invite or a What's new note.`);
+    const notifOff=S.filter(x=>!(x.notifOn>0)).length;if(notifOff&&notifOff>=S.length/2)tips.push(`${notifOff} of ${S.length} couples have notifications off. Without them, people forget to come back. Remind new couples to turn them on.`);
+    const lvT={};S.forEach(x=>Object.entries((x.lv&&x.lv.r)||{}).forEach(([r,v])=>lvT[r]=(lvT[r]||0)+(+v||0)));const topL=Object.entries(lvT).sort((a2,b2)=>b2[1]-a2[1])[0];
+    if(topL)tips.push(`The top reason people leave is “${(LEAVE_REASONS.find(x=>x[0]===topL[0])||[0,topL[0]])[1]}”. See the Feedback tab.`);
+    if(M.a&&M.cipc<(R===7?3:10))tips.push("Check-ins are low. Morning reminders help: ask couples to set them in About me.");
+    if(!tips.length)tips.push("Things look healthy. Keep inviting couples and watch the trend each week.");
+    const ul=el("ul","tips");tips.slice(0,5).forEach(t=>ul.append(el("li",null,t)));ns.append(ul);box.append(ns);
+    box.append(statsBars("Check-ins per day",`All couples · last ${chartKeys.length} days`,chartKeys,chartKeys.map(kk=>S.reduce((n,x)=>n+(+(x.d&&x.d[kk])||0),0)),v=>String(v)," check-ins"));
+  }
+  if(statsTab==="couples"){
+    const list=el("div","chartc");list.append(el("b",null,"Every couple"),el("span","small muted","Anonymous, newest first. No names or content, just activity."));
+    const rows=S.slice().sort((x,y)=>(+y.createdAt||0)-(+x.createdAt||0));
+    const order=rows.map((x,i)=>({x,i:rows.length-i}));
+    order.sort((p,q)=>(atRisk(q.x)-atRisk(p.x))||((+q.x.createdAt||0)-(+p.x.createdAt||0)));
+    order.forEach(({x,i})=>{const e=el("div","crow");const dA=daysAgo(lastSeen(x));
+      const st=!x.partnerJoined?["Waiting on partner","wait"]:atRisk(x)?["At risk",'risk']:dA===0?["Active today","ok"]:dA===1?["Active yesterday","ok"]:["Active "+dA+" days ago","ok"];
+      const top=el("div","row between");top.append(el("b",null,`Couple ${i}`),el("span","cst "+st[1],st[0]));e.append(top);
+      const lv=w=>+((x.ql||{})[w])||0;const ci=sumK(x,"d",cur),sec=sumK(x,"t",cur),actD=cur.filter(kk=>x.a&&x.a[kk]).length;
+      e.append(el("span","small muted",[x.createdAt?`Joined ${new Date(+x.createdAt).toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:"",dA==null?"Never opened":dA===0?"Last open today":`Last open ${dA} day${dA===1?"":"s"} ago`].filter(Boolean).join(" · ")));
+      e.append(el("span","small",`${actD} of ${R} days active · ${ci} check-in${ci===1?"":"s"} · ${fmtTime(sec)} in app`));
+      e.append(el("span","small muted",`Quest: L${lv(A)}${x.partnerJoined?` & L${lv(B)}`:""} · Notifications ${x.notifOn>0?"on":"off"}${x.aiOn>=2?" · AI on":""}`));
+      list.append(e)});
+    box.append(list);
+  }
+  if(statsTab==="features"){
+    const n=Math.max(1,S.length),used=k2=>S.filter(x=>x.n&&x.n[k2]>0).length,tot=k2=>S.reduce((a2,x)=>a2+(+(x.n&&x.n[k2])||0),0);
+    const fa=el("div","chartc");fa.append(el("b",null,"What couples use"),el("span","small muted","All time: share of couples who have tried each feature, and total uses. Most used first."));
+    [["Daily check-in",S.filter(x=>x.d&&Object.keys(x.d).length).length,tot("checkin")],["Chat",used("chat"),tot("chat")],["Hugs, kisses and emojis",used("touch"),tot("touch")],["Photos",used("photo"),tot("photo")],["Videos",used("video"),tot("video")],["Stories",used("story"),tot("story")],["Songs and links",used("song"),tot("song")],["Date invites",used("invite"),tot("invite")],["Challenges",used("challenge"),tot("challenge")],["Goals",used("goal"),tot("goal")],["Daily wins",used("win"),tot("win")],["Today's question",used("question"),tot("question")]]
+      .sort((p,q)=>q[1]-p[1]).forEach(([t,c,tt])=>{const pct=Math.round(c/n*100),r=el("div","hb");r.append(el("span",null,t),el("span","v",`${pct}% · ${tt} use${tt===1?"":"s"}`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);fa.append(r)});
+    box.append(fa);
+    const st=el("div","chartc");st.append(el("b",null,"Settings couples turned on"));[["Notifications (either partner)",S.filter(x=>x.notifOn>0).length],["AI ideas (both partners)",S.filter(x=>x.aiOn>=2).length],["Both partners joined",S.filter(x=>x.partnerJoined).length]].forEach(([t,c])=>{const pct=Math.round(c/n*100),r=el("div","hb");r.append(el("span",null,t),el("span","v",`${c} of ${S.length}`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);st.append(r)});box.append(st);
+    const secK=chartKeys.map(kk=>S.reduce((nn,x)=>nn+(+(x.t&&x.t[kk])||0),0)),visK=chartKeys.map(kk=>S.reduce((nn,x)=>nn+(+(x.sn&&x.sn[kk])||0),0));
+    const vis=visK.slice(-7).reduce((p,q)=>p+q,0),secs=secK.slice(-7).reduce((p,q)=>p+q,0);
+    const tc=statsBars("Time in the app per day",`All couples · ${vis} visits this week, average visit ${fmtTime(vis?secs/vis:0)} · tracking started Oct 18, 2026`,chartKeys,secK,v=>fmtTime(v),"");box.append(tc);
+  }
+  if(statsTab==="setup")renderQuestStats(box,S);
+  if(statsTab==="feedback"){renderLeaveStats(box,S);renderHelpStats(box,S)}
+  box.append(el("p","small muted","Counts and time only. No messages, check-ins, photos or names are collected. Counting started Oct 17, 2026."));
 }
 function renderQuestStats(box,S){
   const card=(t,sub)=>{const c=el("div","chartc");c.append(el("b",null,t));if(sub)c.append(el("span","small muted",sub));return c};
@@ -5071,7 +5123,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-19.3";
+const APP_VERSION="2026-10-19.4";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
