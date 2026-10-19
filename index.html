@@ -485,6 +485,7 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .hwins{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hwin{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}.hwin .who{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}.hwin ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:14px}.hwin .act{align-self:flex-start;border:0;background:none;padding:4px 0;font:inherit;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer}.hwin .cheered{font-size:13px;color:var(--muted)}
 .mpick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.mpick button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:78px;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:16px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}.mpick button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}.mpick button:disabled{opacity:.45}
 .gifgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:104px;gap:6px;max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch;border-radius:12px}.gifgrid>p{grid-column:1/-1}.gifgrid button{position:relative;display:block;width:100%;height:104px;padding:0;margin:0;border:2px solid transparent;border-radius:10px;overflow:hidden;background:var(--soft);cursor:pointer}.gifgrid button[aria-pressed="true"]{border-color:var(--accent)}.gifgrid img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}.gifby{text-align:right}.gifimg{max-width:100%;border-radius:14px;display:block}
+.ig .ill{grid-column:2;margin:2px 0 6px}
 .leftcard{margin-top:10px;padding:14px;border-radius:14px;background:var(--accent-soft);display:flex;flex-direction:column;gap:6px;text-align:left}.leftcard p{margin:0}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
@@ -2955,6 +2956,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-19c",at:"2026-10-19T19:20:00-04:00",date:"Oct 19, 2026",items:[
+    {em:"📲",t:"Picture guide for notifications",b:"Adding Noudé to your Home Screen now has a picture for every step, on iPhone and Android, so turning on notifications is easy."}
+  ]},
   {id:"2026-10-19b",at:"2026-10-19T17:30:00-04:00",date:"Oct 19, 2026",items:[
     {em:"✨",t:"Send GIFs",b:"In Connect, tap GIF to search and send one with a caption. Photo, Video and GIF now sit side by side.",go:["connect","picCard"]}
   ]},
@@ -4303,8 +4307,42 @@ const installedFlag=()=>{try{return !!localStorage.getItem("ut_installed")}catch
 const isInstalled=()=>isStandalone()||installedFlag();
 const notifsOn=()=>!!members[me]?.push&&typeof Notification!=="undefined"&&Notification.permission==="granted";
 if(isStandalone()){try{localStorage.setItem("ut_installed","1")}catch(e){}}
+// Simple drawn guides for adding Noudé to the Home Screen (generic look, not real screenshots)
+const ILL_ICON=(x,y,sz)=>`<g transform="translate(${x} ${y}) scale(${sz/512})"><rect width="512" height="512" rx="112" fill="#2a2030"/><path d="M222.4 130.4 A130 130 0 0 0 222.4 381.6" fill="none" stroke="#f47a5a" stroke-width="34" stroke-linecap="round"/><path d="M289.6 130.4 A130 130 0 0 1 289.6 381.6" fill="none" stroke="#6f7fe0" stroke-width="34" stroke-linecap="round"/><path d="M256 300 C 214 272, 212 236, 236 232 C 247 230, 256 238, 256 247 C 256 238, 265 230, 276 232 C 300 236, 298 272, 256 300 Z" fill="#ec7da0"/></g>`;
+const ILL_HI=(x,y,w,h,r)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r||10}" fill="none" stroke="#e0457b" stroke-width="3"/>`;
+const ILL_TAP=(x,y)=>`<circle cx="${x}" cy="${y}" r="15" fill="#e0457b" opacity=".18"/><circle cx="${x}" cy="${y}" r="7" fill="#e0457b"/>`;
+function guideIll(pf,step){
+  const W=280,H=170,frame=inner=>`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-hidden="true" style="max-width:300px;display:block"><rect x="1" y="1" width="${W-2}" height="${H-2}" rx="18" fill="#f4f4f7" stroke="#d9d9e0"/>${inner}</svg>`;
+  const T=(x,y,t,sz,wt,fill,anchor)=>`<text x="${x}" y="${y}" font-family="-apple-system,system-ui,sans-serif" font-size="${sz||12}" font-weight="${wt||500}" fill="${fill||"#1c1c22"}" text-anchor="${anchor||"start"}">${t}</text>`;
+  const grid=hiLabel=>{let g="";const cols=[34,92,150,208];[22,78].forEach((y,ri)=>cols.forEach((x,ci)=>{if(ri===1&&ci===2)return;g+=`<rect x="${x}" y="${y}" width="38" height="38" rx="10" fill="#dcdce4"/>`}));
+    g+=ILL_ICON(150,78,38)+ILL_HI(144,72,50,50,13)+T(169,131,"Noudé",11,600,"#1c1c22","middle")+T(140,158,hiLabel,11,500,"#6b6b77","middle");return g};
+  if(pf==="ios"){
+    if(step===1)return frame(`<rect x="16" y="96" width="248" height="34" rx="17" fill="#fff" stroke="#d9d9e0"/>${T(140,118,"noudeapp.com",12,500,"#3a3a44","middle")}
+      <rect x="16" y="136" width="248" height="26" rx="0" fill="none"/><path d="M46 148 l-8 0 m0 0 l5 -5 m-5 5 l5 5" stroke="#8a8a96" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M84 148 l8 0 m0 0 l-5 -5 m5 5 l-5 5" stroke="#c4c4cc" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <g transform="translate(140 138)"><path d="M-7 4 v8 h14 v-8" stroke="#2f6fde" stroke-width="2.2" fill="none" stroke-linejoin="round"/><path d="M0 9 V-6 m-5 5 l5 -5 l5 5" stroke="#2f6fde" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <rect x="186" y="140" width="13" height="16" rx="2" stroke="#8a8a96" stroke-width="2" fill="none"/><rect x="226" y="140" width="16" height="16" rx="3" stroke="#8a8a96" stroke-width="2" fill="none"/>${ILL_HI(122,132,36,32,10)}${ILL_TAP(152,160)}
+      ${T(20,36,"Tap the Share button",15,700)}${T(20,56,"It's at the bottom of Safari.",12,500,"#6b6b77")}`);
+    if(step===2)return frame(`<rect x="16" y="14" width="248" height="146" rx="14" fill="#fff" stroke="#d9d9e0"/>
+      ${["Copy","Add to Reading List","Add to Home Screen","Find on Page"].map((t,i)=>{const y=30+i*34;return`<line x1="28" y1="${y+23}" x2="252" y2="${y+23}" stroke="#eee"/>${T(32,y+12,t,13,i===2?700:500)}${i===2?`<rect x="226" y="${y-2}" width="18" height="18" rx="4" stroke="#1c1c22" stroke-width="1.8" fill="none"/><path d="M235 ${y+2} v10 M230 ${y+7} h10" stroke="#1c1c22" stroke-width="1.8" stroke-linecap="round"/>`:""}`}).join("")}
+      ${ILL_HI(22,90,236,30,9)}${ILL_TAP(206,122)}`);
+    if(step===3)return frame(`<rect x="16" y="14" width="248" height="146" rx="14" fill="#fff" stroke="#d9d9e0"/>${T(30,38,"Cancel",13,500,"#2f6fde")}${T(140,38,"Add to Home Screen",12,700,"#1c1c22","middle")}${T(250,38,"Add",13,700,"#2f6fde","end")}
+      <line x1="16" y1="50" x2="264" y2="50" stroke="#eee"/>${ILL_ICON(32,66,48)}<rect x="92" y="74" width="156" height="30" rx="8" fill="#f4f4f7"/>${T(102,94,"Noudé",13,600)}${T(92,128,"noudeapp.com",11,500,"#8a8a96")}
+      ${ILL_HI(218,22,38,24,8)}${ILL_TAP(250,58)}`);
+    return frame(grid("Open Noudé from this icon"));
+  }
+  if(step===1)return frame(`<rect x="12" y="92" width="256" height="40" rx="0" fill="#fff"/><rect x="20" y="100" width="206" height="26" rx="13" fill="#f1f1f4"/>${T(36,117,"noudeapp.com",12,500,"#3a3a44")}
+    <g fill="#3a3a44"><circle cx="246" cy="105" r="2.4"/><circle cx="246" cy="113" r="2.4"/><circle cx="246" cy="121" r="2.4"/></g>${ILL_HI(232,96,28,34,9)}${ILL_TAP(258,140)}
+    ${T(20,36,"Tap the ⋮ menu",15,700)}${T(20,56,"Top right corner of Chrome.",12,500,"#6b6b77")}`);
+  if(step===2)return frame(`<rect x="92" y="12" width="172" height="148" rx="10" fill="#fff" stroke="#d9d9e0"/>
+    ${["New tab","Bookmarks","History","Add to Home screen","Settings"].map((t,i)=>T(108,36+i*28,t,12.5,i===3?700:500)).join("")}
+    ${ILL_HI(98,100,160,28,8)}${ILL_TAP(250,132)}${T(14,150,"May say",10,500,"#6b6b77")}${T(14,163,"“Install app”",10,700,"#6b6b77")}`);
+  if(step===3)return frame(`<rect x="30" y="26" width="220" height="118" rx="16" fill="#fff" stroke="#d9d9e0"/>${T(48,54,"Install app",14,700)}${ILL_ICON(48,66,34)}${T(92,82,"Noudé",13,600)}${T(92,98,"noudeapp.com",10.5,500,"#8a8a96")}
+    ${T(160,130,"Cancel",12.5,600,"#3a6fd8","middle")}<rect x="196" y="114" width="44" height="24" rx="12" fill="#3a6fd8"/>${T(218,130,"Install",11.5,700,"#fff","middle")}${ILL_HI(191,109,54,34,14)}${ILL_TAP(232,138)}`);
+  return frame(grid("Open Noudé from this icon"));
+}
 function guideSteps(pf){
-  const w=el("div","ig"),ol=el("ol"),li=(...parts)=>{const l=el("li"),sp=el("span");parts.forEach(x=>sp.append(typeof x==="string"?document.createTextNode(x):x));l.append(sp);ol.append(l)},ico=t=>el("span","ico",t);
+  let stepN=0;
+  const w=el("div","ig"),ol=el("ol"),li=(...parts)=>{stepN++;const l=el("li"),sp=el("span");parts.forEach(x=>sp.append(typeof x==="string"?document.createTextNode(x):x));l.append(sp);if(pf==="ios"||pf==="android"){const fig=el("div","ill");fig.innerHTML=guideIll(pf,stepN);l.append(fig)}ol.append(l)},ico=t=>el("span","ico",t);
   if(pf==="ios"){
     li("In Safari, tap the Share button ",ico("⬆︎")," at the bottom of the screen (top right on iPad).");
     li("Scroll down and tap ",el("b",null,"Add to Home Screen"),".");
@@ -5166,7 +5204,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-19.6";
+const APP_VERSION="2026-10-19.7";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
