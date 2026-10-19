@@ -475,6 +475,8 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .wlogo{display:block;border-radius:18px;box-shadow:0 6px 20px rgba(42,32,48,.25);margin-bottom:4px}
 .surep{max-width:420px;margin:auto;gap:12px}#sureSheet{align-items:center}
 .textit{background:var(--accent-soft);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;margin-top:8px}.textit label{font-size:12px;font-weight:700}.textit .row{gap:8px;flex-wrap:nowrap}.textit input{flex:1;min-width:0;font:inherit;font-size:16px;height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}.textit input:focus{outline:2px solid var(--accent);outline-offset:0}.textit button{min-height:44px}.textit button{white-space:nowrap}.textit .hint{opacity:.8}
+.wins{display:flex;flex-direction:column;gap:12px}.wgrp{display:flex;flex-direction:column;gap:8px}.wgrp h3{margin:0;font-size:15px}.wchips{display:flex;flex-wrap:wrap;gap:6px}.wchip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer;min-height:40px}.wchip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);font-weight:600}.wchip .x{margin-left:6px;opacity:.6}.wown{display:flex;gap:8px}.wown input{flex:1;min-width:0;font:inherit;font-size:16px;height:42px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}
+.hwins{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hwin{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}.hwin .who{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}.hwin ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:14px}.hwin .act{align-self:flex-start;border:0;background:none;padding:4px 0;font:inherit;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer}.hwin .cheered{font-size:13px;color:var(--muted)}
 .leftcard{margin-top:10px;padding:14px;border-radius:14px;background:var(--accent-soft);display:flex;flex-direction:column;gap:6px;text-align:left}.leftcard p{margin:0}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
@@ -664,6 +666,7 @@ details.pl summary{cursor:pointer;font-weight:600}
     <div id="homeHead"></div>
     <div id="gsBox"></div>
     <div class="stack" style="gap:10px"><h2>Today at a glance</h2><div class="glance" id="homeGlance"></div></div>
+    <div id="homeWins"></div>
     <div id="homeGift"></div>
     <div class="qa" id="homeActions"></div>
     <div id="homeQ"></div>
@@ -691,6 +694,8 @@ details.pl summary{cursor:pointer;font-weight:600}
       <div class="row" style="justify-content:center"><button class="link small" id="cancelEdit" hidden>Cancel changes</button><span class="small muted" id="savedMsg"></span></div>
       </div>
     </div>
+
+    <div id="winsBox"></div>
 
     <div id="selfBox" hidden>
       <details class="sec" id="secSelf">
@@ -2904,6 +2909,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-19a",at:"2026-10-19T08:15:00-04:00",date:"Oct 19, 2026",items:[
+    {em:"🏆",t:"Today's wins",b:"Log a personal win and a work win each day: worked out, quiet morning, prayed, on time, very productive, got recognized, or add your own. Your partner sees them on Home and can cheer you on 👏",go:["today","secWins"]}
+  ]},
   {id:"2026-10-18j",at:"2026-10-18T22:55:00-04:00",date:"Oct 18, 2026",items:[
     {em:"💬",t:"Owner: text an invite",b:"In Beta invites, type a phone number and tap Text it. Messages opens with the invite filled in, ready to send. The number isn't saved."}
   ]},
@@ -3286,7 +3294,7 @@ function renderStats(){
   // feature adoption
   const fa=el("div","chartc");fa.append(el("b",null,"What couples use"),el("span","small muted","Share of couples who have used each feature"));
   const n=Math.max(1,S.length),used=k=>S.filter(x=>x.n&&x.n[k]>0).length;
-  [["Daily check-in",S.filter(x=>x.d&&Object.keys(x.d).length).length],["Chat",used("chat")],["Hugs, kisses and emojis",used("touch")],["Photos",used("photo")],["Videos",used("video")],["Songs and links",used("song")],["Date invites",used("invite")],["Challenges",used("challenge")],["Goals",used("goal")],["Notifications on (either partner)",S.filter(x=>x.notifOn>0).length],["AI ideas on (both partners)",S.filter(x=>x.aiOn>=2).length]]
+  [["Daily check-in",S.filter(x=>x.d&&Object.keys(x.d).length).length],["Chat",used("chat")],["Hugs, kisses and emojis",used("touch")],["Photos",used("photo")],["Videos",used("video")],["Songs and links",used("song")],["Date invites",used("invite")],["Challenges",used("challenge")],["Goals",used("goal")],["Daily wins",used("win")],["Notifications on (either partner)",S.filter(x=>x.notifOn>0).length],["AI ideas on (both partners)",S.filter(x=>x.aiOn>=2).length]]
    .forEach(([t,c])=>{const pct=Math.round(c/n*100),r=el("div","hb");r.append(el("span",null,t),el("span","v",`${c} · ${pct}%`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);fa.append(r)});
   box.append(fa);
   const tot=k=>S.reduce((a,x)=>a+(+(x.n&&x.n[k])||0),0);
@@ -3785,6 +3793,53 @@ function homeInstallBanner(){
   const go=el("button","primary small","Show me");go.onclick=openInstall;const x=el("button","x","×");x.setAttribute("aria-label","Not now");x.onclick=()=>{try{localStorage.setItem("ut_instsnooze",String(Date.now()+3*86400000))}catch(e){}b.remove()};b.append(go,x);return b;
 }
 
+/* ================= Daily wins ================= */
+const WIN_P=[["workout","🏋️","Worked out"],["quiet","🌅","Quiet morning"],["prayer","🙏","Prayed"],["meditate","🧘","Meditated"],["read","📖","Read"],["walk","🚶","Took a walk"],["water","💧","Drank enough water"],["ate","🥗","Ate well"],["sleep","😴","Slept well"],["journal","✍️","Journaled"],["nophone","📵","Phone-free time"],["home","🧹","Got the house in order"],["family","👨‍👩‍👧","Quality time with family"],["kind","💛","Did something kind"]];
+const WIN_W=[["ontime","⏰","On time to work"],["productive","⚡","Very productive"],["recognized","🏅","Got recognized"],["bigtask","✅","Finished a big task"],["goal","🎯","Hit a goal"],["meeting","🤝","Great meeting"],["idea","💡","New idea"],["learned","📚","Learned something"],["helped","🧑‍🏫","Helped a coworker"],["deal","📈","Closed a deal or sale"],["inbox","📥","Cleared my inbox"],["boundary","🚪","Left work on time"]];
+const wins={};
+const winsOf=(p,k)=>(wins[p]||{})[k||todayKey()]||null;
+const winLabel=(set,key)=>{const w=set.find(x=>x[0]===key);return w?w[1]+" "+w[2]:""};
+function winList(d){if(!d)return[];return[...(d.p||[]).map(k=>winLabel(WIN_P,k)),...(d.pOwn||[]).map(t=>"⭐ "+t),...(d.w||[]).map(k=>winLabel(WIN_W,k)),...(d.wOwn||[]).map(t=>"⭐ "+t)].filter(Boolean)}
+const winCount=d=>winList(d).length;
+async function saveWins(patch){
+  if(!signedIn()){toast(saveErr({code:"signed_out"}));return false}
+  const k=todayKey(),cur=winsOf(me)||{},first=!winCount(cur),next={...cur,...patch,date:k,at:Date.now()};
+  try{await db.doc(`${base(me)}/wins/${k}`).set(next);(wins[me]=wins[me]||{})[k]=next;
+    if(first&&winCount(next)){track({"n.win":1});if(partnerId)notify(partnerId,nm(me),`Logged a win today 🏆 ${winList(next)[0]}`,"wins")}
+    renderWins();if(tab==="home")renderHome();return true}
+  catch(e){console.error(e);toast(saveErr(e));return false}
+}
+function toggleWin(kind,key){const d=winsOf(me)||{},arr=new Set(d[kind]||[]);arr.has(key)?arr.delete(key):arr.add(key);saveWins({[kind]:[...arr]})}
+function addOwnWin(kind,inp){const v=inp.value.trim().slice(0,60);if(!v){inp.focus();return}const d=winsOf(me)||{},arr=[...(d[kind]||[])];if(arr.length>=3){toast("Up to 3 of your own here");return}arr.push(v);inp.value="";saveWins({[kind]:arr}).then(ok=>ok&&toast("Win added 🏆"))}
+function removeOwnWin(kind,i){const d=winsOf(me)||{},arr=[...(d[kind]||[])];arr.splice(i,1);saveWins({[kind]:arr})}
+async function cheerWins(p){const k=todayKey(),d=winsOf(p);if(!d)return;const cheers={...(d.cheers||{}),[me]:Date.now()};
+  try{await db.doc(`${base(p)}/wins/${k}`).merge({cheers});(wins[p]=wins[p]||{})[k]={...d,cheers};track({"n.cheer":1});notify(p,nm(me),"Cheered your wins today 👏","wins");toast("Cheer sent 👏");renderHome()}catch(e){toast(saveErr(e))}}
+function renderWins(){
+  const box=$("winsBox");if(!box)return;box.textContent="";if(!signedIn())return;
+  const d=winsOf(me)||{},n=winCount(d),pn=partnerId?(nickOf(partnerId)||nm(partnerId)):"your partner";
+  const sec=el("details","sec");sec.id="secWins";let open=true;try{open=localStorage.getItem("ut_winsopen")!=="0"}catch(e){}sec.open=open;sec.ontoggle=()=>{try{localStorage.setItem("ut_winsopen",sec.open?"1":"0")}catch(e){}};
+  const sm=el("summary");const sh=el("div","sh");sh.append(el("h2",null,"🏆 Today's wins"),el("span","ssum",n?`${n} win${n===1?"":"s"} today · ${pn} can see these`:`One personal, one at work. ${partnerId?pn[0].toUpperCase()+pn.slice(1)+" sees them.":""}`));sm.append(sh,el("span","chev","▼"));sm.lastChild.setAttribute("aria-hidden","true");sec.append(sm);
+  const body=el("div","secbody wins");
+  const grp=(title,set,kind,ownKind,ph)=>{const g=el("div","wgrp");g.append(el("h3",null,title));const ch=el("div","wchips");ch.setAttribute("role","group");ch.setAttribute("aria-label",title);
+    set.forEach(([k,em,t])=>{const on=(d[kind]||[]).includes(k),b=el("button","wchip",em+" "+t);b.type="button";b.setAttribute("aria-pressed",String(on));b.onclick=()=>toggleWin(kind,k);ch.append(b)});
+    (d[ownKind]||[]).forEach((t,i)=>{const b=el("button","wchip","⭐ "+t);b.type="button";b.setAttribute("aria-pressed","true");const x=el("span","x","×");x.setAttribute("aria-hidden","true");b.append(x);b.setAttribute("aria-label",`Remove “${t}”`);b.onclick=async()=>{if(await sure(`“${t}” will be removed from today's wins.`,"Remove"))removeOwnWin(ownKind,i)};ch.append(b)});
+    g.append(ch);const ow=el("div","wown");const lab=el("label",null,"Add your own "+title.toLowerCase().replace(/^\S+\s/,"")+" win");lab.htmlFor="wo-"+kind;lab.style.cssText="position:absolute;left:-9999px";const inp=el("input");inp.type="text";inp.id="wo-"+kind;inp.maxLength=60;inp.placeholder=ph;const add=el("button","secondary","Add");add.type="button";add.onclick=()=>addOwnWin(ownKind,inp);inp.onkeydown=e=>{if(e.key==="Enter")add.click()};ow.append(lab,inp,add);g.append(ow);return g};
+  body.append(grp("🌱 Personal",WIN_P,"p","pOwn","Your own, like Cooked dinner"),grp("💼 Work",WIN_W,"w","wOwn","Your own, like Nailed the presentation"));
+  const ch=d.cheers&&partnerId&&d.cheers[partnerId];if(ch)body.append(el("p","small",`👏 ${pn[0].toUpperCase()+pn.slice(1)} cheered your wins today.`));
+  sec.append(body);box.append(sec);
+}
+function homeWinsEl(){
+  if(!signedIn())return null;const p=partnerId,pn=p?(nickOf(p)||nm(p)):"";const mine=winsOf(me),theirs=p?winsOf(p):null;
+  const w=el("div","stack");w.style.gap="10px";const hd=el("div","row between");hd.append(el("h2",null,"🏆 Today's wins"));const add=el("button","link small",winCount(mine)?"Edit":"Add yours");add.onclick=()=>goTo(["today","secWins"]);hd.append(add);w.append(hd);
+  const g=el("div","hwins");
+  const col=(who,label,d,isMe)=>{const c=el("div","hwin");c.append(el("span","who",label));const L=winList(d);
+    if(L.length){const ul=el("ul");L.slice(0,5).forEach(t=>ul.append(el("li",null,t)));if(L.length>5)ul.append(el("li","small muted",`+${L.length-5} more`));c.append(ul)}
+    else c.append(el("span","small muted",isMe?"No wins yet today":"No wins yet"));
+    if(isMe){if(!L.length){const b=el("button","act","＋ Add a win");b.onclick=()=>goTo(["today","secWins"]);c.append(b)}else if(p&&d?.cheers?.[p])c.append(el("span","cheered",`👏 ${pn} cheered you`))}
+    else if(L.length){if(d.cheers?.[me])c.append(el("span","cheered","👏 You cheered"));else{const b=el("button","act","👏 Cheer");b.onclick=()=>cheerWins(who);c.append(b)}}
+    return c};
+  g.append(col(me,"You",mine,true));if(p)g.append(col(p,pn,theirs,false));w.append(g);return w;
+}
 /* Ask before anything gets deleted or removed. Resolves true only if they confirm. */
 function sure(body,ok,title){return new Promise(res=>{const sh=$("sureSheet");$("sureTitle").textContent=title||"Are you sure?";$("sureBody").textContent=body||"";$("sureOk").textContent=ok||"Delete";sh.hidden=false;
   const done=v=>{sh.hidden=true;$("sureOk").onclick=$("sureNo").onclick=null;sh.onclick=null;document.removeEventListener("keydown",esc);res(v)};
@@ -3832,7 +3887,7 @@ async function leaveMine(){
   try{const q=await db.collection(`${base(me)}/sent`).get();q.docs.forEach(d=>{const x=d.data()||{};if((x.kind==="photo"||x.kind==="clip")&&x.asset)assets.push([x.kind,x.asset])})}catch(e){}
   try{const q=await db.collection(`${base(me)}/messages`).get();q.docs.forEach(d=>{const x=d.data()||{};if((x.kind==="photo"||x.kind==="clip")&&x.asset)assets.push([x.kind,x.asset])})}catch(e){}
   try{const q=await db.collection("stories").get();q.docs.forEach(d=>{const x=d.data()||{};if(x.by===me&&x.asset)assets.push([x.kind,x.asset])})}catch(e){}
-  for(const sub of ["days","sent","replies","messages"])await delColl(`${base(me)}/${sub}`);
+  for(const sub of ["days","sent","replies","messages","wins"])await delColl(`${base(me)}/${sub}`);
   await delColl("stories",x=>x.by===me);
   for(const [k,id] of assets)await delAsset(k==="clip"?"clip":"photo",id);
   await delColl("goals",x=>x.owner===me);
@@ -3847,7 +3902,7 @@ async function leaveMine(){
 }
 // Nobody else is here: delete everything.
 async function wipeSpace(){
-  for(const p of [A,B])for(const sub of ["days","sent","replies","messages"])await delColl(`${base(p)}/${sub}`);
+  for(const p of [A,B])for(const sub of ["days","sent","replies","messages","wins"])await delColl(`${base(p)}/${sub}`);
   try{const v=await db.collection("videos").get();for(const d of v.docs){const n=+(d.data()?.parts)||0;for(let i=0;i<n;i++)await db.doc(`videos/${d.id}/parts/${i}`).delete().catch(()=>{})}}catch(e){}
   for(const c of ["photos","videos","stories","goals","q","ai","settings"])await delColl(c);
   for(const p of [A,B]){remOff(p);await db.doc(base(p)).delete().catch(()=>{})}
@@ -4335,6 +4390,7 @@ function renderHome(){
       const b=el("button","act","See how to help");b.onclick=()=>{markCiSeen();setTab("today");setTimeout(()=>$("forBox").scrollIntoView({behavior:"smooth",block:"start"}),80)};card.append(b)}
     else{card.append(el("span","who",pn),el("span","feel","Hasn't checked in yet"));const b=el("button","act","Send a hug");b.onclick=()=>sendItem({kind:"touch",type:"hug"},"Hug sent 🤗");card.append(b)}
     g.append(card)}
+  {const hw=$("homeWins");if(hw){hw.textContent="";const x=homeWinsEl();if(x)hw.append(x)}}
   renderGift();
   // quick actions
   const qa=$("homeActions");qa.textContent="";
@@ -4829,7 +4885,7 @@ $("meCoachOk").onclick=e=>{e.stopPropagation();meCoachSeen()};
 $("tabHome").onclick=()=>setTab("home");$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>{meCoachSeen();setTab("me")};$("tabChat").onclick=()=>setTab("chat");
 
 let remT=0;function remSoon(){clearTimeout(remT);remT=setTimeout(()=>syncReminder(),1500)}
-function renderAll(){remSoon();questSoon();if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
+function renderAll(){remSoon();questSoon();if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderWins();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
 
 /* ================= Live data ================= */
 const subs={},seenSnap={};
@@ -4845,6 +4901,9 @@ function watch(id){
   },()=>{});
   db.collection(`${base(id)}/sent`).orderBy("createdAt","desc").limit(60).onSnapshot(snap=>{
     sent[id]=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();
+  },()=>{});
+  db.collection(`${base(id)}/wins`).where("date",">=",key(since)).onSnapshot(snap=>{
+    const m={};snap.docs.forEach(d=>{m[d.id]=d.data()||{}});wins[id]=m;if(tab==="home")renderHome();if(tab==="today")renderWins();
   },()=>{});
   db.collection(`${base(id)}/replies`).onSnapshot(snap=>{
     const m={};snap.docs.forEach(d=>m[d.id]=d.data()||{});replies[id]=m;renderAll();
@@ -4995,7 +5054,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.38";
+const APP_VERSION="2026-10-19.1";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
