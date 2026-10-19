@@ -488,6 +488,7 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .ig .ill{grid-column:2;margin:2px 0 6px}
 .spot{background:var(--accent-soft);border:1px solid var(--accent);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left}.spot b{font-size:15px;line-height:1.4}.spot .spot-k{font-weight:700;color:var(--accent)}.spot .row{gap:14px;align-items:center}.btnlike{background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:6px 12px;font-size:13px;font-weight:700}
 .tog2{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.35}.tog2 input{width:18px;height:18px;margin:1px 0 0;flex:none}
+.ownans{display:flex;flex-direction:column;gap:4px;margin-top:8px}.ownans input{font-size:16px}
 .leftcard{margin-top:10px;padding:14px;border-radius:14px;background:var(--accent-soft);display:flex;flex-direction:column;gap:6px;text-align:left}.leftcard p{margin:0}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
@@ -1241,8 +1242,10 @@ const STEPS=[
   {t:"Stay in the loop",s:"Get a heads-up when your partner checks in or sends something, plus gentle check-in reminders.",q:[],special:"notify"}
 ];
 Object.values(Q).forEach(q=>{if(q.na&&q.opts&&!q.opts.some(o=>o[0]==="na"))q.opts.push(["na",q.na])});
-const label=(qid,v)=>{if(v==="na")return Q[qid].na||"N/A";const o=Q[qid].opts?.find(x=>x[0]===v);return o?o[1]:v};
-const labels=(qid,arr)=>(arr||[]).map(v=>v==="na"?label(qid,v):label(qid,v).toLowerCase());
+// Answers people write themselves are stored as "my:<their words>" next to the preset choices.
+const isOwnAns=v=>typeof v==="string"&&v.startsWith("my:");
+const label=(qid,v)=>{if(isOwnAns(v))return v.slice(3);if(v==="na")return Q[qid].na||"N/A";const o=Q[qid].opts?.find(x=>x[0]===v);return o?o[1]:v};
+const labels=(qid,arr)=>(arr||[]).map(v=>v==="na"||isOwnAns(v)?label(qid,v):label(qid,v).toLowerCase());
 const real=a=>(a||[]).filter(x=>x!=="na");
 const cap1=s=>s?s[0].toUpperCase()+s.slice(1):s;
 const joinAnd=a=>a.length<2?a.join(""):a.slice(0,-1).join(", ")+" and "+a[a.length-1];
@@ -1308,7 +1311,7 @@ function normProfile(pr){
   const o={...(pr||{})};
   Object.keys(Q).forEach(k=>{
     const t=Q[k].type,v=o[k];if(v==null)return;
-    const valid=x=>!Q[k].opts||Q[k].opts.some(op=>op[0]===x);
+    const valid=x=>!Q[k].opts||Q[k].opts.some(op=>op[0]===x)||(isOwnAns(x)&&x.length>3&&x.length<=83);
     if(t==="pick2"||t==="days"||t==="multi"){const a=(Array.isArray(v)?v:[v]).filter(x=>typeof x==="string"&&valid(x));if(t==="pick2")a.splice(2);if(t==="multi")a.splice(Q[k].max||4);if(a.length)o[k]=a;else delete o[k]}
     else if(t==="one"){if(typeof v!=="string"||!valid(v))delete o[k]}
     else if(typeof v!=="string")delete o[k];
@@ -2485,6 +2488,16 @@ function renderStep(){
           renderStep();
         };o.append(b);
       });w.append(o);
+      // Write your own
+      {const many=qq.type==="pick2"||qq.type==="multi",cap=qq.type==="multi"?(qq.max||4):2;
+        const cur=many?(pd[id]||[]).find(isOwnAns):(isOwnAns(pd[id])?pd[id]:"");const curTxt=cur?cur.slice(3):"";
+        const wrap=el("div","ownans");const lab=el("label","small",many?"Or write your own":"Or say it your way");lab.htmlFor="own-"+id;
+        const inp=el("input");inp.type="text";inp.id="own-"+id;inp.maxLength=80;inp.placeholder="Write your own…";inp.value=curTxt;
+        inp.oninput=()=>{const t=inp.value.trim();
+          if(many){let a=[...(pd[id]||[])].filter(x=>!isOwnAns(x)&&x!=="na");if(t){a.push("my:"+t);while(a.length>cap)a.shift()}pd[id]=a;
+            o.querySelectorAll("button").forEach(btn=>{const k=btn.id.slice(("q-"+id+"-").length);btn.setAttribute("aria-pressed",String(a.includes(k)))})}
+          else{pd[id]=t?"my:"+t:null;o.querySelectorAll("button").forEach(btn=>btn.setAttribute("aria-pressed","false"))}};
+        wrap.append(lab,inp);if(many&&!curTxt&&(pd[id]||[]).filter(x=>x!=="na").length>=cap)wrap.append(el("span","hint",`Writing your own replaces your oldest pick (up to ${cap}).`));w.append(wrap)}
     }
     body.append(w);
   });
@@ -2965,6 +2978,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-19e",at:"2026-10-19T19:55:00-04:00",date:"Oct 19, 2026",items:[
+    {em:"✏️",t:"Answer in your own words",b:"Questions like How you feel loved, When I'm upset and Please don't now have a Write your own box. Edit yours in About me.",go:["me","profileSummary"]}
+  ]},
   {id:"2026-10-19d",at:"2026-10-19T19:45:00-04:00",date:"Oct 19, 2026",items:[
     {em:"📣",t:"Owner: Spotlight and nudges",b:"Owners can spotlight a feature for couples who haven't tried it (a Home card, plus an optional notification), and send ready-made nudge texts to people they invited."}
   ]},
@@ -5314,7 +5330,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-19.8";
+const APP_VERSION="2026-10-19.9";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
