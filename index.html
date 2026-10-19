@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Noudé</title>
-<meta name="description" content="Noudé · just the two of us. A private, intimate app for couples: check in on each other's mood, swap songs, stories and sweet messages, plan dates and set goals together.">
+<meta name="description" content="Noudé · just the two of us. A private couples app: check in on each other's mood, swap songs, stories and sweet messages, plan dates and set goals together.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Noudé">
 <meta property="og:title" content="Noudé · just the two of us">
-<meta property="og:description" content="A private, intimate app for couples. Invite only, in private beta.">
+<meta property="og:description" content="A private app just for couples. Invite only, in private beta.">
 <meta property="og:url" content="https://noudeapp.com/">
-<meta property="og:image" content="https://noudeapp.com/og-image.png">
+<meta property="og:image" content="https://noudeapp.com/og-image.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Noudé logo: two halves turned toward each other with a heart in the middle">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://noudeapp.com/og-image.png">
+<meta name="twitter:image" content="https://noudeapp.com/og-image.png?v=2">
 <meta name="theme-color" content="#c23d68">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -924,7 +924,7 @@ details.pl summary{cursor:pointer;font-weight:600}
           <h3>Good to know</h3>
           <ul class="small">
             <li><b>Your personal link is your key.</b> Keep it private, and turn on the Privacy lock.</li>
-            <li><b>We never look at your content.</b> It's against our policy to open or view your photos, videos, messages or check-ins. The only data we look at is anonymous: usage counts, error reports and feedback you choose to send.</li><li><b>A note for the beta.</b> Your data is stored securely on Google's servers. While we're in beta, we recommend not sending explicit photos or videos.</li>
+            <li><b>We never look at your content.</b> It's against company policy to view any member's data, such as photos, videos, messages and check-ins. The only data collected is anonymous usage data, such as how many couples check in, which features get used and how long people spend in the app. Error reports and feedback you choose to send are the only other things we see.</li><li><b>A note for the beta.</b> Your data is stored securely on Google's servers. While we're in beta, we recommend not sending explicit photos or videos.</li>
           </ul>
           <div class="pdel">
             <h3>Leave Noudé and delete my data</h3>
@@ -1004,7 +1004,7 @@ details.pl summary{cursor:pointer;font-weight:600}
 <div class="sheet" id="welcome" hidden>
   <div class="inner" style="justify-content:center">
     <div class="stack" style="gap:10px"><svg class="wlogo" width="72" height="72" viewBox="0 0 512 512" role="img" aria-label="Noudé logo"><defs><linearGradient id="wlw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f04e7c"/><stop offset="0.55" stop-color="#ff8a4c"/><stop offset="1" stop-color="#ffc23d"/></linearGradient><linearGradient id="wlc" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2fb5a0"/><stop offset="0.5" stop-color="#5a7de0"/><stop offset="1" stop-color="#9b6ae0"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="#2a2030"/><path d="M222.4 130.4 A130 130 0 0 0 222.4 381.6" fill="none" stroke="url(#wlw)" stroke-width="30" stroke-linecap="round"/><path d="M289.6 130.4 A130 130 0 0 1 289.6 381.6" fill="none" stroke="url(#wlc)" stroke-width="30" stroke-linecap="round"/><path d="M256 300 C 214 272, 212 236, 236 232 C 247 230, 256 238, 256 247 C 256 238, 265 230, 276 232 C 300 236, 298 272, 256 300 Z" fill="#ec7da0"/></svg><span class="eyebrow">Welcome to</span><h1 class="brand">Noudé</h1><p class="tagline">just the two of us</p>
-    <p class="muted">A private, intimate social app for the two of you: check in on each other's mood, swap songs, stories and sweet messages, plan dates and set goals together.</p></div>
+    <p class="muted">A private couples social app for the two of you: check in on each other's mood, swap songs, stories and sweet messages, plan dates and set goals together.</p></div>
     <div class="card stack unlockc" id="unlockCard" hidden>
       <h3>🔑 Joining your partner?</h3>
       <p class="small muted">This space hasn't been added to the beta yet. Enter a beta invite code to unlock it. Your partner keeps everything they've already set up.</p>
@@ -3894,7 +3894,7 @@ const HELP=[
   ["aiboth","Why do we both have to turn it on?","AI ideas read both of your check-ins, so each person decides for themselves. Until you both turn it on, it stays off.",["me","aiCard"],"Open AI settings"],
   ["week","When is the weekly summary written?","On Sundays, once you've had at least 3 check-ins that week. You can also tap to write it early."]]},
  {g:"privacy",t:"Privacy & your data",ic:"🔒",items:[
-  ["seedata","Can anyone see our stuff?","The app never shows what you write or share to anyone but you two. Your data is never shared or sold, and it's against our policy to open or view your photos, messages or check-ins. The only data we look at is anonymous, like how many couples checked in today. While we're in beta, we recommend not sending explicit photos or videos.",["me","secPriv"],"Privacy & your data"],
+  ["seedata","Can anyone see our stuff?","The app never shows what you write or share to anyone but you two. Your data is never shared or sold, and it's against company policy to view any member's data, such as photos, videos, messages and check-ins. The only data collected is anonymous usage data, such as how many couples check in, which features get used and how long people spend in the app. While we're in beta, we recommend not sending explicit photos or videos.",["me","secPriv"],"Privacy & your data"],
   ["wherestored","Where is our data stored?","On Google's Firebase cloud, encrypted in transit and at rest. Noudé never collects your email, phone number, location, contacts or payment details."],
   ["linkkey","Who else can get into our space?","Only someone with your personal link. Keep it private, and turn on the Privacy lock so even someone with the link needs your 6-digit code.",["me","lockCard"],"Set a passcode"],
   ["aiprivacy","Does AI read our messages?","No. AI ideas are off unless you both turn them on. Even then it only uses check-ins and About me answers, never chat or photos, and the AI provider doesn't train on it."],
@@ -4635,7 +4635,7 @@ async function ensureAccess(code,isNew){
 function genCode(){const A2="ABCDEFGHJKMNPQRSTUVWXYZ23456789",b=new Uint8Array(6);crypto.getRandomValues(b);return"US-"+[...b].map(x=>A2[x%A2.length]).join("")}
 let codesUnsub=null,codesList=[],codesErr=false;
 const appLink=()=>location.origin+location.pathname;
-function codeMsg(c){return `💞 You're invited to Noudé, a private, intimate social app just for the two of you.
+function codeMsg(c){return `💞 You're invited to Noudé, a private couples social app just for the two of you.
 
 Check in on each other's mood in 30 seconds, swap songs, stories and sweet messages, plan date nights, set goals together, and never miss a birthday again. 🎶📸💌
 
@@ -4644,7 +4644,7 @@ Your code: ${c.id} (works once)
 2. Enter the code and tap Start our space
 3. Send your partner their invite from About me
 
-🔒 Heads up: Noudé is in beta. Your space is private to the two of you, and your data is never shared or sold. It's against our policy to open or view your photos, messages or check-ins. The only data we look at is anonymous usage counts. While we're in beta, we recommend not sending explicit photos or videos.
+🔒 Heads up: Noudé is in beta. Your space is private to the two of you, and your data is never shared or sold. It's against company policy to view any member's data, such as photos, videos, messages and check-ins. The only data collected is anonymous usage data, such as how many couples check in, which features get used and how long people spend in the app. While we're in beta, we recommend not sending explicit photos or videos.
 
 Tell us what you think!`}
 async function shareCode(c){
@@ -4957,7 +4957,7 @@ window.addEventListener("hashchange",()=>{if(/^#join=/.test(location.hash))locat
 const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.32";
+const APP_VERSION="2026-10-18.33";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
