@@ -474,6 +474,7 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .sreacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.sreact{font:inherit;font-size:13px;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}.sreact.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:600}
 .wlogo{display:block;border-radius:18px;box-shadow:0 6px 20px rgba(42,32,48,.25);margin-bottom:4px}
 .surep{max-width:420px;margin:auto;gap:12px}#sureSheet{align-items:center}
+.textit{background:var(--accent-soft);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;margin-top:8px}.textit label{font-size:12px;font-weight:700}.textit .row{gap:8px;flex-wrap:nowrap}.textit input{flex:1;min-width:0;font:inherit;font-size:16px;height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}.textit input:focus{outline:2px solid var(--accent);outline-offset:0}.textit button{min-height:44px}.textit button{white-space:nowrap}.textit .hint{opacity:.8}
 .leftcard{margin-top:10px;padding:14px;border-radius:14px;background:var(--accent-soft);display:flex;flex-direction:column;gap:6px;text-align:left}.leftcard p{margin:0}
 .goal{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface)}
 .goal.overdue{border-color:#e3a33c}.goal.gdone2{opacity:.85}
@@ -2903,6 +2904,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-18j",at:"2026-10-18T22:55:00-04:00",date:"Oct 18, 2026",items:[
+    {em:"💬",t:"Owner: text an invite",b:"In Beta invites, type a phone number and tap Text it. Messages opens with the invite filled in, ready to send. The number isn't saved."}
+  ]},
   {id:"2026-10-18i",at:"2026-10-18T21:50:00-04:00",date:"Oct 18, 2026",items:[
     {em:"🎉",t:"Owner: invite alerts",b:"The owner's phone now gets a notification the moment a beta invite code is used, and a pop-up if the app is open."}
   ]},
@@ -4652,6 +4656,9 @@ async function ensureAccess(code,isNew){
   if(knownSpace(spaceKey)){try{await ref.set({code:"legacy",at:Date.now()});return"ok"}catch(e){return isDenied(e)?"locked":"error"}}
   return"locked";
 }
+const phoneDigits=v=>String(v||"").replace(/\D/g,"");
+function smsNumber(v){const d=phoneDigits(v);if(d.length===10)return"+1"+d;if(d.length===11&&d[0]==="1")return"+"+d;if(String(v).trim().startsWith("+")&&d.length>=8&&d.length<=15)return"+"+d;return""}
+const smsLink=(num,body)=>`sms:${num}${/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)?"&":"?"}body=${encodeURIComponent(body)}`;
 function genCode(){const A2="ABCDEFGHJKMNPQRSTUVWXYZ23456789",b=new Uint8Array(6);crypto.getRandomValues(b);return"US-"+[...b].map(x=>A2[x%A2.length]).join("")}
 let codesUnsub=null,codesList=[],codesErr=false;
 const appLink=()=>location.origin+location.pathname;
@@ -4706,7 +4713,15 @@ function renderCodes(){
   const sec=(title,list)=>{if(!list.length)return;box.append(el("h4",null,title));list.forEach(c=>{
     const r=el("div","fbi"+(c.used?" fdone":" isnew")),top=el("div","top");top.append(el("span","kind "+(c.used?"love":"idea"),c.used?"Used":"Unused"),el("span","who",c.id),el("span","when",c.used&&c.usedAt?timeAgo(c.usedAt):timeAgo(c.createdAt||Date.now())));r.append(top);
     if(c.note)r.append(el("p","msg",c.note));
-    if(!c.used){const a=el("div","acts");const sh=el("button","primary small","📤 Share invite");sh.onclick=()=>shareCode(c);a.append(sh);const cp=el("button","link small","Copy");cp.onclick=async()=>{try{await navigator.clipboard.writeText(codeMsg(c));toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't copy")}};
+    if(!c.used){
+      // Text it: type a number, Messages opens with the invite filled in. The number is never saved.
+      {const tb=el("div","textit"),lab=el("label",null,"Text it to");lab.htmlFor="tx-"+c.id;const row=el("div","row");const inp=el("input");inp.type="tel";inp.id="tx-"+c.id;inp.inputMode="tel";inp.autocomplete="tel";inp.placeholder="Phone number";
+        const go=el("button","primary","💬 Text it");go.type="button";const msg=el("span","small");msg.setAttribute("role","status");
+        const upd=()=>{go.disabled=phoneDigits(inp.value).length<10};inp.oninput=upd;upd();
+        go.onclick=()=>{const n=smsNumber(inp.value);if(!n){msg.textContent="Enter a full phone number, like (617) 555-0142.";return}track({"n.codeText":1});location.href=smsLink(n,codeMsg(c))};
+        inp.onkeydown=e=>{if(e.key==="Enter"&&!go.disabled)go.click()};
+        row.append(inp,go);tb.append(lab,row,el("span","small hint","Opens Messages with the invite filled in. The number isn't saved."),msg);r.append(tb)}
+      const a=el("div","acts");const sh=el("button","link small","📤 Share instead");sh.onclick=()=>shareCode(c);a.append(sh);const cp=el("button","link small","Copy");cp.onclick=async()=>{try{await navigator.clipboard.writeText(codeMsg(c));toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't copy")}};
       const del=el("button","link small","Delete");del.style.color="var(--warn)";del.onclick=async()=>{if(await sure("This unused invite code will stop working."))db.top.doc("betaCodes/"+c.id).delete().then(()=>toast("Deleted")).catch(()=>toast("Couldn't delete"))};a.append(cp,del);r.append(a)}
     box.append(r)})};
   sec(`Unused (${unused.length})`,unused);sec(`Used (${used.length})`,used);
@@ -4980,7 +4995,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-18.36";
+const APP_VERSION="2026-10-18.37";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
