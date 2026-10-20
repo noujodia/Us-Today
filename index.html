@@ -480,7 +480,8 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .wlogo{display:block;border-radius:18px;box-shadow:0 6px 20px rgba(42,32,48,.25);margin-bottom:4px}
 .surep{max-width:420px;margin:auto;gap:12px}#sureSheet{align-items:center}
 .textit{background:var(--accent-soft);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;margin-top:8px}.textit label{font-size:12px;font-weight:700}.textit .row{gap:8px;flex-wrap:nowrap}.textit input{flex:1;min-width:0;font:inherit;font-size:16px;height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}.textit input:focus{outline:2px solid var(--accent);outline-offset:0}.textit button{min-height:44px}.textit button{white-space:nowrap}.textit .hint{opacity:.8}
-.wins{display:flex;flex-direction:column;gap:12px}.wgrp{display:flex;flex-direction:column;gap:8px}.wgrp h3{margin:0;font-size:15px}.wchips{display:flex;flex-wrap:wrap;gap:6px}.wchip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer;min-height:40px}.wchip[aria-pressed="true"]{background:var(--soft);border-color:transparent;color:var(--muted);filter:grayscale(1);opacity:.75}.wchip[aria-pressed="true"]::before{content:"✓ ";font-weight:700}.wchip .x{margin-left:6px;opacity:.6}.wown{display:flex;gap:8px}.wown input{flex:1;min-width:0;font:inherit;font-size:16px;height:42px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}
+.wins{display:flex;flex-direction:column;gap:12px}.wgrp{display:flex;flex-direction:column;gap:8px}.wgrp h3{margin:0;font-size:15px}.wchips{display:flex;flex-wrap:wrap;gap:6px}.wchip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer;min-height:40px}.wchip[aria-pressed="true"]{background:var(--soft);border-color:transparent;color:var(--muted);filter:grayscale(1);opacity:.75}.wchip[aria-pressed="true"]::before{content:"✓ ";font-weight:700}.wchip .x{margin-left:6px;opacity:.6}.wwk{display:flex;flex-direction:column;gap:6px;background:var(--soft);border-radius:12px;padding:10px 12px}.wwk .wl{font-size:13px;font-weight:700;color:var(--muted)}.wwr{display:flex;flex-wrap:wrap;gap:6px}.wwc{background:var(--surface);border-radius:999px;padding:4px 10px;font-size:13.5px}.wweek{color:var(--accent)}.wkw{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}.wkw .who{font-size:13px;font-weight:700;color:var(--muted)}
+.wown{display:flex;gap:8px}.wown input{flex:1;min-width:0;font:inherit;font-size:16px;height:42px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}
 .wseg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--soft);border-radius:12px;padding:4px;gap:4px}.wseg button{border:0;background:none;border-radius:9px;padding:10px;font:inherit;font-size:15px;font-weight:600;color:var(--muted);min-height:44px;cursor:pointer}.wseg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}.wcheer{background:var(--accent-soft);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left}.wcheer b{font-size:17px}.wcheer .row{gap:14px;margin-top:4px}
 .hwins{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hwin{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}.hwin .who{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}.hwin ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:14px}.hwin .act{align-self:flex-start;border:0;background:none;padding:4px 0;font:inherit;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer}.hwin .cheered{font-size:13px;color:var(--muted)}
 .mpick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.mpick button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:78px;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:16px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}.mpick button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}.mpick button:disabled{opacity:.45}
@@ -582,6 +583,7 @@ details.pl summary{cursor:pointer;font-weight:600}
 .femo.pop{animation:pop .35s ease}
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.35) rotate(-8deg)}100%{transform:scale(1)}}
 .fmain{display:flex;flex-direction:column;gap:7px;min-width:0}
+.why{display:flex;flex-direction:column;gap:6px;margin-top:2px}.why .wl{font-size:13px;color:var(--muted);font-weight:600}.why .wr{display:flex;flex-wrap:wrap;gap:6px}.why .wr button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 11px;font:inherit;font-size:13.5px;cursor:pointer;min-height:36px}.why .wr button[aria-pressed="true"]{background:var(--c,var(--accent));border-color:transparent;color:#fff;font-weight:600}.why input{font:inherit;font-size:16px;height:40px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink);width:100%}
 .ftop{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .fname{font-weight:700}
 .fword{font-size:.82rem;color:var(--muted);text-align:right}
@@ -732,7 +734,7 @@ details.pl summary{cursor:pointer;font-weight:600}
     <div id="weekBox" hidden>
       <details class="sec" id="secWeek">
         <summary><div class="sh"><h2>Your week together</h2><span class="ssum" id="sumWeek"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
-        <div class="secbody"><div id="weekCard"></div></div>
+        <div class="secbody"><div id="weekWins"></div><div id="weekCard"></div></div>
       </details>
     </div>
 
@@ -1184,6 +1186,12 @@ const GROUPS=["Between us","How I'm doing","What's weighing on me"];
 const GMETA=[{em:"💞",c:"var(--g0)"},{em:"☀️",c:"var(--g1)"},{em:"🌧️",c:"var(--g2)"}];
 const FEMO={loved:"❤️",appreciated:"🙏",connected:"🫂",desire:"🔥",happy:"😄",calm:"😌",tired:"😴",stressed:"😵‍💫",anxious:"😬",sad:"😢",lonely:"🥺",hurt:"💔",irritated:"😤",angry:"😡"};
 const LVL=["a little","fairly","really","very"];
+/* Why a heavy feeling is there: work, personal, just in general, plus their own words */
+const WHY_R=[["work","💼 Work"],["personal","🏠 Personal"],["general","🌫️ Just in general"]];
+const WHY_TXT={work:"work",personal:"personal",general:"just in general"};
+const WHY_MAX=100;
+function cleanWhy(o){const out={};if(!o||typeof o!=="object")return out;EMO.filter(x=>x.g===2).forEach(x=>{const w=o[x.k];if(!w||typeof w!=="object")return;const r=WHY_TXT[w.r]?w.r:"";const t=typeof w.t==="string"?w.t.trim().slice(0,WHY_MAX):"";if(r||t)out[x.k]=t?{r,t}:{r}});return out}
+const whyOf=(e,k)=>{const w=e?.why?.[k];if(!w)return"";const r=WHY_TXT[w.r]||"",t=(w.t||"").trim();return r&&t?`${r}: ${t}`:r||t};
 const NEEDS=["A long hug 🤗","Quiet time 🤫","Help with the kids 🧸","Just listen 👂","Sweet words 💬","A date night 🍷","Take dinner off my plate 🍕","Cuddles tonight 🛋️"];
 /* What each dot means, in plain words, per feeling (levels 1–4) */
 const WORDS={
@@ -1296,7 +1304,7 @@ function renderCiBanner(){
   const t=el("div","ci-t");t.append(el("span","ci-h",`${n} checked in 💞`));
   const top=topList(e.levels,3);
   const cw=el("span","fchips");
-  if(top.length)top.forEach(x=>{const c=el("span","fchip");c.style.setProperty("--c",col(x.k));c.append(el("span",null,FEMO[x.k]),el("span",null,word(x.k,x.v)));cw.append(c)});
+  if(top.length)top.forEach(x=>{const c=el("span","fchip");c.style.setProperty("--c",col(x.k));const y=whyOf(e,x.k);c.append(el("span",null,FEMO[x.k]),el("span",null,word(x.k,x.v)+(y?" · "+(y.length>28?y.slice(0,27)+"…":y):"")));cw.append(c)});
   else cw.append(el("span","small muted","No feelings marked"));
   t.append(cw);if(e.note)t.append(el("span","small","Needs: “"+e.note+"”"));
   t.append(el("span","small muted",timeAgo(e.updatedAt)));
@@ -1538,6 +1546,11 @@ function renderNeedChips(){
     box.append(b)});
 }
 function renderDials(){
+  const fa=document.activeElement,fid=fa&&fa.id&&fa.id.startsWith("whyt-")?fa.id:"",fsel=fid?fa.selectionStart:0;
+  renderDials0();
+  if(fid&&$(fid)){const i=$(fid);i.focus();try{i.setSelectionRange(fsel,fsel)}catch(e){}}
+}
+function renderDials0(){
   renderDone();renderNeedChips();
   const box=$("dialGroups");box.textContent="";const na=new Set(draft.na||[]);
   GROUPS.forEach((g,gi)=>{
@@ -1563,7 +1576,15 @@ function renderDials(){
           b.onclick=()=>{draft.levels={...draft.levels,[e.k]:(draft.levels[e.k]===i?i-1:i)};draft.na=(draft.na||[]).filter(x=>x!==gi);popKey=e.k;markDirty();renderDials();renderTop();popKey=null};
           seg.append(b);
         }
-        main.append(top,seg);row.append(em,main);body.append(row);
+        main.append(top,seg);
+        if(gi===2&&cur){const w=(draft.why||{})[e.k]||{},wy=el("div","why");wy.append(el("span","wl",`Why ${e.n.toLowerCase()}?`));
+          const wr=el("div","wr");wr.setAttribute("role","group");wr.setAttribute("aria-label",`Why ${e.n.toLowerCase()}`);
+          WHY_R.forEach(([r,t])=>{const b=el("button",null,t);b.type="button";b.id=`why-${e.k}-${r}`;b.setAttribute("aria-pressed",String(w.r===r));b.onclick=()=>{const W={...(draft.why||{})},c={...(W[e.k]||{})};c.r=c.r===r?"":r;W[e.k]=c;draft.why=W;markDirty();renderDials()};wr.append(b)});
+          const lab=el("label",null,`Say why you feel ${e.n.toLowerCase()} (optional)`);lab.htmlFor=`whyt-${e.k}`;lab.style.cssText="position:absolute;left:-9999px";
+          const inp=el("input");inp.type="text";inp.id=`whyt-${e.k}`;inp.maxLength=WHY_MAX;inp.placeholder="Say why, if you want";inp.value=w.t||"";
+          inp.oninput=()=>{const W={...(draft.why||{})};W[e.k]={...(W[e.k]||{}),t:inp.value};draft.why=W;markDirty()};
+          wy.append(wr,lab,inp);main.append(wy)}
+        row.append(em,main);body.append(row);
       });
       const nb=el("button","na-btn",na.has(gi)?"✓ N/A today":"N/A, doesn't apply today");nb.id="na-"+gi;nb.setAttribute("aria-pressed",String(na.has(gi)));
       nb.onclick=()=>{
@@ -1599,7 +1620,7 @@ function renderHistory(){
     });
   });
 }
-function loadDraft(){const e=E(me)[selDate];draft={levels:{...(e?.levels||{})},na:[...(e?.na||[])],note:e?.note||""};if(!e)openGroups=new Set([0]);$("need").value=draft.note;dirty=false;$("savedMsg").textContent=e?"Saved":""}
+function loadDraft(){const e=E(me)[selDate];draft={levels:{...(e?.levels||{})},na:[...(e?.na||[])],note:e?.note||"",why:JSON.parse(JSON.stringify(e?.why||{}))};if(!e)openGroups=new Set([0]);$("need").value=draft.note;dirty=false;$("savedMsg").textContent=e?"Saved":""}
 let leaveArmed=false;
 function selectDate(k){
   if(dirty&&!leaveArmed){leaveArmed=true;$("savedMsg").textContent="Unsaved changes. Save first, or tap again to discard.";setTimeout(()=>leaveArmed=false,4000);return}
@@ -1614,7 +1635,8 @@ $("save").onclick=async()=>{
   try{
     if(!signedIn())throw{code:"signed_out"};
     const na=(draft.na||[]).filter(g=>!EMO.some(x=>x.g===g&&levels[x.k]));
-    const doc={date:selDate,levels,na,note:draft.note.trim(),updatedAt:Date.now()};
+    const why=cleanWhy(Object.fromEntries(Object.entries(draft.why||{}).filter(([k])=>levels[k])));
+    const doc={date:selDate,levels,na,note:draft.note.trim(),why,updatedAt:Date.now()};
     const prev=E(me)[selDate],firstToday=selDate===todayKey()&&!prev;
     if(prev){doc.firstAt=prev.firstAt||prev.updatedAt;if(prev.morning)doc.morning=prev.morning;if(prev.sameAt)doc.sameAt=prev.sameAt}else doc.firstAt=doc.updatedAt;
     let middayUpdate=false;
@@ -1624,7 +1646,7 @@ $("save").onclick=async()=>{
     if(selDate===todayKey())syncReminder();
     if(firstToday)track({"n.checkin":1,["d."+selDate]:1});
     if(firstToday&&partnerId)notify(partnerId,nm(me),`Checked in for today. See how to show up for ${nm(me)}.`,"checkin");
-    entries[me]={...E(me),[selDate]:{levels,na,note:doc.note,updatedAt:doc.updatedAt,firstAt:doc.firstAt,morning:doc.morning||null,sameAt:doc.sameAt||0}};
+    entries[me]={...E(me),[selDate]:{levels,na,note:doc.note,why,updatedAt:doc.updatedAt,firstAt:doc.firstAt,morning:doc.morning||null,sameAt:doc.sameAt||0}};
     burst();dirty=false;editOpen=false;$("savedMsg").textContent="Saved";renderAll();
     if(selDate===todayKey())setTimeout(()=>$("selfBox").scrollIntoView({behavior:"smooth",block:"start"}),150);
   }catch(e){console.error(e);$("savedMsg").textContent=saveErr(e)}
@@ -1760,7 +1782,7 @@ function renderReadout(p){
   {const st=checkinStatusLine(p,e);if(st)box.append(el("p","chg",st))}
   GROUPS.forEach((_,gi)=>{
     const list=EMO.filter(x=>x.g===gi&&L[x.k]).sort((a,b)=>L[b.k]-L[a.k]);
-    let txt=list.length?cap1(joinAnd(list.map((x,i)=>i?word(x.k,L[x.k]).toLowerCase():word(x.k,L[x.k])))):"";
+    let txt=list.length?cap1(joinAnd(list.map((x,i)=>{const w=i?word(x.k,L[x.k]).toLowerCase():word(x.k,L[x.k]),y=whyOf(e,x.k);return y?`${w} (${y})`:w}))):"";
     if((e.na||[]).includes(gi))txt="N/A today";
     else if(gi===0&&!list.length)txt="Didn't mark feeling loved or close";
     if(!txt)return;
@@ -2853,7 +2875,7 @@ async function callAi(mode,facts){
   const r=await fetch(WORKER_URL+"ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode,facts})});
   const d=await r.json().catch(()=>({}));if(!r.ok||!d.result)throw new Error(d.error||"ai");return d.result;
 }
-const feelText=e=>{if(!e)return"no check-in";const t=topList(e.levels,8).map(x=>word(x.k,x.v)).join(", ");return(t||"no feelings marked")+(e.note?`. Note: "${e.note}"`:"")};
+const feelText=e=>{if(!e)return"no check-in";const t=topList(e.levels,8).map(x=>{const w=e?.why?.[x.k],r={work:"because of work",personal:"because of something personal",general:"nothing specific, just in general"}[w?.r]||"",t=(w?.t||"").trim(),y=[r,t?`in their words: "${t}"`:""].filter(Boolean).join(", ");return word(x.k,x.v)+(y?` (${y})`:"")}).join(", ");return(t||"no feelings marked")+(e.note?`. Note: "${e.note}"`:"")};
 const factsOf=who=>profileFacts(who).filter(([k,v])=>v&&k!=="Name").map(([k,v])=>`- ${k}: ${v}`).join("\n")||"- (no answers yet)";
 const SCHED_KEYS=["Work days","Hours","Home","Busy kid nights","Best time to connect","With the kids"];
 const schedOf=who=>profileFacts(who).filter(([k,v])=>v&&SCHED_KEYS.includes(k)).map(([k,v])=>`- ${k}: ${v}`).join("\n")||"- (not filled in)";
@@ -2891,7 +2913,11 @@ ${an}'s About me:
 ${factsOf(a)}
 
 ${bn}'s About me:
-${factsOf(b)}`;
+${factsOf(b)}
+
+Wins logged this week (last 7 days):
+- ${an}: ${winWeekFacts(a)}
+- ${bn}: ${winWeekFacts(b)}`;
 }
 const aiCache={},aiBusy={};
 async function aiDoc(path){if(path in aiCache)return aiCache[path];try{const s=await db.doc(path).get();aiCache[path]=s.exists?s.data():null}catch(e){aiCache[path]=null}return aiCache[path]}
@@ -2938,7 +2964,7 @@ const checkinsLast7=()=>[me,partnerId].reduce((n,p)=>{for(let i=0;i<7;i++){const
 async function renderWeek(force){
   const wb=$("weekBox"),box=$("weekCard");if(!wb)return;
   if(!partnerId||!signedIn()||selDate!==todayKey()){wb.hidden=true;return}
-  wb.hidden=false;setSum("sumWeek",(!aiOk(me)||!aiOk(partnerId))?"Turn on AI ideas for a weekly summary":new Date().getDay()===0?"Your weekly summary":"Written on Sundays · tap to write it now");
+  wb.hidden=false;renderWeekWins();setSum("sumWeek",(!aiOk(me)||!aiOk(partnerId))?"Turn on AI ideas for a weekly summary":new Date().getDay()===0?"Your weekly summary":"Written on Sundays · tap to write it now");
   if(!aiOk(me)||!aiOk(partnerId)){box.textContent="";const c=el("div","aic soft");c.append(el("span","eyebrow","✨ Weekly summary"));c.append(el("p","small muted",aiOk(me)?`A short AI summary of your week together. Waiting for ${nm(partnerId)} to turn on AI ideas in About me.`:"A short AI summary of your week together, from both of your check-ins."));if(!aiOk(me)){const b=el("button","secondary","Turn on AI ideas");b.style.justifySelf="start";b.onclick=()=>setAiOk(true);c.append(b)}box.append(c);return}
   const path=`ai/week-${weekKey()}`,doc=force?null:await aiDoc(path);
   if(doc?.result&&!force){drawWeek(box,doc);return}
@@ -2951,6 +2977,15 @@ async function renderWeek(force){
   catch(err){console.error(err);box.textContent="";const c=el("div","aic soft");c.append(el("p","small muted","Couldn't write the summary right now. Try again later."));box.append(c)}
   finally{delete aiBusy[path]}
 }
+function renderWeekWins(){
+  const box=$("weekWins");if(!box)return;box.textContent="";const ps=[me,partnerId].filter(Boolean),tot=ps.reduce((n,p)=>n+winWeekTotal(p),0);if(!tot)return;
+  const c=el("div","aic wkw");c.append(el("span","eyebrow",`🏆 Wins this week · ${tot} between you`));
+  ps.forEach(p=>{const W=winWeek(p);if(!W.length)return;const isMe=p===me,who=isMe?"You":(nickOf(p)||nm(p));
+    const g=el("div","stack");g.style.gap="4px";g.append(el("span","who",`${who} · ${winWeekTotal(p)}`));
+    const top=W[0];if(top.n>=2&&WIN_DID[top.k])g.append(el("p","small",`🔥 ${isMe?"You":who} ${didFor(top.k,!isMe)} ${times(top.n)} this week!`));
+    g.append(el("span","small",winWeekLine(p,5)));c.append(g)});
+  box.append(c);
+}
 function drawWeek(box,doc){
   const r=doc.result||{},c=el("div","aic");box.textContent="";setSum("sumWeek",(r.title?String(r.title)+" · ":"")+"✨ Written "+new Date(doc.createdAt).toLocaleDateString(undefined,{weekday:"short"}));
   c.append(el("span","eyebrow","✨ This week"));
@@ -2958,6 +2993,7 @@ function drawWeek(box,doc){
   const list=(t,arr)=>{arr=(Array.isArray(arr)?arr:[]).filter(Boolean);if(!arr.length)return;c.append(el("h4",null,t));const u=el("ul");arr.slice(0,4).forEach(x=>u.append(el("li",null,String(x))));c.append(u)};
   list("What we noticed",r.patterns);
   if(r.win){c.append(el("h4",null,"Going well"));c.append(el("p","small",String(r.win)))}
+  list("Wins to celebrate",r.wins);
   list("Try this week",r.try);
   const f=el("div","foot");f.append(el("span",null,`Written by AI · ${new Date(doc.createdAt).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}`));
   if(aiBudget("w").left>0&&Date.now()-doc.createdAt>6*3600000){const b=el("button","link small","Update");b.onclick=()=>renderWeek(true);f.append(b)}
@@ -2979,6 +3015,10 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-20a",at:"2026-10-20T09:00:00-04:00",date:"Oct 20, 2026",items:[
+    {em:"🌧️",t:"Say why it's weighing on you",b:"When you mark stressed, anxious, sad and the rest, pick Work, Personal or Just in general, and add why if you want. Your partner sees it with your check-in.",go:["today","dialBox"]},
+    {em:"🔥",t:"Your wins add up",b:"Today's wins now show your week, like “You worked out 3 times this week!”, and your weekly recap celebrates them too.",go:["today","secWins"]}
+  ]},
   {id:"2026-10-19e",at:"2026-10-19T19:55:00-04:00",date:"Oct 19, 2026",items:[
     {em:"✏️",t:"Answer in your own words",b:"Questions like How you feel loved, When I'm upset and Please don't now have a Write your own box. Edit yours in About me.",go:["me","profileSummary"]}
   ]},
@@ -4024,6 +4064,20 @@ const winsOf=(p,k)=>(wins[p]||{})[k||todayKey()]||null;
 const winLabel=(set,key)=>{const w=set.find(x=>x[0]===key);return w?w[1]+" "+w[2]:""};
 function winList(d){if(!d)return[];return[...(d.p||[]).map(k=>winLabel(WIN_P,k)),...(d.pOwn||[]).map(t=>"⭐ "+t),...(d.w||[]).map(k=>winLabel(WIN_W,k)),...(d.wOwn||[]).map(t=>"⭐ "+t)].filter(Boolean)}
 const winCount=d=>winList(d).length;
+/* How each win reads in a sentence: "You worked out 3 times this week" */
+const WIN_DID={workout:"worked out",quiet:"had a quiet morning",prayer:"prayed",meditate:"meditated",read:"read",walk:"took a walk",water:"drank enough water",ate:"ate well",sleep:"slept well",journal:"journaled",nophone:"had phone-free time",home:"got the house in order",family:"had quality time with family",kind:"did something kind",ontime:"were on time to work",productive:"had a very productive day",recognized:"got recognized",bigtask:"finished a big task",goal:"hit a goal",meeting:"had a great meeting",idea:"had a new idea",learned:"learned something",helped:"helped a coworker",deal:"closed a deal or sale",inbox:"cleared your inbox",boundary:"left work on time"};
+const DID3={were:"was",your:"their",you:"they"};
+const didFor=(k,third)=>{const v=WIN_DID[k]||"";return third?v.replace(/\b(were|your)\b/g,m=>DID3[m]):v};
+const times=n=>n===1?"once":n===2?"twice":`${n} times`;
+/* Wins over the last 7 days, today included: [{k,em,t,n}] most frequent first */
+function winWeek(p){const all=wins[p]||{},cnt={};for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);const w=all[key(d)];if(!w)continue;
+  [["p",WIN_P],["w",WIN_W]].forEach(([kind,set])=>{(w[kind]||[]).forEach(k=>{const x=set.find(y=>y[0]===k);if(!x)return;cnt[k]=cnt[k]||{k,em:x[1],t:x[2],n:0};cnt[k].n++});
+    (w[kind+"Own"]||[]).forEach(t=>{const id="own:"+String(t).toLowerCase();cnt[id]=cnt[id]||{k:id,em:"⭐",t:String(t),n:0};cnt[id].n++})})}
+  return Object.values(cnt).sort((a,b)=>b.n-a.n||a.t.localeCompare(b.t))}
+const winWeekTotal=p=>winWeek(p).reduce((n,x)=>n+x.n,0);
+const winWeekLine=(p,max=4)=>winWeek(p).slice(0,max).map(x=>`${x.em} ${x.t}${x.n>1?` ×${x.n}`:""}`).join(" · ");
+/* "Worked out 3 times, Prayed twice" for the AI weekly summary */
+const winWeekFacts=p=>{const L=winWeek(p);return L.length?L.map(x=>`${x.t} ${times(x.n)}`).join(", "):"no wins logged"};
 async function saveWins(patch){
   if(!signedIn()){toast(saveErr({code:"signed_out"}));return false}
   const k=todayKey(),cur=winsOf(me)||{},first=!winCount(cur),next={...cur,...patch,date:k,at:Date.now()};
@@ -4040,7 +4094,9 @@ async function cheerWins(p){const k=todayKey(),d=winsOf(p);if(!d)return;const ch
 let winTab=(()=>{try{return localStorage.getItem("ut_wintab")||"p"}catch(e){return"p"}})(),winCheer=null;
 const WIN_CHEER={workout:"Strong start 💪",quiet:"Way to start the morning 🌅",prayer:"Grounded and grateful 🙏",meditate:"Calm mind, good day 🧘",read:"Feeding that mind 📖",walk:"Fresh air wins 🚶",water:"Hydrated and thriving 💧",ate:"Fueling right 🥗",sleep:"Rested and ready 😴",journal:"Thoughts on paper ✍️",nophone:"Present and unplugged 📵",home:"Fresh space, clear head 🧹",family:"That's what it's about 👨‍👩‍👧",kind:"The world needs more of you 💛",ontime:"Right on time ⏰",productive:"Crushing it ⚡",recognized:"So well deserved 🏅",bigtask:"Big one, done ✅",goal:"Goal hit 🎯",meeting:"Great meeting energy 🤝",idea:"Love that idea 💡",learned:"Always growing 📚",helped:"Lifting others up 🧑‍🏫",deal:"Closer! 📈",inbox:"Inbox zero hero 📥",boundary:"Good boundaries 🚪"};
 function cheerFor(key){const h=new Date().getHours(),base=WIN_CHEER[key]||["Great job! 🎉","Congratulations! 🎉","Love that for you 💛","Keep it going 🔥"][Math.floor(Math.random()*4)];return h<11&&key!=="quiet"?`Way to start the morning! ${base}`:base}
-function pickWin(kind,key,label){const d=winsOf(me)||{},on=(d[kind]||[]).includes(key);toggleWin(kind,key);winCheer=on?null:{t:cheerFor(key),label};if(!on)setTimeout(renderWins,60)}
+function pickWin(kind,key,label){const d=winsOf(me)||{},on=(d[kind]||[]).includes(key);
+  const n=on?0:(winWeek(me).find(x=>x.k===key)?.n||0)+1,did=WIN_DID[key];
+  toggleWin(kind,key);winCheer=on?null:{t:cheerFor(key),label,week:n>=2&&did?`You ${did} ${times(n)} this week!!!`:""};if(!on)setTimeout(renderWins,60)}
 function renderWins(){
   const box=$("winsBox");if(!box)return;const keepFocus=document.activeElement&&box.contains(document.activeElement)?document.activeElement.id:"";box.textContent="";if(!signedIn())return;
   const d=winsOf(me)||{},L=winList(d),n=L.length,pn=partnerId?(nickOf(partnerId)||nm(partnerId)):"";
@@ -4049,13 +4105,15 @@ function renderWins(){
   sh.append(el("h2",null,"🏆 Today's wins"),el("span","ssum",n?`${short.slice(0,2).join(", ")}${n>2?` +${n-2} more`:""}${pn?` · ${pn} can see these`:""}`:"Tap to log a personal or work win"));sm.append(sh);const cv=el("span","chev","▼");cv.setAttribute("aria-hidden","true");sm.append(cv);sec.append(sm);
   const body=el("div","secbody wins");
   // celebration after picking a win
-  if(winCheer){const c=el("div","wcheer");c.setAttribute("role","status");c.append(el("b",null,"🎉 "+winCheer.t),el("span","small",`“${winCheer.label}” is in.${pn?` ${pn} will see it.`:""}`));
+  if(winCheer){const c=el("div","wcheer");c.setAttribute("role","status");c.append(el("b",null,"🎉 "+winCheer.t));if(winCheer.week)c.append(el("b","wweek","🔥 "+winCheer.week));c.append(el("span","small",`“${winCheer.label}” is in.${pn?` ${pn} will see it.`:""}`));
     const r=el("div","row");const dn=el("button","primary small","Done");dn.type="button";dn.onclick=()=>{winCheer=null;try{localStorage.setItem("ut_winsopen","0")}catch(e){}renderWins()};
     const more=el("button","link small","Add another");more.type="button";more.onclick=()=>{winCheer=null;renderWins()};r.append(dn,more);c.append(r);body.append(c);sec.append(body);box.append(sec);return}
   // personal / work toggle
   const seg=el("div","wseg");seg.setAttribute("role","tablist");seg.setAttribute("aria-label","Kind of win");
   [["p","🌱 Personal"],["w","💼 Work"]].forEach(([k,t])=>{const cnt=(d[k]||[]).length+(d[k+"Own"]||[]).length;const b=el("button",null,t+(cnt?` · ${cnt}`:""));b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",String(winTab===k));b.onclick=()=>{winTab=k;try{localStorage.setItem("ut_wintab",k)}catch(e){}renderWins()};seg.append(b)});
   body.append(seg);
+  {const W=winWeek(me);if(W.length){const ws=el("div","wwk");ws.id="winsWeek";ws.append(el("span","wl",`This week · ${winWeekTotal(me)} win${winWeekTotal(me)===1?"":"s"}`));const r=el("div","wwr");W.slice(0,6).forEach(x=>r.append(el("span","wwc",`${x.em} ${x.t}${x.n>1?` ×${x.n}`:""}`)));ws.append(r);
+    const top=W[0];if(top&&top.n>=2&&WIN_DID[top.k])ws.append(el("span","small",`🔥 You ${WIN_DID[top.k]} ${times(top.n)} this week!`));body.append(ws)}}
   const kind=winTab,ownKind=kind+"Own",set=kind==="p"?WIN_P:WIN_W;
   const ch=el("div","wchips");ch.setAttribute("role","group");ch.setAttribute("aria-label",kind==="p"?"Personal wins":"Work wins");
   set.forEach(([k,em,t])=>{const on=(d[kind]||[]).includes(k),b=el("button","wchip",em+" "+t);b.type="button";b.setAttribute("aria-pressed",String(on));if(on)b.title="Done today. Tap to undo.";b.onclick=()=>{if(on){toggleWin(kind,k);toast(`Removed “${t}”`)}else pickWin(kind,k,t)};ch.append(b)});
@@ -4074,6 +4132,7 @@ function homeWinsEl(){
   const col=(who,label,d,isMe)=>{const c=el("div","hwin");c.append(el("span","who",label));const L=winList(d);
     if(L.length){const ul=el("ul");L.slice(0,5).forEach(t=>ul.append(el("li",null,t)));if(L.length>5)ul.append(el("li","small muted",`+${L.length-5} more`));c.append(ul)}
     else c.append(el("span","small muted",isMe?"No wins yet today":"No wins yet"));
+    {const wk=winWeekTotal(who);if(wk>L.length)c.append(el("span","small muted","This week: "+winWeekLine(who,2)))}
     if(isMe){if(!L.length){const b=el("button","act","＋ Add a win");b.onclick=()=>{try{localStorage.setItem("ut_winsopen","1")}catch(e){}goTo(["today","secWins"])};c.append(b)}else if(p&&d?.cheers?.[p])c.append(el("span","cheered",`👏 ${pn} cheered you`))}
     else if(L.length){if(d.cheers?.[me])c.append(el("span","cheered","👏 You cheered"));else{const b=el("button","act","👏 Cheer");b.onclick=()=>cheerWins(who);c.append(b)}}
     return c};
@@ -5169,7 +5228,7 @@ function watch(id){
   if(subs[id])return;subs[id]=1;
   const since=new Date();since.setDate(since.getDate()-40);
   db.collection(`${base(id)}/days`).where("date",">=",key(since)).onSnapshot(snap=>{
-    const m={};snap.docs.forEach(d=>{const v=d.data();if(v)m[d.id]={levels:v.levels||{},na:Array.isArray(v.na)?v.na.filter(x=>x===0||x===1||x===2):[],note:v.note||"",updatedAt:+v.updatedAt||0,firstAt:+v.firstAt||+v.updatedAt||0,morning:v.morning&&typeof v.morning==="object"?{levels:v.morning.levels||{},note:String(v.morning.note||""),at:+v.morning.at||0}:null,sameAt:+v.sameAt||0}});
+    const m={};snap.docs.forEach(d=>{const v=d.data();if(v)m[d.id]={levels:v.levels||{},why:cleanWhy(v.why),na:Array.isArray(v.na)?v.na.filter(x=>x===0||x===1||x===2):[],note:v.note||"",updatedAt:+v.updatedAt||0,firstAt:+v.firstAt||+v.updatedAt||0,morning:v.morning&&typeof v.morning==="object"?{levels:v.morning.levels||{},note:String(v.morning.note||""),at:+v.morning.at||0}:null,sameAt:+v.sameAt||0}});
     const tk=todayKey(),prevAt=entries[id]?.[tk]?.updatedAt||0,nowAt=m[tk]?.updatedAt||0;
     if(id!==me&&id===partnerId&&seenSnap[id]&&nowAt>prevAt&&nowAt>ciSeen)toast(prevAt?`${nm(id)} updated their check-in 💞`:`${nm(id)} just checked in 💞`);
     seenSnap[id]=true;
@@ -5179,7 +5238,7 @@ function watch(id){
     sent[id]=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();
   },()=>{});
   db.collection(`${base(id)}/wins`).where("date",">=",key(since)).onSnapshot(snap=>{
-    const m={};snap.docs.forEach(d=>{m[d.id]=d.data()||{}});wins[id]=m;if(tab==="home")renderHome();if(tab==="today")renderWins();
+    const m={};snap.docs.forEach(d=>{m[d.id]=d.data()||{}});wins[id]=m;if(tab==="home")renderHome();if(tab==="today"){renderWins();renderWeekWins()}
   },()=>{});
   db.collection(`${base(id)}/replies`).onSnapshot(snap=>{
     const m={};snap.docs.forEach(d=>m[d.id]=d.data()||{});replies[id]=m;renderAll();
@@ -5331,7 +5390,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-19.10";
+const APP_VERSION="2026-10-20.1";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();

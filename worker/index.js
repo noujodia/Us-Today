@@ -148,12 +148,13 @@ Give exactly 3 steps.`,
   summary: {
     max: 1600,
     system: `Write a short weekly reflection for a couple from both partners' daily check-ins over the last 7 days, plus their About me answers and schedules.
-Be warm, honest and specific: name who, which days, and what the check-ins showed. Notice links with schedules (work days, kid nights) when the data supports it. Do not diagnose, assign blame or invent details. If there are few check-ins, say so briefly and keep it short.
+Be warm, honest and specific: name who, which days, and what the check-ins showed. Notice links with schedules (work days, kid nights) when the data supports it. Some feelings come with a reason (work, personal, or just in general, sometimes in their own words); use it. Celebrate logged wins by name and count. Do not diagnose, assign blame or invent details. If there are few check-ins, say so briefly and keep it short.
 If anything suggests danger, abuse or a crisis, gently encourage reaching out to a trusted person or a professional.
 Respond with JSON only, no other text:
 {"title": "short title for the week, at most 8 words",
  "patterns": ["2 or 3 short observations, one or two sentences each"],
  "win": "one sentence on something that went well between them",
+ "wins": ["1 or 2 short celebrations of the wins they logged, with counts, like 'Maya worked out 3 times this week'. Empty list if no wins were logged"],
  "try": ["2 concrete ideas for the coming week that fit their schedules"]}`,
   },
 };
