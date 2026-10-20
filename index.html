@@ -1187,8 +1187,8 @@ const GMETA=[{em:"💞",c:"var(--g0)"},{em:"☀️",c:"var(--g1)"},{em:"🌧️"
 const FEMO={loved:"❤️",appreciated:"🙏",connected:"🫂",desire:"🔥",happy:"😄",calm:"😌",tired:"😴",stressed:"😵‍💫",anxious:"😬",sad:"😢",lonely:"🥺",hurt:"💔",irritated:"😤",angry:"😡"};
 const LVL=["a little","fairly","really","very"];
 /* Why a heavy feeling is there: work, personal, just in general, plus their own words */
-const WHY_R=[["work","💼 Work"],["personal","🏠 Personal"],["both","💼🏠 Both"],["general","🌫️ Just in general"]];
-const WHY_TXT={work:"work",personal:"personal",both:"work and personal",general:"just in general"};
+const WHY_R=[["work","💼 Work"],["personal","🏠 Personal"],["school","🎓 School"],["event","📅 Big event"],["both","💼🏠 Both"],["general","🌫️ Just in general"]];
+const WHY_TXT={work:"work",personal:"personal",school:"school",event:"a big event",both:"work and personal",general:"just in general"};
 const WHY_MAX=100;
 function cleanWhy(o){const out={};if(!o||typeof o!=="object")return out;EMO.filter(x=>x.g===2).forEach(x=>{const w=o[x.k];if(!w||typeof w!=="object")return;const r=WHY_TXT[w.r]?w.r:"";const t=typeof w.t==="string"?w.t.trim().slice(0,WHY_MAX):"";if(r||t)out[x.k]=t?{r,t}:{r}});return out}
 const whyOf=(e,k)=>{const w=e?.why?.[k];if(!w)return"";const r=WHY_TXT[w.r]||"",t=(w.t||"").trim();return r&&t?`${r}: ${t}`:r||t};
@@ -2875,7 +2875,7 @@ async function callAi(mode,facts){
   const r=await fetch(WORKER_URL+"ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode,facts})});
   const d=await r.json().catch(()=>({}));if(!r.ok||!d.result)throw new Error(d.error||"ai");return d.result;
 }
-const feelText=e=>{if(!e)return"no check-in";const t=topList(e.levels,8).map(x=>{const w=e?.why?.[x.k],r={work:"because of work",personal:"because of something personal",both:"because of both work and personal life",general:"nothing specific, just in general"}[w?.r]||"",t=(w?.t||"").trim(),y=[r,t?`in their words: "${t}"`:""].filter(Boolean).join(", ");return word(x.k,x.v)+(y?` (${y})`:"")}).join(", ");return(t||"no feelings marked")+(e.note?`. Note: "${e.note}"`:"")};
+const feelText=e=>{if(!e)return"no check-in";const t=topList(e.levels,8).map(x=>{const w=e?.why?.[x.k],r={work:"because of work",personal:"because of something personal",school:"because of school",event:"because of a big event coming up or happening",both:"because of both work and personal life",general:"nothing specific, just in general"}[w?.r]||"",t=(w?.t||"").trim(),y=[r,t?`in their words: "${t}"`:""].filter(Boolean).join(", ");return word(x.k,x.v)+(y?` (${y})`:"")}).join(", ");return(t||"no feelings marked")+(e.note?`. Note: "${e.note}"`:"")};
 const factsOf=who=>profileFacts(who).filter(([k,v])=>v&&k!=="Name").map(([k,v])=>`- ${k}: ${v}`).join("\n")||"- (no answers yet)";
 const SCHED_KEYS=["Work days","Hours","Home","Busy kid nights","Best time to connect","With the kids"];
 const schedOf=who=>profileFacts(who).filter(([k,v])=>v&&SCHED_KEYS.includes(k)).map(([k,v])=>`- ${k}: ${v}`).join("\n")||"- (not filled in)";
@@ -3016,7 +3016,7 @@ async function setAiOk(v){
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
   {id:"2026-10-20a",at:"2026-10-20T09:00:00-04:00",date:"Oct 20, 2026",items:[
-    {em:"🌧️",t:"Say why it's weighing on you",b:"When you mark stressed, anxious, sad and the rest, pick Work, Personal, Both or Just in general, and add why if you want. Your partner sees it with your check-in.",go:["today","dialBox"]},
+    {em:"🌧️",t:"Say why it's weighing on you",b:"When you mark stressed, anxious, sad and the rest, pick Work, Personal, School, Big event, Both or Just in general, and add why if you want. Your partner sees it with your check-in.",go:["today","dialBox"]},
     {em:"🔥",t:"Your wins add up",b:"Today's wins now show your week, like “You worked out 3 times this week!”, and your weekly recap celebrates them too.",go:["today","secWins"]}
   ]},
   {id:"2026-10-19e",at:"2026-10-19T19:55:00-04:00",date:"Oct 19, 2026",items:[
@@ -5390,7 +5390,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-20.2";
+const APP_VERSION="2026-10-20.3";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
