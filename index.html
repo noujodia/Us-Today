@@ -462,7 +462,7 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .sring.gold{padding:6px;background:conic-gradient(from 0deg,#fff1a8,#f2c14e,#d4932a,#f8d36b,#fff1a8)}
 .ibanner{display:flex;align-items:center;gap:10px;margin-top:10px;padding:12px;border-radius:14px;background:var(--accent-soft);text-align:left}.ibanner .iic{font-size:1.5rem}.ibanner .itx{flex:1;display:flex;flex-direction:column;gap:2px}.ibanner .x{position:static}
 @media (prefers-reduced-motion:reduce){.hcap.pulse{animation:none}}
-.brand{font-size:2.6rem;letter-spacing:-.02em;margin:0}.tagline{margin:-6px 0 0;font-style:italic;color:var(--accent);font-weight:600}
+.brand{font-size:2.6rem;letter-spacing:-.02em;margin:0}.wfeats{gap:12px}.wfeats h3{margin:4px 0 0}.wfeat{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:start}.wfeat>span{width:40px;height:40px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:20px}.wfeat b{display:block;font-size:15px}.wfeat p{margin:2px 0 0;font-size:14px;color:var(--muted);line-height:1.45}#toBetaReq{color:var(--accent);font-weight:600}.btnlink{display:flex;align-items:center;justify-content:center;text-decoration:none;text-align:center;box-sizing:border-box}.tagline{margin:-6px 0 0;font-style:italic;color:var(--accent);font-weight:600}
 .relh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.relnew{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--accent);color:#fff}
 .nxr.past .ic2{opacity:.7}.nxr.past b{font-weight:600}.nxr .rt.late{color:#d38a12}.nxacts{display:flex;gap:10px;align-items:center;margin-top:6px;flex-wrap:wrap}.nxacts .primary.small{padding:6px 12px;font-size:.82rem}.nxdone{display:block;margin-top:8px}
 .priv h3{margin:6px 0 0;font-size:1rem}.priv ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
@@ -1066,6 +1066,22 @@ details.pl summary{cursor:pointer;font-weight:600}
       <label for="betaCode" class="small" style="font-weight:600">Beta invite code</label>
       <input type="text" id="betaCode" placeholder="US-XXXXXX" autocapitalize="characters" autocomplete="off" spellcheck="false" maxlength="12">
       <button class="primary" id="startSpace">Start our space</button>
+      <p class="small muted" style="margin:0">No code yet? <a href="#betaReq" id="toBetaReq">Request beta access</a></p>
+    </div>
+    <div class="card stack betareq" id="betaReq">
+      <h3>💌 Want to try the beta?</h3>
+      <p class="small muted" style="margin:0">Noudé is invite-only while we test. Email us and we'll send you and your partner an invite code.</p>
+      <a class="primary btnlink" id="betaMail" href="mailto:hello@noudeapp.com?subject=Noud%C3%A9%20beta%20access&amp;body=Hi!%20We'd%20love%20to%20try%20the%20Noud%C3%A9%20beta.%0A%0AOur%20names%3A%20%0AHow%20you'd%20like%20to%20get%20the%20invite%20(email%20or%20text)%3A%20%0AHow%20we%20heard%20about%20Noud%C3%A9%3A%20%0A">Email hello@noudeapp.com</a>
+      <div class="row" style="gap:8px;align-items:center"><span class="small">Or write to <b>hello@noudeapp.com</b></span><button class="link small" id="betaCopy" type="button">Copy</button></div>
+    </div>
+    <div class="stack wfeats" aria-labelledby="wfTitle">
+      <h3 id="wfTitle">What's inside</h3>
+      <div class="wfeat"><span aria-hidden="true">💞</span><div><b>30-second check-ins</b><p>Tap how you feel. Your partner sees it right away, along with what you need today.</p></div></div>
+      <div class="wfeat"><span aria-hidden="true">✨</span><div><b>AI ideas for your partner</b><p>Three simple ways to show up, based on how they feel today. Powered by Claude, and off until you both turn it on.</p></div></div>
+      <div class="wfeat"><span aria-hidden="true">🏆</span><div><b>Wins and cheers</b><p>Log personal and work wins, cheer each other on, and watch your week add up.</p></div></div>
+      <div class="wfeat"><span aria-hidden="true">🎯</span><div><b>Couple Quest and goals</b><p>Unlock levels and badges together, and set shared goals you both track.</p></div></div>
+      <div class="wfeat"><span aria-hidden="true">📸</span><div><b>Stories, captions and private chat</b><p>Photos, videos, GIFs and songs, seen by exactly one person.</p></div></div>
+      <div class="wfeat"><span aria-hidden="true">🔒</span><div><b>Private by design</b><p>Just you and your partner. Viewing members' photos, messages or check-ins is against company policy; we only collect anonymous usage counts.</p></div></div>
     </div>
     <div class="card stack">
       <h3>Already have a space?</h3>
@@ -5490,6 +5506,8 @@ function useLink(L){
   spaceKey=L.key;
   try{localStorage.setItem("ut_space",spaceKey);if(L.who)localStorage.setItem("ut_who",L.who);else if(prev!==spaceKey)localStorage.setItem("ut_who",B)}catch(e){}
 }
+$("betaCopy").onclick=async()=>{try{await navigator.clipboard.writeText("hello@noudeapp.com");toast("Email address copied")}catch(e){toast("hello@noudeapp.com")}};
+$("toBetaReq").onclick=e=>{e.preventDefault();$("betaReq").scrollIntoView({behavior:"smooth",block:"center"})};
 $("joinBtn").onclick=()=>{
   const L=parseLink($("joinInput").value);
   if(!L){$("welcomeErr").textContent="That doesn't look like an Noudé link. Copy the whole link and try again.";return}
@@ -5500,7 +5518,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-20.6";
+const APP_VERSION="2026-10-20.7";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
