@@ -462,7 +462,7 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .sring.gold{padding:6px;background:conic-gradient(from 0deg,#fff1a8,#f2c14e,#d4932a,#f8d36b,#fff1a8)}
 .ibanner{display:flex;align-items:center;gap:10px;margin-top:10px;padding:12px;border-radius:14px;background:var(--accent-soft);text-align:left}.ibanner .iic{font-size:1.5rem}.ibanner .itx{flex:1;display:flex;flex-direction:column;gap:2px}.ibanner .x{position:static}
 @media (prefers-reduced-motion:reduce){.hcap.pulse{animation:none}}
-.brand{font-size:2.6rem;letter-spacing:-.02em;margin:0}.wshots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:6px 0 4px}.wshots figure{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}.wshots img{width:100%;height:auto;aspect-ratio:314/680;object-fit:cover;object-position:top;border-radius:22px;border:4px solid #1a1016;box-sizing:border-box;display:block;background:var(--soft);box-shadow:0 6px 18px rgba(26,16,22,.18),0 0 0 1px var(--line)}.wshots figcaption{font-size:13.5px;font-weight:600;text-align:center}.wfeats{gap:12px}.wfeats h3{margin:4px 0 0}.wfeat{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:start}.wfeat>span{width:40px;height:40px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:20px}.wfeat b{display:block;font-size:15px}.wfeat p{margin:2px 0 0;font-size:14px;color:var(--muted);line-height:1.45}#toBetaReq{color:var(--accent);font-weight:600}.btnlink{display:flex;align-items:center;justify-content:center;text-decoration:none;text-align:center;box-sizing:border-box}.tagline{margin:-6px 0 0;font-style:italic;color:var(--accent);font-weight:600}
+.brand{font-size:2.6rem;letter-spacing:-.02em;margin:0}.wshots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:6px 0 4px}.wshots figure{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}.wshots img{width:100%;height:auto;aspect-ratio:314/680;object-fit:cover;object-position:top;border-radius:22px;border:4px solid #1a1016;box-sizing:border-box;display:block;background:var(--soft);box-shadow:0 6px 18px rgba(26,16,22,.18),0 0 0 1px var(--line)}.wshots figcaption{font-size:13.5px;font-weight:600;text-align:center}#codesManual>summary{cursor:pointer;font-weight:600}.wfeats{gap:12px}.wfeats h3{margin:4px 0 0}.wfeat{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:start}.wfeat>span{width:40px;height:40px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:20px}.wfeat b{display:block;font-size:15px}.wfeat p{margin:2px 0 0;font-size:14px;color:var(--muted);line-height:1.45}#toBetaReq{color:var(--accent);font-weight:600}.btnlink{display:flex;align-items:center;justify-content:center;text-decoration:none;text-align:center;box-sizing:border-box}.tagline{margin:-6px 0 0;font-style:italic;color:var(--accent);font-weight:600}
 .relh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.relnew{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--accent);color:#fff}
 .nxr.past .ic2{opacity:.7}.nxr.past b{font-weight:600}.nxr .rt.late{color:#d38a12}.nxacts{display:flex;gap:10px;align-items:center;margin-top:6px;flex-wrap:wrap}.nxacts .primary.small{padding:6px 12px;font-size:.82rem}.nxdone{display:block;margin-top:8px}
 .priv h3{margin:6px 0 0;font-size:1rem}.priv ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
@@ -5243,7 +5243,7 @@ async function shareCode(c){
 function watchCodes(){
   if(codesUnsub)return;
   try{codesUnsub=db.top.collection("betaCodes").orderBy("createdAt","desc").limit(200).onSnapshot(q=>{codesErr=false;codesList=q.docs.map(d=>({id:d.id,...(d.data()||{})}));
-    {const fresh=codesList.filter(c=>c.used&&+c.usedAt>codesSeenAt);if(fresh.length&&codesSeenAt){const c=fresh[0];toast(`🎉 ${c.note?c.note+"'s code":"Invite "+c.id} was just used`);codesSeenAt=Math.max(...fresh.map(c=>+c.usedAt));try{localStorage.setItem("ut_codeseen",String(codesSeenAt))}catch(e){}}}if(!$("codesSheet").hidden)renderCodes()},()=>{codesErr=true;codesUnsub=null;if(!$("codesSheet").hidden)renderCodes()})}catch(e){codesErr=true}
+    {const fresh=codesList.filter(c=>c.used&&!c.manual&&+c.usedAt>codesSeenAt);if(fresh.length&&codesSeenAt){const c=fresh[0];toast(`🎉 ${c.note?c.note+"'s code":"Invite "+c.id} was just used`);codesSeenAt=Math.max(...fresh.map(c=>+c.usedAt));try{localStorage.setItem("ut_codeseen",String(codesSeenAt))}catch(e){}}}if(!$("codesSheet").hidden)renderCodes()},()=>{codesErr=true;codesUnsub=null;if(!$("codesSheet").hidden)renderCodes()})}catch(e){codesErr=true}
 }
 async function newCode(note){
   const id=genCode();
@@ -5266,9 +5266,20 @@ function renderCodes(){
   const inp=el("input");inp.type="text";inp.id="codeNote";inp.maxLength=60;inp.placeholder="e.g. Jay & Kim";
   const b=el("button","primary","Create code");b.onclick=async()=>{b.disabled=true;const id=await newCode(inp.value);inp.value="";b.disabled=false;if(id)toast(`Code ${id} created. Tap 📤 Share invite below.`)};
   form.append(lab,inp,b);box.append(form);
+  // Couples who joined before invite codes existed: add them to the Used list by hand (not linked to their space or usage)
+  {const ex=el("details","card stack");ex.id="codesManual";ex.append(el("summary",null,"Couple joined before invite codes?"));
+    const w=el("div","stack");w.style.gap="8px";w.append(el("p","small muted","Add them to your Used list so you can keep track and send nudges. This doesn't connect to their space or their usage."));
+    const l1=el("label","small","Who they are");l1.htmlFor="manNote";l1.style.fontWeight="600";const n=el("input");n.type="text";n.id="manNote";n.maxLength=60;n.placeholder="e.g. Johnny & Nancy";
+    const l2=el("label","small","Phone number (optional, for nudges)");l2.htmlFor="manPhone";l2.style.fontWeight="600";const ph=el("input");ph.type="tel";ph.id="manPhone";ph.inputMode="tel";ph.placeholder="(617) 555-0142";
+    const go=el("button","secondary","Add to Used");go.type="button";
+    go.onclick=async()=>{const note=n.value.trim();if(!note){n.focus();toast("Add who they are first");return}const num=ph.value.trim()?smsNumber(ph.value):"";if(ph.value.trim()&&!num){toast("Enter a full phone number, like (617) 555-0142.");ph.focus();return}
+      go.disabled=true;const id=genCode(),t=Date.now();
+      try{await db.top.doc("betaCodes/"+id).set({used:true,usedAt:t,createdAt:t,note:note.slice(0,60),manual:true});if(num)await saveContact(id,num,note);n.value="";ph.value="";toast(`${note} added to Used`)}
+      catch(e){console.error(e);toast("Couldn't add them. Check your connection.")}finally{go.disabled=false}};
+    w.append(l1,n,l2,ph,go);ex.append(w);box.append(ex)}
   const unused=codesList.filter(c=>!c.used),used=codesList.filter(c=>c.used);
   const sec=(title,list)=>{if(!list.length)return;box.append(el("h4",null,title));list.forEach(c=>{
-    const r=el("div","fbi"+(c.used?" fdone":" isnew")),top=el("div","top");top.append(el("span","kind "+(c.used?"love":"idea"),c.used?"Used":"Unused"),el("span","who",c.id),el("span","when",c.used&&c.usedAt?timeAgo(c.usedAt):timeAgo(c.createdAt||Date.now())));r.append(top);
+    const r=el("div","fbi"+(c.used?" fdone":" isnew")),top=el("div","top");top.append(el("span","kind "+(c.used?"love":"idea"),c.used?"Used":"Unused"),el("span","who",c.id),el("span","when",c.manual?"Joined before codes":c.used&&c.usedAt?timeAgo(c.usedAt):timeAgo(c.createdAt||Date.now())));r.append(top);
     if(c.note)r.append(el("p","msg",c.note));
     if(c.used&&contacts[c.id]?.phone)r.append(nudgeBox(c.id,contacts[c.id].phone));
     if(!c.used){
@@ -5563,7 +5574,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-20.11";
+const APP_VERSION="2026-10-21.1";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
