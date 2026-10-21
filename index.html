@@ -317,7 +317,7 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .sec>summary .sh{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .sec>summary h2{margin:0;font-size:1.05rem}
 .sec>summary .ssum{font-size:.84rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.sec>summary .chev{flex:none;width:28px;height:28px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-size:.8rem;transition:transform .2s}
+.sec>summary .chev{flex:none;width:36px;height:36px;border-radius:50%;background:color-mix(in srgb,var(--accent) 16%,transparent);border:1.5px solid color-mix(in srgb,var(--accent) 45%,transparent);display:grid;place-items:center;color:var(--accent);font-size:.95rem;font-weight:700;transition:transform .2s,background .2s;box-sizing:border-box}.sec>summary:hover .chev,.sec>summary:focus-visible .chev{background:color-mix(in srgb,var(--accent) 26%,transparent)}
 .sec[open]>summary .chev{transform:rotate(180deg)}
 .sec[open]>summary{border-color:transparent;background:none;padding:4px 2px 0}
 .sec>.secbody{display:flex;flex-direction:column;gap:12px;margin-top:10px}
@@ -2621,7 +2621,7 @@ function renderConnectHead(){
     box.append(c);
   });
 }
-function renderConnect(){renderConnectHead();renderTouches();renderPicCard();renderSongs();renderPickers();renderInbox();renderGoals();renderSent()}
+function renderConnect(){renderConnectHead();renderTouches();renderPicCard();renderSongs();renderPickers();renderInbox();renderGoals();renderSent();renderMoney()}
 
 /* ================= About me + onboarding ================= */
 let step=0,pd={},firstRun=false;
@@ -5388,7 +5388,7 @@ $("meCoachOk").onclick=e=>{e.stopPropagation();meCoachSeen()};
 $("tabHome").onclick=()=>setTab("home");$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>{meCoachSeen();setTab("me")};$("tabChat").onclick=()=>setTab("chat");
 
 let remT=0;function remSoon(){clearTimeout(remT);remT=setTimeout(()=>syncReminder(),1500)}
-function renderAll(){remSoon();questSoon();if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderWins();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();renderMoney();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
+function renderAll(){remSoon();questSoon();if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderWins();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
 
 /* ================= Live data ================= */
 const subs={},seenSnap={};
@@ -5563,7 +5563,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-20.10";
+const APP_VERSION="2026-10-20.11";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
