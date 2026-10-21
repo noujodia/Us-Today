@@ -204,6 +204,16 @@ input,textarea,select{font-size:16px!important}
 .att .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
 .att .x{border:0;background:var(--soft);color:var(--ink);width:28px;height:28px;border-radius:50%;padding:0;flex:none}
 .composer{display:flex;gap:8px;align-items:flex-end;border-top:1px solid var(--line);padding:10px}
+.chathead{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}.chathead h2{margin:0;font-size:1.15rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#chatReach .reach{flex-wrap:nowrap;gap:6px}#chatReach .reach a,#chatReach .reach button{width:40px;height:40px;min-height:40px;padding:0;justify-content:center;font-size:18px;border-radius:50%}
+.chattip{font-size:12.5px;color:var(--muted);text-align:center;padding:2px 12px 8px}
+#ciBanner:empty,#bannerBox:empty{display:none}
+html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none;height:100%}
+html.chatmode #topHead,html.chatmode #whoSwitch{display:none!important}
+html.chatmode #pChat:not([hidden]){display:flex;flex-direction:column;gap:8px;min-height:0}
+html.chatmode .chat{flex:1;min-height:0}
+html.chatmode .msgs{height:auto;flex:1;min-height:0}
+html.chatmode .composer{padding-bottom:max(10px,env(safe-area-inset-bottom,0px))}
 .composer textarea{flex:1;resize:none;min-height:42px;max-height:140px;border-radius:21px;padding:10px 14px;line-height:1.35}
 .composer .primary{width:42px;height:42px;padding:0;border-radius:50%;flex:none;display:grid;place-items:center;font-size:1.1rem}
 .composer .primary:disabled{opacity:.4}
@@ -663,7 +673,7 @@ details.pl summary{cursor:pointer;font-weight:600}
 </head>
 <body>
 <div class="wrap">
-  <div class="row between" style="align-items:flex-start;gap:12px;flex-wrap:nowrap">
+  <div class="row between" id="topHead" style="align-items:flex-start;gap:12px;flex-wrap:nowrap">
     <div class="stack" style="gap:4px;min-width:0">
       <span class="eyebrow" id="dateLabel">Today</span>
       <h1 id="hello">How are we feeling?</h1>
@@ -857,7 +867,7 @@ details.pl summary{cursor:pointer;font-weight:600}
   </div>
 
   <div id="pChat" class="stack" hidden style="gap:12px">
-    <div class="stack" style="gap:4px"><h2 id="chatTitle">Messages</h2><div id="chatReach"></div><p class="muted small">Just the two of you. Tap a message to react with an emoji. Photos and videos here count toward your 2 a day.</p></div>
+    <div class="chathead"><h2 id="chatTitle">Messages</h2><div id="chatReach"></div></div>
     <div class="chat">
       <div class="msgs" id="msgs" aria-live="polite"></div>
       <div class="att" id="att" hidden></div>
@@ -2369,7 +2379,7 @@ const payApps=p=>[["venmo","Venmo"],["cashapp","Cash App"],["paypal","PayPal"]].
 function reachEl(p,opts={}){
   if(!p)return null;const ph=reachOf(p,"phone"),apps=payApps(p);if(!ph&&!(apps.length&&opts.money))return null;
   const w=el("div","reach");w.setAttribute("role","group");w.setAttribute("aria-label",`Reach ${nm(p)}`);
-  const lk=(t,u,stat)=>{const a=el("a",null,t);a.href=u;if(/^https:/.test(u)){a.target="_blank";a.rel="noopener"}a.onclick=()=>track({[stat]:1});w.append(a)};
+  const lk=(t,u,stat)=>{const a=el("a",null,opts.compact?t.split(" ")[0]:t);if(opts.compact){a.setAttribute("aria-label",t.replace(/^\S+\s/,""));a.title=a.getAttribute("aria-label")}a.href=u;if(/^https:/.test(u)){a.target="_blank";a.rel="noopener"}a.onclick=()=>track({[stat]:1});w.append(a)};
   if(ph){lk("📞 Call","tel:"+ph,"n.call");if(isIOSDev){lk("🎥 FaceTime","facetime:"+ph,"n.facetime");lk("🎧 FaceTime audio","facetime-audio:"+ph,"n.facetime")}else lk("💬 WhatsApp","https://wa.me/"+ph.slice(1),"n.call")}
   if(apps.length&&opts.money){const b=el("button",null,"💸 Send money");b.type="button";b.onclick=()=>goTo(["connect","secMoney"]);w.append(b)}
   if(!w.children.length)return null;
@@ -2891,9 +2901,10 @@ function dayLabel(t){const d=new Date(t),k=key(d),y=new Date();y.setDate(y.getDa
 function renderChat(toBottom){
   const box=$("msgs");if(!box)return;
   const near=box.scrollHeight-box.scrollTop-box.clientHeight<80,keep=box.scrollTop;
-  $("chatTitle").textContent=partnerId?`You and ${nm(partnerId)}`:"Messages";{const cr=$("chatReach");if(cr){cr.textContent="";const r=reachEl(partnerId);if(r)cr.append(r)}}
+  $("chatTitle").textContent=partnerId?`You and ${nm(partnerId)}`:"Messages";{const cr=$("chatReach");if(cr){cr.textContent="";const r=reachEl(partnerId,{compact:true});if(r)cr.append(r)}}
   box.textContent="";const list=allMsgs();
   if(!list.length){box.append(el("div","mempty",`No messages yet. Say something sweet to ${nm(partnerId)} 💬`));return}
+  box.append(el("div","chattip","🔒 Just the two of you · Tap a message to react"));
   const seenBy=partnerId?chatReadAt(partnerId):0;
   const lastMine=[...list].reverse().find(x=>x.from===me);
   let lastDay="";
@@ -2988,7 +2999,8 @@ function autoGrow(){const t=$("msgIn");t.style.height="auto";t.style.height=Math
 $("msgIn").addEventListener("input",()=>{autoGrow();updSend()});
 $("msgIn").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&!matchMedia("(pointer:coarse)").matches){e.preventDefault();sendMsg()}});
 $("composer").onsubmit=e=>{e.preventDefault();sendMsg()};
-$("msgIn").addEventListener("focus",()=>setTimeout(()=>{const b=$("msgs");b.scrollTop=b.scrollHeight},250));
+$("msgIn").addEventListener("focus",()=>{setTimeout(()=>{fitChat();const b=$("msgs");b.scrollTop=b.scrollHeight},250);setTimeout(fitChat,600)});
+$("msgIn").addEventListener("blur",()=>setTimeout(fitChat,250));
 
 /* ================= Auto-delete ================= */
 let mediaSettings={autoDelete:0};
@@ -3180,6 +3192,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-21a",at:"2026-10-21T15:50:00-04:00",date:"Oct 21, 2026",items:[
+    {em:"💬",t:"Smoother chat",b:"Chat now fills the screen like a messaging app: only your messages scroll, the box to type in stays at the bottom, and Call and FaceTime sit at the top.",go:["chat","msgIn"]}
+  ]},
   {id:"2026-10-20c",at:"2026-10-20T23:55:00-04:00",date:"Oct 20, 2026",items:[
     {em:"💸",t:"Send money moved to Connect",b:"Pick what it's for (Lunch, Gas, Just because or your own), enter the amount, and pay with Venmo, Cash App or PayPal. Each send is saved so you both can see this month's totals.",go:["connect","secMoney"]}
   ]},
@@ -5394,10 +5409,23 @@ function setTab(t){
   if(t==="connect"){renderConnect();markSeen()}
   if(t==="me")renderProfile();
   if(t==="home")renderHome();
+  document.documentElement.classList.toggle("chatmode",t==="chat");if(t!=="chat")$("pChat").style.height="";
   if(t==="chat"){renderChat(true);markChatRead()}else renderChatBadge();
   try{window.scrollTo({top:0})}catch(e){}
+  if(t==="chat")requestAnimationFrame(fitChat);
   renderBanner();renderCiBanner();
 }
+/* Chat works like a messenger: the page stays put and only the messages scroll. The chat fills the screen above the keyboard. */
+function fitChat(){
+  if(tab!=="chat")return;const pc=$("pChat"),vv=window.visualViewport,msgs=$("msgs");
+  const atBottom=msgs.scrollHeight-msgs.scrollTop-msgs.clientHeight<40;
+  const top=pc.getBoundingClientRect().top+(window.scrollY||0),bottom=vv?vv.offsetTop+vv.height:window.innerHeight;
+  pc.style.height=Math.max(240,Math.floor(bottom-top-8))+"px";
+  if(vv&&vv.offsetTop>0&&document.activeElement===$("msgIn"))window.scrollTo(0,0);
+  if(atBottom)msgs.scrollTop=msgs.scrollHeight;
+}
+if(window.visualViewport){visualViewport.addEventListener("resize",fitChat);visualViewport.addEventListener("scroll",fitChat)}
+window.addEventListener("resize",fitChat);window.addEventListener("orientationchange",()=>setTimeout(fitChat,250));
 function meCoachSeen(){try{localStorage.setItem("ut_mecoach","1")}catch(e){}$("meCoach").hidden=true}
 function maybeMeCoach(){let seen=false;try{seen=!!localStorage.getItem("ut_mecoach")}catch(e){}if(seen||!spaceKey||!members[me]?.onboarded||tab==="me"||!$("sheet").hidden||!$("wnSheet").hidden)return;$("meCoach").hidden=false}
 $("meCoachOk").onclick=e=>{e.stopPropagation();meCoachSeen()};
@@ -5591,7 +5619,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-21.2";
+const APP_VERSION="2026-10-21.3";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
