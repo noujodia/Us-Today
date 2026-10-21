@@ -205,7 +205,8 @@ input,textarea,select{font-size:16px!important}
 .att .x{border:0;background:var(--soft);color:var(--ink);width:28px;height:28px;border-radius:50%;padding:0;flex:none}
 .composer{display:flex;gap:8px;align-items:flex-end;border-top:1px solid var(--line);padding:10px}
 .chathead{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}.chathead h2{margin:0;font-size:1.15rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#chatReach .reach{flex-wrap:nowrap;gap:6px}#chatReach .reach a,#chatReach .reach button{width:40px;height:40px;min-height:40px;padding:0;justify-content:center;font-size:18px;border-radius:50%}
+#chatReach .reach{flex-wrap:nowrap;gap:6px}.reach .rbtn .ric{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#30b85b;color:#fff;flex:none}.reach .rbtn .ric svg{width:15px;height:15px}
+#chatReach .reach{gap:14px}#chatReach .reach .rbtn{flex-direction:column;gap:3px;border:0;background:none;padding:0;min-height:0;width:auto;font-size:11.5px;font-weight:600;color:var(--muted)}#chatReach .reach .rbtn .ric{width:42px;height:42px}#chatReach .reach .rbtn .ric svg{width:21px;height:21px}
 .chattip{font-size:12.5px;color:var(--muted);text-align:center;padding:2px 12px 8px}
 #ciBanner:empty,#bannerBox:empty{display:none}
 html.chatmode,html.chatmode body{overflow:hidden;overscroll-behavior:none;height:100%}
@@ -2376,11 +2377,17 @@ function cleanReach(k,v){v=String(v||"").trim();if(!v)return"";
   return REACH_RE[k]&&REACH_RE[k].test(v)?v:""}
 const reachOf=(p,k)=>{const v=p&&members[p]?.profile?.[k];return typeof v==="string"?cleanReach(k,v):""};
 const payApps=p=>[["venmo","Venmo"],["cashapp","Cash App"],["paypal","PayPal"]].filter(([k])=>reachOf(p,k));
+const REACH_IC={
+  call:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg>',
+  video:'<svg viewBox="0 0 24 24" width="21" height="21" fill="currentColor"><rect x="2" y="6" width="13.5" height="12" rx="3"/><path d="M17 10.2l4.3-2.9a.6.6 0 0 1 .95.5v8.4a.6.6 0 0 1-.95.5L17 13.8z"/></svg>',
+  audio:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg>',
+  wa:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.8-1.1-4.6-4-4.8-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.8.9c.3.1.5.2.5.3.1.2.1.7-.2 1.3z"/></svg>'};
 function reachEl(p,opts={}){
   if(!p)return null;const ph=reachOf(p,"phone"),apps=payApps(p);if(!ph&&!(apps.length&&opts.money))return null;
   const w=el("div","reach");w.setAttribute("role","group");w.setAttribute("aria-label",`Reach ${nm(p)}`);
-  const lk=(t,u,stat)=>{const a=el("a",null,opts.compact?t.split(" ")[0]:t);if(opts.compact){a.setAttribute("aria-label",t.replace(/^\S+\s/,""));a.title=a.getAttribute("aria-label")}a.href=u;if(/^https:/.test(u)){a.target="_blank";a.rel="noopener"}a.onclick=()=>track({[stat]:1});w.append(a)};
-  if(ph){lk("📞 Call","tel:"+ph,"n.call");if(isIOSDev){lk("🎥 FaceTime","facetime:"+ph,"n.facetime");lk("🎧 FaceTime audio","facetime-audio:"+ph,"n.facetime")}else lk("💬 WhatsApp","https://wa.me/"+ph.slice(1),"n.call")}
+  const lk=(kind,t,u,stat)=>{const a=el("a","rbtn "+kind);a.href=u;if(/^https:/.test(u)){a.target="_blank";a.rel="noopener"}a.setAttribute("aria-label",`${t} ${nm(p)}`);
+    const ic=el("span","ric");ic.innerHTML=REACH_IC[kind];ic.setAttribute("aria-hidden","true");a.append(ic,el("span","rl",t));a.onclick=()=>track({[stat]:1});w.append(a)};
+  if(ph){lk("call","Call","tel:"+ph,"n.call");if(isIOSDev){lk("video","FaceTime","facetime:"+ph,"n.facetime");if(!opts.compact)lk("audio","FaceTime audio","facetime-audio:"+ph,"n.facetime")}else lk("wa","WhatsApp","https://wa.me/"+ph.slice(1),"n.call")}
   if(apps.length&&opts.money){const b=el("button",null,"💸 Send money");b.type="button";b.onclick=()=>goTo(["connect","secMoney"]);w.append(b)}
   if(!w.children.length)return null;
   return w;
@@ -5619,7 +5626,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-21.3";
+const APP_VERSION="2026-10-21.4";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
