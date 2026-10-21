@@ -788,8 +788,10 @@ details.pl summary{cursor:pointer;font-weight:600}
       <div class="row"><button class="secondary" id="picChoose" hidden>Choose photo or video</button><button class="primary" id="picSend" disabled>Send photo</button></div>
       <p class="small muted" id="picNote" hidden></p>
     </div>
+    <details class="sec" id="secSong">
+      <summary><div class="sh"><h2>Send a song or video</h2><span class="ssum" id="sumSong"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody">
     <div class="card stack" id="songCard">
-      <h2>Send a song or video</h2>
       <p class="small muted" id="songHint">Search for a song, or paste a link to a video or song.</p>
       <input type="search" id="songQ" maxlength="80" placeholder="Search a song or artist" aria-label="Search songs" enterkeyhint="search">
       <div class="sres" id="songRes" aria-live="polite"></div>
@@ -800,10 +802,12 @@ details.pl summary{cursor:pointer;font-weight:600}
       <div class="row"><button class="primary" id="sendSong">Send it</button></div>
       <details class="pl" id="playlist"><summary id="plSum">Our playlist</summary><div class="stack" id="plList" style="gap:8px;margin-top:10px"></div></details>
     </div>
-    <div class="stack">
-      <h2 id="inboxTitle">From your partner</h2>
-      <div class="card" style="padding-block:4px" id="inbox"></div>
-    </div>
+      </div>
+    </details>
+    <details class="sec" id="secFrom">
+      <summary><div class="sh"><h2 id="inboxTitle">From your partner</h2><span class="ssum" id="sumFrom"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody"><div class="card" style="padding-block:4px" id="inbox"></div></div>
+    </details>
     <details class="sec" id="secInv">
       <summary><div class="sh"><h2>Plan a date or invite</h2><span class="ssum" id="sumInv"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
       <div class="secbody"><div class="card stack">
@@ -2149,6 +2153,10 @@ function renderInbox(){
   $("inboxTitle").textContent=p?`From ${nm(p)}`:"From your partner";
   $("touchTitle").textContent=p?`Send ${nm(p)} a little something`:"Send a little something";
   const list=incoming().slice(0,25);
+  {const sec=$("secFrom"),nNew=list.filter(x=>x.createdAt>lastSeen).length;
+    if(!sec.dataset.init){sec.dataset.init="1";let o="1";try{o=localStorage.getItem("ut_fromopen")??"1"}catch(e){}sec.open=o==="1";sec.addEventListener("toggle",()=>{try{localStorage.setItem("ut_fromopen",sec.open?"1":"0")}catch(e){}})}
+    if(nNew&&sec.dataset.lastNew!==String(list[0]?.id)){sec.dataset.lastNew=String(list[0]?.id);sec.open=true}
+    setSum("sumFrom",!list.length?(p?`Nothing yet from ${nm(p)}`:"Appears once your partner joins"):nNew?`${nNew} new · ${itemTitle(list[0],"in").title}`:`Latest: ${itemTitle(list[0],"in").title} · ${timeAgo(list[0].createdAt)}`)}
   if(!list.length){box.append(el("p","muted small empty-msg",p?`Nothing yet. Hugs, invites and challenges from ${nm(p)} show up here.`:"Once your partner joins, what they send shows up here."));return}
   list.forEach(it=>{
     const rep=(replies[me]||{})[it.id],row=el("div","item");row.id="in-"+it.id;
@@ -2532,6 +2540,7 @@ $("sendSong").onclick=async()=>{
 function renderSongs(){
   const all=[...incoming().map(x=>({...x,dir:"in"})),...outgoing().map(x=>({...x,dir:"out"}))].filter(x=>x.kind==="media"&&(safeUrl(x.url)||x.track)).sort((a,b)=>b.createdAt-a.createdAt);
   $("plSum").textContent=`Our playlist (${all.length})`;$("playlist").hidden=!all.length;
+  {const last=all.find(x=>x.dir==="out"),nm2=x=>x.track?`“${x.track.name}”`:platformOf(x.url).n;setSum("sumSong",last?`Last sent: ${nm2(last)} · Our playlist (${all.length})`:all.length?`Our playlist (${all.length}) · search or paste a link`:"Search a song, or paste a YouTube, TikTok or Spotify link")}
   const box=$("plList");box.textContent="";
   all.slice(0,40).forEach(it=>{const w=el("div","stack");w.style.gap="4px";w.append(el("span","small muted",`${it.dir==="in"?"From "+nm(partnerId):"From you"} · ${timeAgo(it.createdAt)}${it.note?" · “"+it.note+"”":""}`),mediaFor(it));box.append(w)});
   $("songHint").textContent=partnerId?`Search for a song to send ${nm(partnerId)}, or paste a link to a video or song.`:"Search for a song, or paste a link to a video or song.";
@@ -3251,7 +3260,7 @@ document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("wnShee
 function maybeWhatsNew(){if(!spaceKey||!members[me]?.onboarded||!$("sheet").hidden||!$("wnSheet").hidden)return;if(unseenReleases().length)setTimeout(()=>{if($("sheet").hidden)openWhatsNew(false)},700)}
 
 /* ---- "New" dots: shown on a new feature until it's used ---- */
-const DOTS=[{k:"chat",id:"tabChat",tab:true},{k:"song",sel:"#songCard h2"},{k:"video",sel:"#picCard h2"},{k:"ai",sel:"#aiCard h3"},{k:"attach",id:"msgAttach",tab:true}];
+const DOTS=[{k:"chat",id:"tabChat",tab:true},{k:"song",sel:"#secSong h2"},{k:"video",sel:"#picCard h2"},{k:"ai",sel:"#aiCard h3"},{k:"attach",id:"msgAttach",tab:true}];
 const dotKey=k=>"ut_dot_"+spaceKey+me+"_"+k;
 const dotUsed=k=>{try{return !!localStorage.getItem(dotKey(k))}catch(e){return true}};
 function useDot(k){try{localStorage.setItem(dotKey(k),"1")}catch(e){}renderDots()}
@@ -5491,7 +5500,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-20.4";
+const APP_VERSION="2026-10-20.5";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
