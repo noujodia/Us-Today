@@ -481,6 +481,9 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .surep{max-width:420px;margin:auto;gap:12px}#sureSheet{align-items:center}
 .textit{background:var(--accent-soft);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;margin-top:8px}.textit label{font-size:12px;font-weight:700}.textit .row{gap:8px;flex-wrap:nowrap}.textit input{flex:1;min-width:0;font:inherit;font-size:16px;height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}.textit input:focus{outline:2px solid var(--accent);outline-offset:0}.textit button{min-height:44px}.textit button{white-space:nowrap}.textit .hint{opacity:.8}
 .wins{display:flex;flex-direction:column;gap:12px}.wgrp{display:flex;flex-direction:column;gap:8px}.wgrp h3{margin:0;font-size:15px}.wchips{display:flex;flex-wrap:wrap;gap:6px}.wchip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer;min-height:40px}.wchip[aria-pressed="true"]{background:var(--soft);border-color:transparent;color:var(--muted);filter:grayscale(1);opacity:.75}.wchip[aria-pressed="true"]::before{content:"✓ ";font-weight:700}.wchip .x{margin-left:6px;opacity:.6}.wwk{display:flex;flex-direction:column;gap:6px;background:var(--soft);border-radius:12px;padding:10px 12px}.wwk .wl{font-size:13px;font-weight:700;color:var(--muted)}.wwr{display:flex;flex-wrap:wrap;gap:6px}.wwc{background:var(--surface);border-radius:999px;padding:4px 10px;font-size:13.5px}.wweek{color:var(--accent)}.wkw{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}.wkw .who{font-size:13px;font-weight:700;color:var(--muted)}
+.rc label{font-weight:600;margin-bottom:-6px}.rc input{font:inherit;font-size:16px;height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink);width:100%}
+.reach{display:flex;flex-wrap:wrap;gap:8px}.reach a,.reach button,.paybtns a{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:14.5px;font-weight:600;text-decoration:none;min-height:42px;cursor:pointer}.paybtns{display:flex;flex-wrap:wrap;gap:8px}.paybtns a{background:var(--accent);color:#fff;border-color:transparent}.phero .reach{justify-content:center;margin-top:4px}
+.vprev{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface);cursor:pointer;max-width:320px;width:100%;text-align:left}.vthumb{position:relative;aspect-ratio:16/9;background:#111;display:flex;align-items:center;justify-content:center}.vthumb img,.vthumb iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}.vplay{position:relative;z-index:1;width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}.vprev.tiktok .vthumb{aspect-ratio:4/5;max-height:300px}.vmeta{display:flex;flex-direction:column;gap:2px;padding:8px 10px}.vmeta b{font-size:14px;line-height:1.3}.mrow .vprev{margin-top:4px}.bkd{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;width:auto}
 .wown{display:flex;gap:8px}.wown input{flex:1;min-width:0;font:inherit;font-size:16px;height:42px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}
 .wseg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--soft);border-radius:12px;padding:4px;gap:4px}.wseg button{border:0;background:none;border-radius:9px;padding:10px;font:inherit;font-size:15px;font-weight:600;color:var(--muted);min-height:44px;cursor:pointer}.wseg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}.wcheer{background:var(--accent-soft);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left}.wcheer b{font-size:17px}.wcheer .row{gap:14px;margin-top:4px}
 .hwins{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hwin{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}.hwin .who{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}.hwin ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:14px}.hwin .act{align-self:flex-start;border:0;background:none;padding:4px 0;font:inherit;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer}.hwin .cheered{font-size:13px;color:var(--muted)}
@@ -841,7 +844,7 @@ details.pl summary{cursor:pointer;font-weight:600}
   </div>
 
   <div id="pChat" class="stack" hidden style="gap:12px">
-    <div class="stack" style="gap:4px"><h2 id="chatTitle">Messages</h2><p class="muted small">Just the two of you. Tap a message to react with an emoji. Photos and videos here count toward your 2 a day.</p></div>
+    <div class="stack" style="gap:4px"><h2 id="chatTitle">Messages</h2><div id="chatReach"></div><p class="muted small">Just the two of you. Tap a message to react with an emoji. Photos and videos here count toward your 2 a day.</p></div>
     <div class="chat">
       <div class="msgs" id="msgs" aria-live="polite"></div>
       <div class="att" id="att" hidden></div>
@@ -890,6 +893,17 @@ details.pl summary{cursor:pointer;font-weight:600}
         <div class="cmt"><input type="text" id="avWish" inputmode="url" maxlength="400" placeholder="Paste your Amazon wish list link"><button class="secondary" id="avWishSave">Save</button></div>
         <p class="small muted" style="margin:0">In Amazon: Account → Your Lists → pick a list → Share → Copy link. Any store's list works. Your partner sees a wish list button on your profile and before birthdays and holidays.</p>
         <p class="small muted" id="wishMsg" role="status" style="margin:0"></p>
+      </div></div>
+    </details>
+    <details class="sec" id="secReach">
+      <summary><div class="sh"><h2>📞 Call &amp; send money</h2><span class="ssum" id="sumReach"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody"><div class="card stack rc">
+        <p class="small muted" style="margin:0">Only your partner sees these. They get one-tap Call and FaceTime buttons, and can send you money through your own apps. Noudé never handles calls or money. All optional.</p>
+        <label for="rcPhone" class="small">Your phone number</label><input type="tel" id="rcPhone" inputmode="tel" maxlength="20" placeholder="(617) 555-0142" autocomplete="tel">
+        <label for="rcVenmo" class="small">Venmo username</label><input type="text" id="rcVenmo" maxlength="31" placeholder="@your-name" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <label for="rcCash" class="small">Cash App $Cashtag</label><input type="text" id="rcCash" maxlength="21" placeholder="$yourname" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <label for="rcPaypal" class="small">PayPal.Me name</label><input type="text" id="rcPaypal" maxlength="60" placeholder="paypal.me/yourname" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <div class="row"><button class="secondary" id="rcSave">Save</button><span class="small muted" id="rcMsg" role="status"></span></div>
       </div></div>
     </details>
     <div class="phero" id="partnerHero" hidden></div>
@@ -1126,6 +1140,17 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="panel">
     <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="codesTitle">Beta invites</h2></div><button class="x" id="codesX" aria-label="Close">×</button></div>
     <div id="codesBody" class="stack" style="gap:12px"></div>
+  </div>
+</div>
+<div class="ov" id="paySheet" hidden role="dialog" aria-modal="true" aria-labelledby="payTitle">
+  <div class="panel surep rc">
+    <h2 id="payTitle">💸 Send money</h2>
+    <p class="small muted" id="payWho" style="margin:0"></p>
+    <label for="payAmt" class="small">Amount ($)</label><input type="text" id="payAmt" inputmode="decimal" maxlength="8" placeholder="20">
+    <label for="payNote" class="small">Note</label><input type="text" id="payNote" maxlength="60" placeholder="Dinner 🍝">
+    <div class="paybtns" id="payBtns"></div>
+    <p class="small muted" style="margin:0">Opens the app so you can confirm there. Noudé never sees or handles the money.</p>
+    <div class="row"><button class="secondary" id="payX">Close</button></div>
   </div>
 </div>
 <div class="ov" id="sureSheet" hidden role="alertdialog" aria-modal="true" aria-labelledby="sureTitle" aria-describedby="sureBody">
@@ -2144,7 +2169,7 @@ function renderInbox(){
     if(it.kind==="media"){row.append(mediaFor(it));const a=el("div","sreacts");a.setAttribute("role","group");a.setAttribute("aria-label","React to this song");
       SONG_REACTS.forEach(([k,em,t])=>{const on=rep?.status===k,b=el("button","sreact"+(on?" on":""));b.type="button";b.setAttribute("aria-pressed",String(on));b.append(el("span",null,em),document.createTextNode(" "+t));
         b.onclick=()=>{if(on)return;reply(it.id,{status:k}).then(ok=>ok&&toast(`Sent: ${t} ${em}`))};a.append(b)});row.append(a)}
-    if(it.kind==="invite"&&it.place)row.append(placeEl(it));
+    if(it.kind==="invite"&&it.place)row.append(placeEl(it,"in",rep?.status==="yes"));
     if(it.kind==="invite"&&rep?.status==="yes"){const cr=inviteCal(it,"in");if(cr)row.append(cr)}
     if(it.kind==="invite"){
       const a=el("div","row");
@@ -2188,7 +2213,7 @@ function renderSent(){
     row.append(itemHead(it,"out",s?el("span","pill "+s[1],s[0]):null));
     if(isPicLike(it)){const im=itemMedia(it);if(it.kind==="photo")im.style.maxHeight="160px";row.append(im);if(it.caption)row.append(el("p","small muted",it.caption));if(rep?.reaction){const rr=el("div","reacted",`${nm(partnerId)} reacted`);rr.append(el("b",null,rep.reaction));row.append(rr)}if(rep?.comment)row.append(el("p","reply-cap",`${nm(partnerId)}: ${rep.comment}`))}
     if(it.kind==="media"){if(it.note)row.append(el("p","need","“"+it.note+"”"));row.append(mediaFor(it))}
-    if(it.kind==="invite"&&it.place)row.append(placeEl(it));
+    if(it.kind==="invite"&&it.place)row.append(placeEl(it,"out",rep?.status==="yes"));
     if(it.kind==="invite"&&rep?.status==="yes"){const cr=inviteCal(it,"out");if(cr)row.append(cr)}
     box.append(row);
   });
@@ -2303,14 +2328,83 @@ function platformOf(u){
 }
 function mediaEl(u){
   const url=safeUrl(u);if(!url)return el("p","small muted","This link couldn't be opened.");
+  {const v=videoPreviewEl(url);if(v)return v}
   const m=platformOf(url),a=el("a","media");a.href=url;a.target="_blank";a.rel="noopener";
   const ic=el("span","ic "+m.k,m.ab),t=el("span","mt");t.append(el("b",null,m.n),el("span","u",url.replace(/^https?:\/\/(www\.)?/,"")));
   a.append(ic,t,el("span","go",m.go+" ↗"));return a;
 }
-function placeEl(it){
-  const w=el("div","stack");w.style.gap="4px";
-  w.append(el("p",null,"📍 "+it.place));
-  w.append(linkRow([{t:"See it on the map",u:mapsQ(it.place+(it.area?" "+it.area:""))}]));return w;
+/* ---- Call, FaceTime and send money: plain links, nothing passes through Noudé ---- */
+const REACH_RE={venmo:/^[A-Za-z0-9_-]{5,30}$/,cashapp:/^[A-Za-z][A-Za-z0-9_]{0,19}$/,paypal:/^[A-Za-z0-9]{1,40}$/};
+const isIOSDev=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+function cleanReach(k,v){v=String(v||"").trim();if(!v)return"";
+  if(k==="phone"){const d=v.replace(/\D/g,"");if(d.length===10)return"+1"+d;if(d.length>=11&&d.length<=15)return"+"+d;return""}
+  if(k==="venmo")v=v.replace(/^@/,"");if(k==="cashapp")v=v.replace(/^\$/,"");
+  if(k==="paypal")v=v.replace(/^(https?:\/\/)?(www\.)?paypal\.me\//i,"").replace(/[/?#].*$/,"");
+  return REACH_RE[k]&&REACH_RE[k].test(v)?v:""}
+const reachOf=(p,k)=>{const v=p&&members[p]?.profile?.[k];return typeof v==="string"?cleanReach(k,v):""};
+const payApps=p=>[["venmo","Venmo"],["cashapp","Cash App"],["paypal","PayPal"]].filter(([k])=>reachOf(p,k));
+function reachEl(p){
+  if(!p)return null;const ph=reachOf(p,"phone"),apps=payApps(p);if(!ph&&!apps.length)return null;
+  const w=el("div","reach");w.setAttribute("role","group");w.setAttribute("aria-label",`Reach ${nm(p)}`);
+  const lk=(t,u,stat)=>{const a=el("a",null,t);a.href=u;if(/^https:/.test(u)){a.target="_blank";a.rel="noopener"}a.onclick=()=>track({[stat]:1});w.append(a)};
+  if(ph){lk("📞 Call","tel:"+ph,"n.call");if(isIOSDev){lk("🎥 FaceTime","facetime:"+ph,"n.facetime");lk("🎧 FaceTime audio","facetime-audio:"+ph,"n.facetime")}else lk("💬 WhatsApp","https://wa.me/"+ph.slice(1),"n.call")}
+  if(apps.length){const b=el("button",null,"💸 Send money");b.type="button";b.onclick=()=>openPay(p);w.append(b)}
+  return w;
+}
+let payFor=null;
+function openPay(p){payFor=p;$("payWho").textContent=`To ${nickOf(p)||nm(p)}. Pick how to pay.`;$("payAmt").value="";$("payNote").value="";renderPayBtns();$("paySheet").hidden=false;setTimeout(()=>$("payAmt").focus(),50)}
+const payAmt=()=>{const v=($("payAmt").value||"").replace(/[$,\s]/g,"");return/^\d{1,5}(\.\d{1,2})?$/.test(v)&&+v>0?v:""};
+function payLink(k,u,amt,note){
+  if(k==="venmo")return`https://venmo.com/${u}?txn=pay${amt?"&amount="+amt:""}${note?"&note="+encodeURIComponent(note):""}`;
+  if(k==="cashapp")return`https://cash.app/$${u}${amt?"/"+amt:""}`;
+  return`https://paypal.me/${u}${amt?"/"+amt+"USD":""}`}
+function renderPayBtns(){const box=$("payBtns");box.textContent="";const p=payFor;if(!p)return;const amt=payAmt(),note=($("payNote").value||"").trim().slice(0,60);
+  payApps(p).forEach(([k,t])=>{const a=el("a",null,`Pay with ${t}`);a.href=payLink(k,reachOf(p,k),amt,note);a.target="_blank";a.rel="noopener";a.id="pay-"+k;a.onclick=()=>{track({"n.pay":1});setTimeout(()=>{$("paySheet").hidden=true},400)};box.append(a)})}
+$("payAmt").addEventListener("input",renderPayBtns);$("payNote").addEventListener("input",renderPayBtns);
+$("payX").onclick=()=>{$("paySheet").hidden=true};$("paySheet").addEventListener("click",e=>{if(e.target.id==="paySheet")$("paySheet").hidden=true});
+function renderReachMe(){
+  if(!$("rcPhone"))return;const pr=P(me);
+  if(document.activeElement?.closest?.("#secReach")==null){$("rcPhone").value=pr.phone?fmtPhone(pr.phone):"";$("rcVenmo").value=pr.venmo?"@"+pr.venmo:"";$("rcCash").value=pr.cashapp?"$"+pr.cashapp:"";$("rcPaypal").value=pr.paypal||""}
+  const bits=[pr.phone?"Call & FaceTime":"",...[["venmo","Venmo"],["cashapp","Cash App"],["paypal","PayPal"]].filter(([k])=>pr[k]).map(x=>x[1])].filter(Boolean);
+  setSum("sumReach",bits.length?bits.join(" · ")+" · only your partner sees these":"Add your number and payment apps");
+}
+$("rcSave").onclick=async()=>{
+  const F=[["phone","rcPhone","That phone number doesn't look right. Use 10 digits, like (617) 555-0142."],["venmo","rcVenmo","Venmo usernames are 5 to 30 letters, numbers, - or _."],["cashapp","rcCash","A $Cashtag starts with a letter, up to 20 characters."],["paypal","rcPaypal","Use just your PayPal.Me name, like yourname."]];
+  const out={};for(const [k,id,err] of F){const raw=$(id).value.trim();if(!raw)continue;const v=cleanReach(k,raw);if(!v){$("rcMsg").textContent=err;$(id).focus();return}out[k]=v}
+  const btn=$("rcSave");btn.disabled=true;$("rcMsg").textContent="Saving…";
+  try{if(!signedIn())throw{code:"signed_out"};const prof={...P(me)};F.forEach(([k])=>{if(out[k])prof[k]=out[k];else delete prof[k]});
+    await db.doc(base(me)).set({...(members[me]||{}),joinedAt:members[me]?.joinedAt||Date.now(),profile:prof});
+    members[me]={...(members[me]||{}),profile:prof};$("rcMsg").textContent="Saved ✓";document.activeElement?.blur?.();renderAll()}
+  catch(e){console.error(e);$("rcMsg").textContent=saveErr(e)}finally{btn.disabled=false}
+};
+/* ---- Book the date: links out, plus a shared "Booked" mark ---- */
+const invBooked=it=>{if(it.bookedAt)return{at:it.bookedAt,by:it.bookedBy};for(const p of [me,partnerId]){const r=p&&(replies[p]||{})[it.id];if(r?.bookedAt)return{at:r.bookedAt,by:r.bookedBy||p}}return null};
+async function markBooked(it,dir){try{if(!signedIn())throw{code:"signed_out"};const d={bookedAt:Date.now(),bookedBy:me};
+  if(dir==="out"){await db.doc(`${base(me)}/sent/${it.id}`).merge(d);it.bookedAt=d.bookedAt;it.bookedBy=me}else await reply(it.id,d);
+  track({"n.booked":1});if(partnerId)notify(partnerId,nm(me),`Booked it ✓ ${invLabel(it)} · ${it.when}`,"invite",/^[\w-]{4,40}$/.test(it.id)?"#item="+it.id:"");toast("Marked as booked ✓");renderAll()}catch(e){console.error(e);toast(saveErr(e))}}
+function placeEl(it,dir,accepted){
+  const w=el("div","stack");w.style.gap="6px";
+  w.append(el("p",null,"📍 "+it.place));const q=it.place+(it.area?" "+it.area:"");
+  w.append(linkRow([{t:"Google Maps",u:mapsQ(q)},{t:"Apple Maps",u:"https://maps.apple.com/?q="+enc(q)},{t:"OpenTable",u:"https://www.opentable.com/s?term="+enc(q)},{t:"Resy",u:"https://www.google.com/search?q="+enc(q+" Resy")}]));
+  if(dir){const bk=invBooked(it);if(bk)w.append(el("span","pill ok bkd",`✓ Booked${bk.by?` by ${bk.by===me?"you":(nickOf(bk.by)||nm(bk.by))}`:""}`));
+    else if(accepted){const b=el("button","secondary small","✓ I booked it");b.type="button";b.onclick=()=>markBooked(it,dir);w.append(b)}}
+  return w;
+}
+/* ---- YouTube and TikTok previews (title and thumbnail through the worker) ---- */
+const vidCache={};
+const VID_RE=/https?:\/\/(?:www\.|m\.|vm\.|music\.)?(?:youtube\.com|youtu\.be|tiktok\.com)\/[^\s]+/i;
+function vidId(u){try{const x=new URL(u),h=x.hostname.replace(/^(www\.|m\.|music\.)/,"");let id="";if(h==="youtu.be")id=x.pathname.slice(1).split("/")[0];else if(h==="youtube.com"){id=x.searchParams.get("v")||"";if(!id){const m=x.pathname.match(/^\/(shorts|embed|live)\/([\w-]+)/);if(m)id=m[2]}}return/^[\w-]{6,20}$/.test(id)?id:""}catch(e){return""}}
+function videoPreviewEl(u){
+  const url=safeUrl(u);if(!url)return null;const m=platformOf(url);if(m.k!=="youtube"&&m.k!=="tiktok")return null;
+  const id=m.k==="youtube"?vidId(url):"",card=el("div","vprev "+m.k),thumb=el("div","vthumb");
+  if(id){const im=el("img");im.alt="";im.loading="lazy";im.src=`https://i.ytimg.com/vi/${id}/hqdefault.jpg`;thumb.append(im)}
+  thumb.append(el("span","vplay","▶"));const meta=el("div","vmeta"),t=el("b",null,m.n+" video"),sub=el("span","small muted",url.replace(/^https?:\/\/(www\.)?/,"").slice(0,48));meta.append(t,sub);card.append(thumb,meta);
+  if(WORKER_URL){const load=vidCache[url]||(vidCache[url]=fetch(WORKER_URL+"oembed?url="+encodeURIComponent(url)).then(r=>r.ok?r.json():{}).catch(()=>({})));
+    load.then(d=>{if(!d||!d.title)return;t.textContent=d.title;sub.textContent=(d.author?d.author+" · ":"")+m.n;if(!id&&d.thumb&&/^https:\/\//.test(d.thumb)&&!thumb.querySelector("img")){const im=el("img");im.alt="";im.src=d.thumb;thumb.prepend(im)}})}
+  card.tabIndex=0;card.setAttribute("role","button");card.setAttribute("aria-label",`Play ${m.n} video`);
+  const go=e=>{e?.stopPropagation?.();if(id){const f=el("iframe");f.src=`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1`;f.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";f.allowFullscreen=true;f.title=t.textContent;thumb.replaceChildren(f);card.onclick=null;card.removeAttribute("role");track({"n.vplay":1})}else window.open(url,"_blank","noopener")};
+  card.onclick=go;card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go(e)}};
+  return card;
 }
 /* ---- Song search (Apple's free catalog search) and 30-second previews ---- */
 let songPick=null,songSeq=0,songTimer=0;
@@ -2665,11 +2759,12 @@ function chipsFor(pr,qid){
 function renderProfileView(){
   const p=other(me),isP=profView==="partner"&&!!p,who=isP?p:me,pr=P(who),pn=p?nm(p):"Partner";
   $("profView").hidden=!p;$("pvPartner").textContent=nickOf(p)||pn;$("pvMe").setAttribute("aria-pressed",String(!isP));$("pvPartner").setAttribute("aria-pressed",String(isP));
-  $("photoBox").hidden=isP;$("secDates").hidden=isP;$("secWish").hidden=isP;$("settingsBox").hidden=isP;$("editProfile").hidden=isP;
+  $("photoBox").hidden=isP;$("secDates").hidden=isP;$("secWish").hidden=isP;$("secReach").hidden=isP;if(!isP)renderReachMe();$("settingsBox").hidden=isP;$("editProfile").hidden=isP;
   const ph=$("partnerHero");ph.hidden=!isP;ph.textContent="";
   if(isP){ph.append(storyRing(p,avatar(p,"av-l"),true));const nk=nickOf(p);ph.append(el("span","pname",nk||pn));if(nk)ph.append(el("span","pnick",pn));const c=capOf(p);if(c)ph.append(el("span","pcap","“"+c+"”"));
     if(bdayOf(p))ph.append(el("span","pbday","🎂 Birthday · "+fromKey(bdayOf(p)).toLocaleDateString(undefined,{month:"long",day:"numeric"})));
-    if(wishOf(p))ph.append(wishBtn(p));else{const a=el("button","link small",`🎁 Ask ${nk||pn} to add a wish list`);a.onclick=askWish;ph.append(a)}}
+    if(wishOf(p))ph.append(wishBtn(p));else{const a=el("button","link small",`🎁 Ask ${nk||pn} to add a wish list`);a.onclick=askWish;ph.append(a)}
+    {const r=reachEl(p);if(r)ph.append(r)}}
   $("answersTitle").textContent=isP?`About ${pn}`:"About you";
   $("meIntro").textContent=isP?`What helps ${pn} feel loved and supported, in their own words.`:`${p?pn:"Your partner"} sees these answers. They shape the ideas you both get.`;
   const box=$("profileSummary");box.textContent="";
@@ -2727,7 +2822,7 @@ function dayLabel(t){const d=new Date(t),k=key(d),y=new Date();y.setDate(y.getDa
 function renderChat(toBottom){
   const box=$("msgs");if(!box)return;
   const near=box.scrollHeight-box.scrollTop-box.clientHeight<80,keep=box.scrollTop;
-  $("chatTitle").textContent=partnerId?`You and ${nm(partnerId)}`:"Messages";
+  $("chatTitle").textContent=partnerId?`You and ${nm(partnerId)}`:"Messages";{const cr=$("chatReach");if(cr){cr.textContent="";const r=reachEl(partnerId);if(r)cr.append(r)}}
   box.textContent="";const list=allMsgs();
   if(!list.length){box.append(el("div","mempty",`No messages yet. Say something sweet to ${nm(partnerId)} 💬`));return}
   const seenBy=partnerId?chatReadAt(partnerId):0;
@@ -2748,6 +2843,7 @@ function renderChat(toBottom){
       const b=el("button","bub"+(isEmojiOnly(m.text)?" bigemo":""),m.text);
       b.type="button";b.setAttribute("aria-label",(mine?"Your message: ":"Message: ")+m.text+". Tap to react");b.onclick=toggle;
       row.append(b);box.append(row);
+      {const vm=VID_RE.exec(m.text||"");const vp=vm&&videoPreviewEl(vm[0].replace(/[).,!?]+$/,""));if(vp){const r3=el("div","mrow "+(mine?"mine":"theirs"));if(!mine)r3.append(el("span","avsp"));r3.append(vp);box.append(r3)}}
     }
     const rs=reactsOf(m);
     if(rs.length){const rr=el("div","mreact "+(mine?"mine":"theirs"));const counts={};rs.forEach(x=>counts[x]=(counts[x]||0)+1);Object.entries(counts).forEach(([em,c])=>rr.append(el("span",null,c>1?em+" "+c:em)));rr.setAttribute("aria-label","Reactions: "+rs.join(" "));box.append(rr)}
@@ -3015,6 +3111,11 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-20b",at:"2026-10-20T22:00:00-04:00",date:"Oct 20, 2026",items:[
+    {em:"📞",t:"Call, FaceTime and send money",b:"Add your number and Venmo, Cash App or PayPal in About me. Your partner gets one-tap Call, FaceTime and Send money buttons in Chat and on your profile.",go:["me","secReach"]},
+    {em:"📍",t:"Book the date",b:"Date invites with a place now have OpenTable, Resy and map buttons, plus “I booked it” so you both know it's set.",go:["connect","secInv"]},
+    {em:"▶️",t:"Video previews",b:"YouTube and TikTok links in Chat and Connect show the video's title and picture. YouTube plays right in the app.",go:["chat","msgIn"]}
+  ]},
   {id:"2026-10-20a",at:"2026-10-20T09:00:00-04:00",date:"Oct 20, 2026",items:[
     {em:"🌧️",t:"Say why it's weighing on you",b:"When you mark stressed, anxious, sad and the rest, pick Work, Personal, School, Big event, Both or Just in general, and add why if you want. Your partner sees it with your check-in.",go:["today","dialBox"]},
     {em:"🔥",t:"Your wins add up",b:"Today's wins now show your week, like “You worked out 3 times this week!”, and your weekly recap celebrates them too.",go:["today","secWins"]}
@@ -5390,7 +5491,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-20.3";
+const APP_VERSION="2026-10-20.4";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();

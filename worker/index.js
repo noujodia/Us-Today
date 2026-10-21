@@ -270,6 +270,23 @@ async function ownerCodeUsed(env, d) {
 }
 
 // GIF search through GIPHY. Needs a GIPHY_KEY secret in Cloudflare (Settings → Variables and secrets).
+// Title and thumbnail for a YouTube or TikTok link, from their free public oEmbed endpoints (no key).
+async function oembed(u) {
+  let x; try { x = new URL(String(u).slice(0, 500)); } catch (_) { return { error: "bad url" }; }
+  if (x.protocol !== "https:" && x.protocol !== "http:") return { error: "bad url" };
+  const h = x.hostname.replace(/^(www\.|m\.)/, "");
+  let api = "", provider = "";
+  if (/^(youtube\.com|youtu\.be|music\.youtube\.com)$/.test(h)) { api = "https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent(x.href); provider = "youtube"; }
+  else if (/^(tiktok\.com|vm\.tiktok\.com|vt\.tiktok\.com)$/.test(h)) { api = "https://www.tiktok.com/oembed?url=" + encodeURIComponent(x.href); provider = "tiktok"; }
+  else return { error: "unsupported" };
+  try {
+    const r = await fetch(api, { headers: { "User-Agent": "Noude/1.0 (+https://noudeapp.com)" } });
+    if (!r.ok) return { error: "not found" };
+    const d = await r.json();
+    const thumb = typeof d.thumbnail_url === "string" && /^https:\/\//.test(d.thumbnail_url) ? d.thumbnail_url.slice(0, 600) : "";
+    return { provider, title: String(d.title || "").slice(0, 150), author: String(d.author_name || "").slice(0, 80), thumb };
+  } catch (_) { return { error: "failed" }; }
+}
 async function searchGifs(env, q, offset) {
   const params = new URLSearchParams({ api_key: env.GIPHY_KEY, limit: "24", offset: String(Math.max(0, Math.min(+offset || 0, 200))), rating: "pg-13", bundle: "messaging_non_clips" });
   const url = q ? "https://api.giphy.com/v1/gifs/search?" + params + "&q=" + encodeURIComponent(q.slice(0, 50)) : "https://api.giphy.com/v1/gifs/trending?" + params;
@@ -300,6 +317,11 @@ export default {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
       const results = await searchSongs(new URL(req.url).searchParams.get("term") || "");
       return new Response(JSON.stringify({ results }), { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600", ...cors(origin) } });
+    }
+    if (req.method === "GET" && path === "/oembed") {
+      if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
+      const out = await oembed(new URL(req.url).searchParams.get("url") || "");
+      return new Response(JSON.stringify(out), { status: out.error ? 400 : 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=86400", ...cors(origin) } });
     }
     if (req.method === "GET" && path === "/gif") {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
