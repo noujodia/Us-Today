@@ -270,6 +270,22 @@ async function ownerCodeUsed(env, d) {
 }
 
 // GIF search through GIPHY. Needs a GIPHY_KEY secret in Cloudflare (Settings → Variables and secrets).
+// Follow a TikTok share link to the full video address (up to 3 hops).
+async function resolveTikTok(u) {
+  let cur = u;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const r = await fetch(cur, { method: "GET", redirect: "manual", headers: { "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1" } });
+      const loc = r.headers.get("Location");
+      if (!loc) return cur;
+      const next = new URL(loc, cur);
+      if (!/(^|\.)tiktok\.com$/.test(next.hostname)) return cur;
+      cur = next.href;
+      if (/\/video\/\d+/.test(next.pathname)) return cur;
+    } catch (_) { return cur; }
+  }
+  return cur;
+}
 // Title and thumbnail for a YouTube or TikTok link, from their free public oEmbed endpoints (no key).
 async function oembed(u) {
   let x; try { x = new URL(String(u).slice(0, 500)); } catch (_) { return { error: "bad url" }; }
@@ -277,7 +293,13 @@ async function oembed(u) {
   const h = x.hostname.replace(/^(www\.|m\.)/, "");
   let api = "", provider = "";
   if (/^(youtube\.com|youtu\.be|music\.youtube\.com)$/.test(h)) { api = "https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent(x.href); provider = "youtube"; }
-  else if (/^(tiktok\.com|vm\.tiktok\.com|vt\.tiktok\.com)$/.test(h)) { api = "https://www.tiktok.com/oembed?url=" + encodeURIComponent(x.href); provider = "tiktok"; }
+  else if (/^(tiktok\.com|vm\.tiktok\.com|vt\.tiktok\.com)$/.test(h)) {
+    // Share links (tiktok.com/t/…, vm.tiktok.com/…) are redirects; TikTok's oEmbed only knows the full /@user/video/… address.
+    let full = x.href;
+    if (h !== "tiktok.com" || /^\/t\//.test(x.pathname)) full = await resolveTikTok(x.href);
+    try { const f = new URL(full); full = f.origin + f.pathname; } catch (_) {}
+    api = "https://www.tiktok.com/oembed?url=" + encodeURIComponent(full); provider = "tiktok";
+  }
   else return { error: "unsupported" };
   try {
     const r = await fetch(api, { headers: { "User-Agent": "Noude/1.0 (+https://noudeapp.com)" } });
@@ -321,7 +343,7 @@ export default {
     if (req.method === "GET" && path === "/oembed") {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
       const out = await oembed(new URL(req.url).searchParams.get("url") || "");
-      return new Response(JSON.stringify(out), { status: out.error ? 400 : 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=86400", ...cors(origin) } });
+      return new Response(JSON.stringify(out), { status: out.error ? 400 : 200, headers: { "Content-Type": "application/json", "Cache-Control": out.error ? "no-store" : "public, max-age=86400", ...cors(origin) } });
     }
     if (req.method === "GET" && path === "/gif") {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
