@@ -482,7 +482,7 @@ button.danger{align-self:flex-start;background:none;border:1.5px solid var(--war
 .textit{background:var(--accent-soft);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;margin-top:8px}.textit label{font-size:12px;font-weight:700}.textit .row{gap:8px;flex-wrap:nowrap}.textit input{flex:1;min-width:0;font:inherit;font-size:16px;height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}.textit input:focus{outline:2px solid var(--accent);outline-offset:0}.textit button{min-height:44px}.textit button{white-space:nowrap}.textit .hint{opacity:.8}
 .wins{display:flex;flex-direction:column;gap:12px}.wgrp{display:flex;flex-direction:column;gap:8px}.wgrp h3{margin:0;font-size:15px}.wchips{display:flex;flex-wrap:wrap;gap:6px}.wchip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer;min-height:40px}.wchip[aria-pressed="true"]{background:var(--soft);border-color:transparent;color:var(--muted);filter:grayscale(1);opacity:.75}.wchip[aria-pressed="true"]::before{content:"✓ ";font-weight:700}.wchip .x{margin-left:6px;opacity:.6}.wwk{display:flex;flex-direction:column;gap:6px;background:var(--soft);border-radius:12px;padding:10px 12px}.wwk .wl{font-size:13px;font-weight:700;color:var(--muted)}.wwr{display:flex;flex-wrap:wrap;gap:6px}.wwc{background:var(--surface);border-radius:999px;padding:4px 10px;font-size:13.5px}.wweek{color:var(--accent)}.wkw{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}.wkw .who{font-size:13px;font-weight:700;color:var(--muted)}
 .rc label{font-weight:600;margin-bottom:-6px}.rc input{font:inherit;font-size:16px;height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink);width:100%}
-.reach{display:flex;flex-wrap:wrap;gap:8px}.reach a,.reach button,.paybtns a{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:14.5px;font-weight:600;text-decoration:none;min-height:42px;cursor:pointer}.paybtns{display:flex;flex-wrap:wrap;gap:8px}.paybtns a{background:var(--accent);color:#fff;border-color:transparent}.phero .reach{justify-content:center;margin-top:4px}
+.reach{display:flex;flex-wrap:wrap;gap:8px}.reach a,.reach button,.paybtns a{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:14.5px;font-weight:600;text-decoration:none;min-height:42px;cursor:pointer}.paybtns{display:flex;flex-wrap:wrap;gap:8px}.paybtns a.off{opacity:.45}.mrowm{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}.mrowm .em{font-size:20px;text-align:center}.mrowm .mt{display:flex;flex-direction:column;gap:1px;min-width:0}.paybtns a{background:var(--accent);color:#fff;border-color:transparent}.phero .reach{justify-content:center;margin-top:4px}
 .vprev{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface);cursor:pointer;max-width:320px;width:100%;text-align:left}.vthumb{position:relative;aspect-ratio:16/9;background:#111;display:flex;align-items:center;justify-content:center}.vthumb img,.vthumb iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}.vplay{position:relative;z-index:1;width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}.vprev.tiktok .vthumb{aspect-ratio:auto;height:300px;width:100%;background:linear-gradient(135deg,#0b0b0f 0%,#1a1a22 55%,#2a0f1a 100%)}.vprev.tiktok .vthumb::after{content:"TikTok";position:absolute;bottom:10px;left:12px;color:#fff;opacity:.75;font-weight:700;font-size:13px;letter-spacing:.3px}.vprev.tiktok .vthumb:has(img)::after{content:none}.vmeta{display:flex;flex-direction:column;gap:2px;padding:8px 10px}.vmeta b{font-size:14px;line-height:1.3}.mrow .vprev{margin-top:4px}.bkd{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;width:auto}
 .wown{display:flex;gap:8px}.wown input{flex:1;min-width:0;font:inherit;font-size:16px;height:42px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink)}
 .wseg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--soft);border-radius:12px;padding:4px;gap:4px}.wseg button{border:0;background:none;border-radius:9px;padding:10px;font:inherit;font-size:15px;font-weight:600;color:var(--muted);min-height:44px;cursor:pointer}.wseg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}.wcheer{background:var(--accent-soft);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left}.wcheer b{font-size:17px}.wcheer .row{gap:14px;margin-top:4px}
@@ -845,6 +845,10 @@ details.pl summary{cursor:pointer;font-weight:600}
         <div class="card" style="padding-block:4px" id="sentList"></div>
       </div>
     </details>
+    <details class="sec" id="secMoney">
+      <summary><div class="sh"><h2>💸 Send money</h2><span class="ssum" id="sumMoney"></span></div><span class="chev" aria-hidden="true">▼</span></summary>
+      <div class="secbody"><div class="card stack rc" id="moneyCard"></div></div>
+    </details>
   </div>
 
   <div id="pChat" class="stack" hidden style="gap:12px">
@@ -1161,17 +1165,6 @@ details.pl summary{cursor:pointer;font-weight:600}
   <div class="panel">
     <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="codesTitle">Beta invites</h2></div><button class="x" id="codesX" aria-label="Close">×</button></div>
     <div id="codesBody" class="stack" style="gap:12px"></div>
-  </div>
-</div>
-<div class="ov" id="paySheet" hidden role="dialog" aria-modal="true" aria-labelledby="payTitle">
-  <div class="panel surep rc">
-    <h2 id="payTitle">💸 Send money</h2>
-    <p class="small muted" id="payWho" style="margin:0"></p>
-    <label for="payAmt" class="small">Amount ($)</label><input type="text" id="payAmt" inputmode="decimal" maxlength="8" placeholder="20">
-    <label for="payNote" class="small">Note</label><input type="text" id="payNote" maxlength="60" placeholder="Dinner 🍝">
-    <div class="paybtns" id="payBtns"></div>
-    <p class="small muted" style="margin:0">Opens the app so you can confirm there. Noudé never sees or handles the money.</p>
-    <div class="row"><button class="secondary" id="payX">Close</button></div>
   </div>
 </div>
 <div class="ov" id="sureSheet" hidden role="alertdialog" aria-modal="true" aria-labelledby="sureTitle" aria-describedby="sureBody">
@@ -2368,25 +2361,70 @@ function cleanReach(k,v){v=String(v||"").trim();if(!v)return"";
   return REACH_RE[k]&&REACH_RE[k].test(v)?v:""}
 const reachOf=(p,k)=>{const v=p&&members[p]?.profile?.[k];return typeof v==="string"?cleanReach(k,v):""};
 const payApps=p=>[["venmo","Venmo"],["cashapp","Cash App"],["paypal","PayPal"]].filter(([k])=>reachOf(p,k));
-function reachEl(p){
-  if(!p)return null;const ph=reachOf(p,"phone"),apps=payApps(p);if(!ph&&!apps.length)return null;
+function reachEl(p,opts={}){
+  if(!p)return null;const ph=reachOf(p,"phone"),apps=payApps(p);if(!ph&&!(apps.length&&opts.money))return null;
   const w=el("div","reach");w.setAttribute("role","group");w.setAttribute("aria-label",`Reach ${nm(p)}`);
   const lk=(t,u,stat)=>{const a=el("a",null,t);a.href=u;if(/^https:/.test(u)){a.target="_blank";a.rel="noopener"}a.onclick=()=>track({[stat]:1});w.append(a)};
   if(ph){lk("📞 Call","tel:"+ph,"n.call");if(isIOSDev){lk("🎥 FaceTime","facetime:"+ph,"n.facetime");lk("🎧 FaceTime audio","facetime-audio:"+ph,"n.facetime")}else lk("💬 WhatsApp","https://wa.me/"+ph.slice(1),"n.call")}
-  if(apps.length){const b=el("button",null,"💸 Send money");b.type="button";b.onclick=()=>openPay(p);w.append(b)}
+  if(apps.length&&opts.money){const b=el("button",null,"💸 Send money");b.type="button";b.onclick=()=>goTo(["connect","secMoney"]);w.append(b)}
+  if(!w.children.length)return null;
   return w;
 }
-let payFor=null;
-function openPay(p){payFor=p;$("payWho").textContent=`To ${nickOf(p)||nm(p)}. Pick how to pay.`;$("payAmt").value="";$("payNote").value="";renderPayBtns();$("paySheet").hidden=false;setTimeout(()=>$("payAmt").focus(),50)}
-const payAmt=()=>{const v=($("payAmt").value||"").replace(/[$,\s]/g,"");return/^\d{1,5}(\.\d{1,2})?$/.test(v)&&+v>0?v:""};
+/* ---- Send money (Connect): reason + amount, opens the partner's app; each send is logged so you both can see it ---- */
+const MONEY_R=[["lunch","🍔","Lunch"],["gas","⛽","Gas"],["just","💛","Just because"]];
+const money={};let mReason="",mOwn="",mAmt="";
+const payAmtOk=v=>{v=String(v||"").replace(/[$,\s]/g,"");return/^\d{1,5}(\.\d{1,2})?$/.test(v)&&+v>0?v:""};
 function payLink(k,u,amt,note){
   if(k==="venmo")return`https://venmo.com/${u}?txn=pay${amt?"&amount="+amt:""}${note?"&note="+encodeURIComponent(note):""}`;
   if(k==="cashapp")return`https://cash.app/$${u}${amt?"/"+amt:""}`;
   return`https://paypal.me/${u}${amt?"/"+amt+"USD":""}`}
-function renderPayBtns(){const box=$("payBtns");box.textContent="";const p=payFor;if(!p)return;const amt=payAmt(),note=($("payNote").value||"").trim().slice(0,60);
-  payApps(p).forEach(([k,t])=>{const a=el("a",null,`Pay with ${t}`);a.href=payLink(k,reachOf(p,k),amt,note);a.target="_blank";a.rel="noopener";a.id="pay-"+k;a.onclick=()=>{track({"n.pay":1});setTimeout(()=>{$("paySheet").hidden=true},400)};box.append(a)})}
-$("payAmt").addEventListener("input",renderPayBtns);$("payNote").addEventListener("input",renderPayBtns);
-$("payX").onclick=()=>{$("paySheet").hidden=true};$("paySheet").addEventListener("click",e=>{if(e.target.id==="paySheet")$("paySheet").hidden=true});
+const moneyReason=r=>{if(isOwnAns(r))return{em:"✏️",t:r.slice(3)};const x=MONEY_R.find(y=>y[0]===r);return x?{em:x[1],t:x[2]}:{em:"💸",t:"Money"}};
+const fmtUsd=n=>"$"+(Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2});
+function moneyAll(){const out=[];[me,partnerId].filter(Boolean).forEach(p=>Object.entries(money[p]||{}).forEach(([id,v])=>{if(v&&+v.amt>0)out.push({id,from:p,...v})}));return out.sort((a,b)=>b.at-a.at)}
+const monthStart=()=>{const d=new Date();d.setDate(1);d.setHours(0,0,0,0);return d.getTime()};
+function moneyMonth(p){return moneyAll().filter(x=>x.from===p&&x.at>=monthStart()).reduce((n,x)=>n+(+x.amt||0),0)}
+async function logMoney(app){
+  const amt=payAmtOk(mAmt);const r=mReason==="own"?(mOwn.trim()?"my:"+mOwn.trim().slice(0,40):""):mReason;if(!amt||!r)return;
+  const d={amt:+amt,reason:r,app,at:Date.now()};
+  try{if(!signedIn())throw{code:"signed_out"};await db.collection(`${base(me)}/money`).add(d);
+    track({"n.pay":1,["pay.r."+(isOwnAns(r)?"own":r)]:1});
+    if(partnerId)notify(partnerId,nm(me),`Sending you ${fmtUsd(+amt)} for ${moneyReason(r).t.toLowerCase()} 💸`,"money");
+    mAmt="";mOwn="";mReason="";toast(`Logged: ${fmtUsd(+amt)} · ${moneyReason(r).t}`);setTimeout(renderMoney,300)}
+  catch(e){console.error(e);toast(saveErr(e))}}
+async function delMoney(x){if(!(await sure(`Remove ${fmtUsd(+x.amt)} for ${moneyReason(x.reason).t.toLowerCase()} from your history? Use this if you didn't finish sending it.`,"Remove")))return;
+  try{await db.doc(`${base(me)}/money/${x.id}`).delete();if(money[me])delete money[me][x.id];renderMoney();toast("Removed")}catch(e){toast(saveErr(e))}}
+function renderMoney(){
+  const box=$("moneyCard");if(!box)return;const keep=document.activeElement&&box.contains(document.activeElement)?document.activeElement.id:"";box.textContent="";
+  const p=partnerId,pn=p?(nickOf(p)||nm(p)):"your partner",apps=p?payApps(p):[];
+  const mine=moneyMonth(me),theirs=p?moneyMonth(p):0;
+  setSum("sumMoney",mine||theirs?"This month: "+[mine?`you sent ${fmtUsd(mine)}`:"",theirs?`${pn} sent ${fmtUsd(theirs)}`:""].filter(Boolean).join(" · "):"Lunch, gas or just because");
+  if(!p){box.append(el("p","small muted","Once your partner joins, you can send them money here."));return}
+  if(!apps.length){box.append(el("p","small muted",`${pn} hasn't added Venmo, Cash App or PayPal yet. They can add one in About me → Call & send money.`));
+    const b=el("button","secondary",`Ask ${pn} to add one`);b.type="button";b.onclick=()=>{notify(p,nm(me),"Add your Venmo, Cash App or PayPal in About me so I can send you money 💸","money");toast("Asked ✓")};box.append(b)}
+  else{
+    box.append(el("span","small",`To ${pn}. What's it for?`));
+    const ch=el("div","wchips mchips");ch.setAttribute("role","group");ch.setAttribute("aria-label","What it's for");
+    [...MONEY_R,["own","✏️","Choose your own"]].forEach(([k,em,t])=>{const b=el("button","wchip",em+" "+t);b.type="button";b.id="mr-"+k;b.setAttribute("aria-pressed",String(mReason===k));b.onclick=()=>{mReason=mReason===k?"":k;renderMoney();if(mReason==="own")setTimeout(()=>$("mOwn")?.focus(),30)};ch.append(b)});
+    box.append(ch);
+    if(mReason==="own"){const l=el("label",null,"What's it for?");l.htmlFor="mOwn";const i=el("input");i.type="text";i.id="mOwn";i.maxLength=40;i.placeholder="Like Groceries or Date night";i.value=mOwn;i.oninput=()=>{mOwn=i.value;drawPay()};box.append(l,i)}
+    const la=el("label",null,"Amount ($)");la.htmlFor="mAmt";const a=el("input");a.type="text";a.id="mAmt";a.inputMode="decimal";a.maxLength=8;a.placeholder="20";a.value=mAmt;a.oninput=()=>{mAmt=a.value;drawPay()};
+    const qa=el("div","wchips");[10,20,50].forEach(v=>{const b=el("button","wchip","$"+v);b.type="button";b.onclick=()=>{mAmt=String(v);a.value=mAmt;drawPay()};qa.append(b)});
+    box.append(la,a,qa);
+    const pb=el("div","paybtns");pb.id="payBtns";box.append(pb);
+    const hint=el("p","small muted");hint.id="payHint";hint.style.margin="0";box.append(hint);
+    function drawPay(){pb.textContent="";const amt=payAmtOk(mAmt),r=mReason==="own"?(mOwn.trim()?"my:"+mOwn.trim():""):mReason;const ready=amt&&r;
+      hint.textContent=ready?"Opens the app so you can confirm there. Noudé logs it here and never touches the money.":!r?"Pick what it's for.":"Enter an amount.";
+      apps.forEach(([k,t])=>{const lk=el("a",null,`Pay with ${t}`);lk.id="pay-"+k;if(ready){lk.href=payLink(k,reachOf(p,k),amt,(isOwnAns(r)?moneyReason(r).t:`${moneyReason(r).t} ${moneyReason(r).em}`));lk.target="_blank";lk.rel="noopener";lk.onclick=()=>logMoney(t)}else{lk.setAttribute("aria-disabled","true");lk.classList.add("off");lk.onclick=e=>{e.preventDefault();toast(hint.textContent)}}pb.append(lk)})}
+    drawPay();
+  }
+  const all=moneyAll();
+  if(all.length){const h=el("div","stack");h.style.gap="6px";h.append(el("h4",null,"Recent"));
+    all.slice(0,8).forEach(x=>{const r=moneyReason(x.reason),row=el("div","mrowm"),isMe=x.from===me;
+      row.append(el("span","em",r.em));const t=el("div","mt");t.append(el("b",null,`${isMe?"You":(nickOf(x.from)||nm(x.from))} → ${isMe?pn:"you"} · ${fmtUsd(+x.amt)}`),el("span","small muted",`${r.t}${x.app?" · "+x.app:""} · ${timeAgo(x.at)}`));row.append(t);
+      if(isMe){const d=el("button","link small","Remove");d.type="button";d.onclick=()=>delMoney(x);row.append(d)}h.append(row)});
+    box.append(h)}
+  if(keep&&$(keep)){const i=$(keep);i.focus();try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}}
+}
 function renderReachMe(){
   if(!$("rcPhone"))return;const pr=P(me);
   if(document.activeElement?.closest?.("#secReach")==null){$("rcPhone").value=pr.phone?fmtPhone(pr.phone):"";$("rcVenmo").value=pr.venmo?"@"+pr.venmo:"";$("rcCash").value=pr.cashapp?"$"+pr.cashapp:"";$("rcPaypal").value=pr.paypal||""}
@@ -2790,7 +2828,7 @@ function renderProfileView(){
   if(isP){ph.append(storyRing(p,avatar(p,"av-l"),true));const nk=nickOf(p);ph.append(el("span","pname",nk||pn));if(nk)ph.append(el("span","pnick",pn));const c=capOf(p);if(c)ph.append(el("span","pcap","“"+c+"”"));
     if(bdayOf(p))ph.append(el("span","pbday","🎂 Birthday · "+fromKey(bdayOf(p)).toLocaleDateString(undefined,{month:"long",day:"numeric"})));
     if(wishOf(p))ph.append(wishBtn(p));else{const a=el("button","link small",`🎁 Ask ${nk||pn} to add a wish list`);a.onclick=askWish;ph.append(a)}
-    {const r=reachEl(p);if(r)ph.append(r)}}
+    {const r=reachEl(p,{money:true});if(r)ph.append(r)}}
   $("answersTitle").textContent=isP?`About ${pn}`:"About you";
   $("meIntro").textContent=isP?`What helps ${pn} feel loved and supported, in their own words.`:`${p?pn:"Your partner"} sees these answers. They shape the ideas you both get.`;
   const box=$("profileSummary");box.textContent="";
@@ -3137,6 +3175,9 @@ async function setAiOk(v){
 /* ================= What's new ================= */
 /* Newest first. Add an entry with each update; "go" is [tab, element id to highlight]. */
 const RELEASES=[
+  {id:"2026-10-20c",at:"2026-10-20T23:55:00-04:00",date:"Oct 20, 2026",items:[
+    {em:"💸",t:"Send money moved to Connect",b:"Pick what it's for (Lunch, Gas, Just because or your own), enter the amount, and pay with Venmo, Cash App or PayPal. Each send is saved so you both can see this month's totals.",go:["connect","secMoney"]}
+  ]},
   {id:"2026-10-20b",at:"2026-10-20T22:00:00-04:00",date:"Oct 20, 2026",items:[
     {em:"📞",t:"Call, FaceTime and send money",b:"Add your number and Venmo, Cash App or PayPal in About me. Your partner gets one-tap Call, FaceTime and Send money buttons in Chat and on your profile.",go:["me","secReach"]},
     {em:"📍",t:"Book the date",b:"Date invites with a place now have OpenTable, Resy and map buttons, plus “I booked it” so you both know it's set.",go:["connect","secInv"]},
@@ -5347,7 +5388,7 @@ $("meCoachOk").onclick=e=>{e.stopPropagation();meCoachSeen()};
 $("tabHome").onclick=()=>setTab("home");$("tabToday").onclick=()=>setTab("today");$("tabConnect").onclick=()=>setTab("connect");$("tabMe").onclick=()=>{meCoachSeen();setTab("me")};$("tabChat").onclick=()=>setTab("chat");
 
 let remT=0;function remSoon(){clearTimeout(remT);remT=setTimeout(()=>syncReminder(),1500)}
-function renderAll(){remSoon();questSoon();if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderWins();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
+function renderAll(){remSoon();questSoon();if(tab==="home")renderHome();renderGs();renderMidday();renderDots();renderCiBanner();renderTop();renderDials();renderWins();renderHistory();renderRecs();renderReads();renderBadge();renderBanner();if(tab==="connect"){renderConnect();renderMoney();markSeen()}if(tab==="me")renderProfile();if(tab==="chat"){renderChat();markChatRead()}else renderChatBadge()}
 
 /* ================= Live data ================= */
 const subs={},seenSnap={};
@@ -5366,6 +5407,9 @@ function watch(id){
   },()=>{});
   db.collection(`${base(id)}/wins`).where("date",">=",key(since)).onSnapshot(snap=>{
     const m={};snap.docs.forEach(d=>{m[d.id]=d.data()||{}});wins[id]=m;if(tab==="home")renderHome();if(tab==="today"){renderWins();renderWeekWins()}
+  },()=>{});
+  db.collection(`${base(id)}/money`).where("at",">=",since.getTime()).onSnapshot(snap=>{
+    const m={};snap.docs.forEach(d=>{m[d.id]=d.data()||{}});money[id]=m;if(tab==="connect")renderMoney();
   },()=>{});
   db.collection(`${base(id)}/replies`).onSnapshot(snap=>{
     const m={};snap.docs.forEach(d=>m[d.id]=d.data()||{});replies[id]=m;renderAll();
@@ -5519,7 +5563,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-20.9";
+const APP_VERSION="2026-10-20.10";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
