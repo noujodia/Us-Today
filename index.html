@@ -23,6 +23,11 @@
 <meta name="apple-mobile-web-app-title" content="Noudé">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
@@ -1051,7 +1056,7 @@ details.pl summary{cursor:pointer;font-weight:600}
   </div>
 </div>
 
-<div class="sheet" id="loading" style="display:grid;place-items:center"><p class="muted">Loading…</p></div>
+<div class="sheet" id="loading" style="display:grid;place-items:center"><div class="stack" style="gap:10px;align-items:center;text-align:center;padding:0 24px"><p class="muted" style="margin:0">Loading…</p><p class="small muted" id="slowMsg" hidden style="margin:0">Taking longer than usual. Your connection may be slow.</p><button class="secondary" id="slowRetry" hidden>Try again</button></div></div>
 <div class="sheet" id="welcome" hidden>
   <div class="inner" style="justify-content:center">
     <div class="stack" style="gap:10px"><svg class="wlogo" width="72" height="72" viewBox="0 0 512 512" role="img" aria-label="Noudé logo"><defs><linearGradient id="wlw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f04e7c"/><stop offset="0.55" stop-color="#ff8a4c"/><stop offset="1" stop-color="#ffc23d"/></linearGradient><linearGradient id="wlc" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2fb5a0"/><stop offset="0.5" stop-color="#5a7de0"/><stop offset="1" stop-color="#9b6ae0"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="#2a2030"/><path d="M222.4 130.4 A130 130 0 0 0 222.4 381.6" fill="none" stroke="url(#wlw)" stroke-width="30" stroke-linecap="round"/><path d="M289.6 130.4 A130 130 0 0 1 289.6 381.6" fill="none" stroke="url(#wlc)" stroke-width="30" stroke-linecap="round"/><path d="M256 300 C 214 272, 212 236, 236 232 C 247 230, 256 238, 256 247 C 256 238, 265 230, 276 232 C 300 236, 298 272, 256 300 Z" fill="#ec7da0"/></svg><span class="eyebrow">Welcome to</span><h1 class="brand">Noudé</h1><p class="tagline">just the two of us</p>
@@ -5458,11 +5463,17 @@ async function connectDb(root){
   const [{initializeApp},auth,fs]=await Promise.all([import(FB+"firebase-app.js"),import(FB+"firebase-auth.js"),import(FB+"firebase-firestore.js")]);
   const app=connectDb.app||(connectDb.app=initializeApp(FIREBASE_CONFIG));
   const cred=await auth.signInAnonymously(auth.getAuth(app));
-  const fdb=fs.getFirestore(app);
+  // Keep a copy on the phone so the app can open from it while the network catches up.
+  let fdb=connectDb.fdb;
+  if(!fdb){try{fdb=fs.initializeFirestore&&fs.persistentLocalCache?fs.initializeFirestore(app,{localCache:fs.persistentLocalCache(fs.persistentMultipleTabManager?{tabManager:fs.persistentMultipleTabManager()}:{})}):fs.getFirestore(app)}catch(e){fdb=fs.getFirestore(app)}connectDb.fdb=fdb}
   const snap=x=>({id:x.id,exists:x.exists(),data:()=>x.data()});
   const make=full=>{
     const doc=p=>({id:p.split("/").pop(),
       get:async()=>snap(await fs.getDoc(fs.doc(fdb,full(p)))),
+      /* Server copy, but if it takes longer than ms, use the copy saved on this phone (when there is one). */
+      getFast:async ms=>{const r=fs.doc(fdb,full(p)),srv=fs.getDoc(r);if(!fs.getDocFromCache)return snap(await srv);
+        const slow=new Promise(res=>setTimeout(()=>fs.getDocFromCache(r).then(c=>res(c)).catch(()=>{}),ms||2500));
+        return snap(await Promise.race([srv,slow]))},
       set:d=>fs.setDoc(fs.doc(fdb,full(p)),d),
       update:d=>fs.updateDoc(fs.doc(fdb,full(p)),d),
       delete:()=>fs.deleteDoc(fs.doc(fdb,full(p))),
@@ -5489,12 +5500,18 @@ function newKey(){const b=new Uint8Array(18);crypto.getRandomValues(b);return bt
 
 /* ================= Boot ================= */
 renderAll();
-const done=()=>{$("loading").hidden=true};
+const done=()=>{$("loading").hidden=true;clearTimeout(slowT)};
+let slowT=setTimeout(function slowCheck(){if($("loading").hidden)return;$("slowMsg").hidden=false;$("slowRetry").hidden=false},9000);
+$("slowRetry").onclick=()=>location.reload();
 async function startSpace(firstTime){
   try{
     db=await connectDb("couples/"+spaceKey);
   }catch(e){console.error(e);done();showNotice("Couldn't connect. Check your internet connection and reopen the app.");return}
-  const acc=await ensureAccess(firstTime?pendingCode:"",!!firstTime);
+  let known=false;try{known=!firstTime&&localStorage.getItem("ut_known_"+spaceKey)==="1"}catch(e){}
+  // A space this phone has opened before doesn't wait on the access check; it runs alongside.
+  const accP=ensureAccess(firstTime?pendingCode:"",!!firstTime);
+  const acc=known?"ok":await accP;
+  if(known)accP.then(a=>{if(a==="locked"){try{localStorage.removeItem("ut_known_"+spaceKey)}catch(e){}location.reload()}}).catch(()=>{});
   if(acc!=="ok"&&acc!=="open"){
     done();const msg={badcode:"That invite code isn't valid. Check it and try again.",usedcode:"That invite code has already been used. Ask for a new one.",needcode:"Enter your beta invite code to start.",locked:"This space isn't part of the beta. If you were invited, ask for your link again.",error:"Couldn't check your invite. Check your connection and try again."}[acc]||"Couldn't start.";
     if(firstTime){spaceKey=null;$("welcome").hidden=false;$("welcomeErr").textContent=msg;return}
@@ -5506,7 +5523,7 @@ async function startSpace(firstTime){
   let w=null;try{w=localStorage.getItem("ut_who")}catch(e){}
   me=w===B?B:A;partnerId=me===A?B:A;entries={};loadSeen();
   try{
-    const [sa,sb]=await Promise.all([db.doc(base(A)).get(),db.doc(base(B)).get()]);
+    const [sa,sb]=await Promise.all([db.doc(base(A)).getFast(2500),db.doc(base(B)).getFast(2500)]);
     members[A]=sa.exists?(sa.data()||{}):{};members[B]=sb.exists?(sb.data()||{}):{};
     if(!sa.exists&&me===A)await db.doc(base(A)).set({joinedAt:Date.now(),profile:{}});
     if(members[me]?.left){done();try{localStorage.removeItem("ut_space");localStorage.removeItem("ut_who")}catch(x){}spaceKey=null;$("welcome").hidden=false;$("welcomeErr").textContent="This spot is closed: this person left Noudé and deleted their data. To use Noudé again, start a new space with a beta invite code.";return}
@@ -5574,7 +5591,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-21.1";
+const APP_VERSION="2026-10-21.2";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
