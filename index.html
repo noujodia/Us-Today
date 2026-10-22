@@ -306,6 +306,30 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
 .tile b{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}.tile span{font-size:.8rem;color:var(--muted)}
+.ov .panel.od{max-width:1100px;max-height:94vh}
+.od-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.od-seg{display:flex;gap:4px;background:var(--soft);border-radius:12px;padding:4px}.od-seg button{border:0;background:none;border-radius:9px;padding:8px 13px;font:inherit;font-size:14px;font-weight:600;color:var(--muted);min-height:38px;cursor:pointer}.od-seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.od-tabs{display:flex;gap:18px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}.od-tabs::-webkit-scrollbar{display:none}.od-tabs button{border:0;background:none;font:inherit;font-size:15px;font-weight:600;color:var(--muted);padding:10px 2px;border-bottom:3px solid transparent;white-space:nowrap;min-height:44px;cursor:pointer}.od-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.od-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0;box-sizing:border-box}
+.od-dark{background:#2a2030;border-color:#2a2030;color:#fff;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}.od-dark .stack{flex:1 1 380px;min-width:0}.od-eye{font-size:12px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:#e9b8c9}.od-sum{margin:0;font-size:17px;line-height:1.45}
+.od-btn{border:0;border-radius:12px;padding:10px 14px;font:inherit;font-size:14px;font-weight:700;min-height:42px;cursor:pointer;align-self:flex-start}.od-btn.pink{background:#ec7da0;color:#2a2030}.od-btn.pinkfill{background:var(--accent);color:var(--accent-ink)}.od-btn.soft{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);padding:8px 12px;min-height:38px;font-size:13.5px}
+.od-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}.od-kt{font-size:14px;font-weight:600;color:var(--muted)}.od-kv{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.od-kv b{font-size:28px;letter-spacing:-.4px}
+.od-pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap}.od-pill.up,.od-pill.ok{background:#e3f4ea;color:#1f6b43}.od-pill.down,.od-pill.risk{background:#fbe7e1;color:#9a3a22}.od-pill.flat{background:var(--soft);color:var(--muted)}.od-pill.wait{background:#fff1d6;color:#7a4b00}.od-pill.new{background:#e6ecfb;color:#2f4aa0}
+.od-spark{display:flex;align-items:flex-end;gap:3px;height:32px}.od-spark i{flex:1;background:var(--accent);border-radius:3px;opacity:.85;min-width:3px}.od-spark i.b{background:#5a7de0}.od-spark i.g{background:#2fb5a0}.od-spark i.o{background:#ff8a4c}.od-spark.tall{height:56px;gap:4px}.od-spark i.lite{background:color-mix(in srgb,var(--accent) 40%,transparent)}.od-spark i.off{background:var(--line)}
+.od-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}.od-grow{flex:999 1 520px}.od-side{flex:1 1 300px}
+.od-ch{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.od-legend{display:flex;gap:12px;font-size:12.5px;color:var(--muted)}.od-legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}.od-legend .l1::before{background:var(--accent)}.od-legend .l2::before{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+.od-bars{display:flex;align-items:flex-end;gap:8px;height:190px;border-bottom:1px solid var(--line);padding-bottom:0;margin-bottom:24px}.od-bars.dense{gap:3px}.od-bars button{flex:1;height:100%;border:0;background:none;padding:0;display:flex;flex-direction:column;justify-content:flex-end;position:relative;min-width:0;cursor:pointer}.od-bars i{display:block;width:100%;transition:height .3s}.od-bars i.one{background:color-mix(in srgb,var(--accent) 35%,transparent);border-radius:4px 4px 0 0}.od-bars i.both{background:var(--accent)}.od-bars button:not(.on) i{opacity:.75}.od-bars .od-x{position:absolute;bottom:-21px;left:-6px;right:-6px;text-align:center;font-size:11px;color:var(--muted);white-space:nowrap}
+.od-det{display:flex;flex-wrap:wrap;gap:6px 16px;background:var(--soft);border-radius:12px;padding:10px 12px;font-size:14px}
+.od-al{display:flex;gap:10px;align-items:flex-start;padding-top:10px;border-top:1px solid var(--line)}.od-n{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:14px}.od-n.risk{background:#fbe7e1;color:#9a3a22}.od-n.wait{background:#fff1d6;color:#7a4b00}.od-n.blue{background:#e6ecfb;color:#2f4aa0}.od-n.gray{background:var(--soft);color:var(--muted)}
+.od-chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:13.5px;font-weight:600;min-height:36px;cursor:pointer}.od-chip[aria-pressed="true"]{background:#2a2030;border-color:#2a2030;color:#fff}.od-chips{display:flex;flex-wrap:wrap;gap:6px}
+.od-fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));column-gap:28px;row-gap:10px}.od-fr{display:grid;grid-template-columns:minmax(110px,140px) minmax(0,1fr) 48px;gap:10px;align-items:center;font-size:14px}.od-fr b{text-align:right}
+.od-tr{height:10px;background:var(--soft);border-radius:999px;overflow:hidden}.od-tr i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .3s}.od-tr.big{height:26px;border-radius:8px}.od-tr.big i{border-radius:8px}
+.od-scroll{overflow-x:auto}.od-table{min-width:600px;display:flex;flex-direction:column}.od-tr2{display:grid;grid-template-columns:90px 80px 110px 80px 80px minmax(0,1fr);gap:8px;align-items:center;text-align:left;padding:10px;border:0;border-top:1px solid var(--line);background:none;font:inherit;font-size:14px;color:var(--ink);border-radius:10px;min-height:46px;cursor:pointer}.od-tr2.on{background:color-mix(in srgb,var(--accent) 12%,transparent)}.od-th{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-top:0;cursor:default;min-height:0}.od-tr2 .mono{font-family:ui-monospace,Menlo,monospace}
+@media(max-width:620px){.od-table{min-width:0}.od-tr2{grid-template-columns:64px minmax(0,1fr) auto}.od-tr2>span:nth-child(2),.od-tr2>span:nth-child(4),.od-tr2>span:nth-child(5){display:none}}
+.od-eye2{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}.od-side h3{margin:0;font-size:18px}.od-mini{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.od-mini>div{background:var(--soft);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:2px}.od-mini b{font-size:18px}.od-tag{background:var(--soft);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600}
+.od-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.od-wbars{display:flex;align-items:flex-end;gap:8px;height:170px}.od-wbars>div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0}.od-wbars i{display:block;width:100%;max-width:34px;background:var(--accent);border-radius:6px 6px 0 0}.od-wbars span{font-size:11px;color:var(--muted);white-space:nowrap}.od-wbars b{font-size:12.5px}
 .chartc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;position:relative}
 .bars{display:flex;align-items:flex-end;gap:2px;height:120px;border-bottom:1px solid var(--line)}
 .bars button{flex:1;border:0;padding:0;background:none;height:100%;display:flex;align-items:flex-end;cursor:pointer;min-width:0}
@@ -1146,7 +1170,7 @@ details.pl summary{cursor:pointer;font-weight:600}
   </div>
 </div>
 <div class="ov" id="statsSheet" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
-  <div class="panel">
+  <div class="panel od">
     <div class="phead"><div class="stack" style="gap:2px"><span class="eyebrow">Only you can see this</span><h2 id="statsTitle">Usage</h2></div><button class="x" id="statsX" aria-label="Close">×</button></div>
     <div id="statsBody" class="stack" style="gap:12px"></div>
   </div>
@@ -3558,10 +3582,10 @@ function initOwner(){let flag=false;try{flag=!!localStorage.getItem("ut_owner")}
 let spaceHash="";
 function fnvHex(str){let h1=0x811c9dc5,h2=0x01000193^0x5bd1e995;for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);h1=Math.imul(h1^c,16777619)>>>0;h2=Math.imul(h2^c,2246822519)>>>0}return(h1.toString(16).padStart(8,"0")+h2.toString(16).padStart(8,"0")).slice(0,16)}
 async function hashSpace(k){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("ut:"+k));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("").slice(0,16)}catch(e){return fnvHex("ut:"+k)}}
-function track(inc,set){if(!spaceHash||!db?.top?.track)return;db.top.track("spaces/"+spaceHash,{inc:inc||{},set:{...(set||{}),lastActive:Date.now()}}).catch(()=>{})}
+function track(inc,set){if(!spaceHash||!db?.top?.track)return;inc={...(inc||{})};const tk=todayKey();Object.keys(inc).forEach(k=>{if(k.startsWith("n."))inc["f."+tk+"."+k.slice(2)]=(inc["f."+tk+"."+k.slice(2)]||0)+inc[k]});db.top.track("spaces/"+spaceHash,{inc,set:{...(set||{}),lastActive:Date.now()}}).catch(()=>{})}
 function trackOpen(){
   const today=todayKey();
-  track({},{["a."+today]:true,createdAt:+members[A]?.joinedAt||Date.now(),partnerJoined:!!members[B]?.onboarded,aiOn:[A,B].filter(p=>members[p]?.aiOk).length,notifOn:[A,B].filter(p=>members[p]?.push).length,v:APP_VERSION});
+  track({},{["a."+today]:true,["ap."+today+"."+me]:true,createdAt:+members[A]?.joinedAt||Date.now(),partnerJoined:!!members[B]?.onboarded,aiOn:[A,B].filter(p=>members[p]?.aiOk).length,notifOn:[A,B].filter(p=>members[p]?.push).length,v:APP_VERSION});
 }
 // Time in app (anonymous): counts visits and seconds the app is on screen, per day, per couple.
 let sessT0=0,sessTimer=0;
@@ -3577,12 +3601,14 @@ let statsData=null;
 async function openStats(){
   $("statsSheet").hidden=false;const box=$("statsBody");box.textContent="";box.append(el("p","muted small","Loading…"));
   try{if(spaceHash)track({},{internal:true}); // the owner's own space is marked as yours and left out by default
-    const q=await db.top.collection("spaces").get();statsData=q.docs.map(d=>({id:d.id,...(d.data()||{}),...(d.id===spaceHash?{internal:true}:{})}));renderStats()}
+    const q=await db.top.collection("spaces").get();statsData=q.docs.map(d=>({id:d.id,...(d.data()||{}),...(d.id===spaceHash?{internal:true}:{})}));try{const cq=await db.top.collection("betaCodes").get();statsCodes=cq.docs.map(d=>({id:d.id,...(d.data()||{})}))}catch(e){statsCodes=[]}renderStats()}
   catch(e){box.textContent="";box.append(el("p","small","Usage needs one more rules update. Copy the rules below, paste them over your Firestore rules and tap Publish. Then reopen Usage."));
     const pre=el("pre","code",ownerRules(db?.uid||""));box.append(pre);const r=el("div","row");const c=el("button","primary","Copy rules");c.onclick=async()=>{try{await navigator.clipboard.writeText(ownerRules(db?.uid||""));toast("Rules copied")}catch(x){toast("Couldn't copy. Select the text instead.")}};
     const l=el("a","secondary","Open Firebase rules");l.href="https://console.firebase.google.com/project/us-today-e354e/firestore/rules";l.target="_blank";l.rel="noopener";l.style.cssText="text-decoration:none;display:inline-flex;align-items:center;border-radius:12px;padding:12px 16px;font-weight:600";r.append(c,l);box.append(r)}
 }
 let statsTab=(()=>{try{return localStorage.getItem("ut_statstab")||"overview"}catch(e){return"overview"}})(),statsRange=(()=>{try{return +localStorage.getItem("ut_statsrange")||7}catch(e){return 7}})();
+let statsCodes=[],statsSel=-1,statsFilter="all",statsCouple="";
+const OD_FEATS=[["Daily check-ins","checkin",""],["Chat","chat",""],["Hugs and emojis","touch",""],["Photos","photo","photo"],["Videos","video","video"],["GIFs","gif","gif"],["Stories","story","story"],["Songs and links","song","song"],["Date invites","invite","invite"],["Challenges","challenge","challenge"],["Goals together","goal","goal"],["Today's wins","win","win"],["Cheers","cheer",""],["Today's question","question","question"],["Send money","pay",""],["Calls and FaceTime","call",""],["Booked dates","booked",""]];
 function statsBars(title,sub,keys,vals,fmt,unit){
   const c=el("div","chartc");c.append(el("b",null,title));if(sub)c.append(el("span","small muted",sub));
   const tip=el("span","ctip");tip.hidden=true;c.append(tip);const mx=Math.max(1,...vals),bars=el("div","bars");bars.setAttribute("role","img");
@@ -3594,86 +3620,144 @@ function renderStats(){
   const box=$("statsBody");box.textContent="";
   let incOwn=false;try{incOwn=!!localStorage.getItem("ut_statsown")}catch(e){}
   const all=statsData||[],own=all.filter(x=>x.internal).length,S=incOwn?all:all.filter(x=>!x.internal);
-  if(own){const r=el("div","row between small");r.style.cssText="background:var(--soft);border-radius:12px;padding:10px 12px";r.append(el("span",null,incOwn?"Including your own space (you and your partner).":"Your own space is left out, so these numbers are other couples only."));
-    const t=el("button","link small",incOwn?"Leave it out":"Include it");t.onclick=()=>{try{incOwn?localStorage.removeItem("ut_statsown"):localStorage.setItem("ut_statsown","1")}catch(e){}renderStats()};r.append(t);box.append(r)}
-  // tabs + range
   const R=statsRange,keysFor=(off,len)=>{const o=[];for(let i=off+len-1;i>=off;i--){const d=new Date();d.setDate(d.getDate()-i);o.push(key(d))}return o};
-  const cur=keysFor(0,R),prev=keysFor(R,R),chartKeys=keysFor(0,Math.max(14,R));
-  const tabs=el("div","stabs");tabs.setAttribute("role","tablist");tabs.setAttribute("aria-label","Usage sections");
-  [["overview","Overview"],["couples","Couples"],["features","Features"],["setup","Setup"],["feedback","Feedback"]].forEach(([k,t])=>{const bt=el("button",null,t);bt.type="button";bt.setAttribute("role","tab");bt.setAttribute("aria-selected",String(statsTab===k));bt.onclick=()=>{statsTab=k;try{localStorage.setItem("ut_statstab",k)}catch(e){}renderStats()};tabs.append(bt)});
+  const cur=keysFor(0,R),prev=keysFor(R,R);
+  // header: range + own-space toggle
+  const hd=el("div","od-head");
+  const rg=el("div","od-seg");rg.setAttribute("role","group");rg.setAttribute("aria-label","Date range");[[7,"7 days"],[30,"30 days"],[90,"90 days"]].forEach(([n,t])=>{const bt=el("button",null,t);bt.type="button";bt.setAttribute("aria-pressed",String(R===n));bt.onclick=()=>{statsRange=n;statsSel=-1;try{localStorage.setItem("ut_statsrange",String(n))}catch(e){}renderStats()};rg.append(bt)});
+  hd.append(rg);
+  if(own){const t=el("button","link small",incOwn?"Leave out your own space":"Include your own space");t.onclick=()=>{try{incOwn?localStorage.removeItem("ut_statsown"):localStorage.setItem("ut_statsown","1")}catch(e){}renderStats()};hd.append(t)}
+  box.append(hd);
+  const tabs=el("div","od-tabs");tabs.setAttribute("role","tablist");tabs.setAttribute("aria-label","Usage sections");
+  const go=t=>{statsTab=t;try{localStorage.setItem("ut_statstab",t)}catch(e){}renderStats();$("statsSheet").querySelector(".panel").scrollTop=0};
+  [["overview","Overview"],["couples","Couples"],["features","Features"],["growth","Growth"],["setup","Setup"],["feedback","Feedback"]].forEach(([k,t])=>{const bt=el("button",null,t);bt.type="button";bt.setAttribute("role","tab");bt.setAttribute("aria-selected",String(statsTab===k));bt.onclick=()=>go(k);tabs.append(bt)});
   box.append(tabs);
-  const rg=el("div","srange");rg.setAttribute("role","group");rg.setAttribute("aria-label","Time range");[[7,"Last 7 days"],[30,"Last 30 days"]].forEach(([n,t])=>{const bt=el("button","opt",t);bt.type="button";bt.setAttribute("aria-pressed",String(R===n));bt.onclick=()=>{statsRange=n;try{localStorage.setItem("ut_statsrange",String(n))}catch(e){}renderStats()};rg.append(bt)});
-  if(statsTab==="overview"||statsTab==="couples")box.append(rg);
-  // shared math
-  const sumK=(x,f,ks)=>ks.reduce((n,k)=>n+(+(x[f]&&x[f][k])||0),0),act=(x,ks)=>ks.some(k=>x.a&&x.a[k]);
-  const lastSeen=x=>{const ks=Object.keys(x.a||{}).filter(k=>x.a[k]).sort();return ks.length?fromKey(ks[ks.length-1]):(x.lastActive?new Date(+x.lastActive):null)};
-  const daysAgo=d=>d?Math.floor((new Date().setHours(0,0,0,0)-new Date(d).setHours(0,0,0,0))/864e5):null;
-  const ageDays=x=>x.createdAt?Math.floor((Date.now()-+x.createdAt)/864e5):0;
-  const atRisk=x=>{const dA=daysAgo(lastSeen(x));return ageDays(x)>=3&&(dA==null||dA>=3)};
-  const m=ks=>{const a=S.filter(x=>act(x,ks)).length,ci=S.reduce((n,x)=>n+sumK(x,"d",ks),0),sec=S.reduce((n,x)=>n+sumK(x,"t",ks),0),cd=S.reduce((n,x)=>n+ks.filter(k=>x.t&&+x.t[k]>0).length,0);return{a,ci,cipc:a?ci/a:0,tpd:cd?sec/cd:0}};
-  const M=m(cur),P=m(prev);const rangeWord=R===7?"this week":"the last 30 days",prevWord=R===7?"last week":"the 30 days before";
-  const delta=(now,was,fmt,goodUp=true)=>{if(!was&&!now)return el("span","dl flat","No change");if(!was)return el("span","dl up","New");const d=now-was;if(Math.abs(d)<1e-9)return el("span","dl flat","Same as "+prevWord);const up=d>0,good=up===goodUp;return el("span","dl "+(good?"up":"down"),`${up?"▲":"▼"} ${fmt(Math.abs(d))} vs ${prevWord}`)};
   if(!S.length){box.append(el("p","small muted","No couples to show yet. Once other couples start using Noudé, their anonymous numbers show up here."));return}
+  // ---- shared math ----
+  const now0=new Date().setHours(0,0,0,0);
+  const sumK=(x,f,ks)=>ks.reduce((n,k)=>n+(+(x[f]&&x[f][k])||0),0),act=(x,k)=>!!(x.a&&x.a[k]),actAny=(x,ks)=>ks.some(k=>act(x,k));
+  const both=(x,k)=>!!(x.ap&&x.ap[k]&&x.ap[k].a&&x.ap[k].b);
+  const lastSeen=x=>{const ks=Object.keys(x.a||{}).filter(k=>x.a[k]).sort();return ks.length?fromKey(ks[ks.length-1]):(x.lastActive?new Date(+x.lastActive):null)};
+  const daysAgo=d=>d?Math.floor((now0-new Date(d).setHours(0,0,0,0))/864e5):null;
+  const ageDays=x=>x.createdAt?Math.floor((Date.now()-+x.createdAt)/864e5):0;
+  const quiet=x=>{const dA=daysAgo(lastSeen(x));return ageDays(x)>=3&&(dA==null||dA>=3)};
+  const streak=x=>{let n=0;for(let i=0;i<120;i++){const d=new Date();d.setDate(d.getDate()-i);const k=key(d);if(act(x,k))n++;else if(i>0)break}return n};
+  const featUse=(x,fk,ks)=>ks.reduce((n,k)=>n+(+(x.f&&x.f[k]&&x.f[k][fk])||0),0)+(fk==="checkin"?0:0);
+  const hasF=S.some(x=>x.f&&Object.keys(x.f).length);
+  const featIn=(x,fk,ks)=>fk==="checkin"?sumK(x,"d",ks):hasF?featUse(x,fk,ks):0;
+  const m=ks=>{const A2=S.filter(x=>actAny(x,ks)),a=A2.length,ci=S.reduce((n,x)=>n+sumK(x,"d",ks),0),sec=S.reduce((n,x)=>n+sumK(x,"t",ks),0),cd=S.reduce((n,x)=>n+ks.filter(k=>x.t&&+x.t[k]>0).length,0);return{a,ci,cipw:a?ci/a/(ks.length/7):0,tpd:cd?sec/cd:0}};
+  const M=m(cur),P=m(prev);
+  const ret=(()=>{const old=S.filter(x=>ageDays(x)>=30);if(!old.length)return null;const last7=keysFor(0,7);return Math.round(old.filter(x=>actAny(x,last7)).length/old.length*100)})();
+  const rangeLong=R===7?"in the last 7 days":R===30?"in the last 30 days":"in the last 90 days",prevWord=R===7?"the week before":R===30?"the 30 days before":"the 90 days before";
+  const dl=(now,was,fmt,goodUp=true)=>{if(!was&&!now)return el("span","od-pill flat","No change");if(!was)return el("span","od-pill up","New");const d=now-was;if(Math.abs(d)<1e-9)return el("span","od-pill flat","No change");const up=d>0;return el("span","od-pill "+(up===goodUp?"up":"down"),`${up?"▲":"▼"} ${fmt(Math.abs(d))}`)};
+  const spark=(vals,cls)=>{const w=el("div","od-spark");w.setAttribute("aria-hidden","true");const mx=Math.max(1,...vals);vals.forEach(v=>{const i=el("i",cls||"");i.style.height=Math.max(6,v/mx*100)+"%";w.append(i)});return w};
+  const card=(cls)=>el("div","od-card"+(cls?" "+cls:""));
+  const statusOf=x=>{const dA=daysAgo(lastSeen(x));if(!x.partnerJoined)return["Partner not joined","wait","waiting"];if(quiet(x))return[`Quiet ${dA==null?"":dA+" days"}`.trim(),"risk","quiet"];if(ageDays(x)<7)return["New","new","new"];return["Active","ok","active"]};
+  const cname=x=>"#"+String(x.id||"").slice(0,4);
+  const unusedCodes=statsCodes.filter(c=>!c.used&&!c.manual&&c.createdAt&&Date.now()-+c.createdAt>5*864e5).length;
 
   if(statsTab==="overview"){
-    const waiting=S.filter(x=>!x.partnerJoined).length,risk=S.filter(atRisk).length,newC=S.filter(x=>x.createdAt&&+x.createdAt>=fromKey(cur[0]).getTime()).length;
-    const sum=el("div","ssum2");
-    const lines=[`${M.a} of ${S.length} couple${S.length===1?"":"s"} ${M.a===1?"was":"were"} active ${rangeWord}${P.a||M.a?(M.a>P.a?` (up from ${P.a})`:M.a<P.a?` (down from ${P.a})`:` (same as ${prevWord})`):""}.`,
-      M.ci?`They checked in ${M.ci} time${M.ci===1?"":"s"}, about ${M.cipc.toFixed(1)} per active couple, and spent around ${fmtTime(M.tpd)} a day in Noudé.`:"No check-ins yet in this period.",
-      newC?`${newC} new couple${newC===1?"":"s"} joined ${rangeWord}.`:"",
-      waiting?`${waiting} couple${waiting===1?" is":"s are"} still waiting on a partner to join.`:"Every couple has both partners in.",
-      risk?`${risk} couple${risk===1?" hasn't":"s haven't"} opened Noudé in 3+ days.`:""].filter(Boolean);
-    lines.forEach(t=>sum.append(el("p",null,t)));box.append(sum);
-    const k=el("div","kpis");
-    const kpi=(title,val,dl,what)=>{const c=el("div","kpi");c.append(el("span","kt",title),el("b",null,val),dl,el("span","kw",what));k.append(c)};
-    kpi("Active couples",String(M.a),delta(M.a,P.a,v=>String(Math.round(v))),"Opened Noudé at least once in this period. The best sign of a healthy app.");
-    kpi("Check-ins per couple",M.cipc.toFixed(1),delta(M.cipc,P.cipc,v=>v.toFixed(1)),`Average check-ins for each active couple. ${R===7?"7 or more a week":"25 or more a month"} means it's a daily habit.`);
-    kpi("Time per day",fmtTime(M.tpd),delta(M.tpd,P.tpd,v=>fmtTime(v)),"How long a couple spends in Noudé on days they open it.");
+    const waiting=S.filter(x=>!x.partnerJoined).length,qn=S.filter(quiet).length,notifOff=S.filter(x=>!(x.notifOn>0)).length;
+    const featNow=OD_FEATS.map(([t,fk])=>({t,fk,n:S.filter(x=>actAny(x,cur)&&featIn(x,fk,cur)>0).length,p:S.filter(x=>actAny(x,prev)&&featIn(x,fk,prev)>0).length})).filter(f=>f.n||f.p);
+    const grow=featNow.filter(f=>f.n>f.p).sort((a,b)=>(b.n-b.p)-(a.n-a.p)).slice(0,2).map(f=>f.t);
+    const sumC=card("od-dark");const sl=el("div","stack");sl.style.gap="6px";sl.append(el("span","od-eye","In plain English · "+rangeLong));
+    sl.append(el("p","od-sum",[`${M.a} of ${S.length} couple${S.length===1?"":"s"} opened Noudé ${rangeLong}${P.a!==M.a&&P.a?` (${M.a>P.a?"up":"down"} from ${P.a})`:""}.`,M.ci?`About ${M.cipw.toFixed(1)} check-ins per active couple a week, ${fmtTime(M.tpd)} a day in the app.`:"No check-ins in this period.",grow.length?`${grow.join(" and ")} ${grow.length===1?"is":"are"} growing fastest.`:"",qn?`${qn} couple${qn===1?" has":"s have"} gone quiet.`:"",waiting?`${waiting} partner${waiting===1?" still hasn't":"s still haven't"} joined.`:""].filter(Boolean).join(" ")));
+    sumC.append(sl);if(qn||waiting){const b=el("button","od-btn pink","See who needs a nudge");b.type="button";b.onclick=()=>{statsFilter=qn?"quiet":"waiting";statsCouple="";go("couples")};sumC.append(b)}box.append(sumC);
+    // KPIs
+    const k=el("div","od-kpis");
+    const daily=(f)=>keysFor(0,10).map(kk=>f(kk));
+    const kpi=(title,val,d,sp,note,cls)=>{const c=card();c.append(el("span","od-kt",title));const r=el("div","od-kv");r.append(el("b",null,val));if(d)r.append(d);c.append(r,spark(sp,cls),el("span","small muted",note));k.append(c)};
+    kpi("Active couples",`${M.a} of ${S.length}`,dl(M.a,P.a,v=>String(Math.round(v))),daily(kk=>S.filter(x=>act(x,kk)).length),"Opened Noudé in this period","");
+    kpi("Check-ins per couple / week",M.cipw.toFixed(1),dl(M.cipw,P.cipw,v=>v.toFixed(1)),daily(kk=>S.reduce((n,x)=>n+(+(x.d&&x.d[kk])||0),0)),"Goal: 5 or more","b");
+    kpi("Time in app / day",fmtTime(M.tpd),dl(M.tpd,P.tpd,v=>fmtTime(v)),daily(kk=>S.reduce((n,x)=>n+(+(x.t&&x.t[kk])||0),0)),"Per couple, on days they open it","g");
+    kpi("30-day retention",ret==null?"—":ret+"%",null,daily(kk=>S.filter(x=>act(x,kk)).length),ret==null?"Shows once couples are 30+ days in":"Couples 30+ days in, active this week","o");
     box.append(k);
-    // next steps
-    const ns=el("div","chartc");ns.append(el("b",null,"💡 Suggested next steps"));const tips=[];
-    if(waiting)tips.push(`${waiting} couple${waiting===1?" is":"s are"} waiting on a partner. Check in with ${waiting===1?"them":"them"} and make sure the partner got the invite link.`);
-    if(risk)tips.push(`${risk} couple${risk===1?" has":"s have"} gone quiet for 3+ days. A quick personal text often brings people back. See the Couples tab.`);
-    const usedF=key=>S.filter(x=>x.n&&x.n[key]>0).length;
-    const unused=[["photo","Photos"],["story","Stories"],["goal","Goals"],["win","Daily wins"],["song","Songs"],["invite","Date invites"]].filter(([k2])=>!usedF(k2)).map(x=>x[1]);
-    if(S.length>=2&&unused.length)tips.push(`No one has tried ${unused.slice(0,3).join(", ")} yet. Consider mentioning ${unused.length===1?"it":"them"} in your invite or a What's new note.`);
-    const notifOff=S.filter(x=>!(x.notifOn>0)).length;if(notifOff&&notifOff>=S.length/2)tips.push(`${notifOff} of ${S.length} couples have notifications off. Without them, people forget to come back. Remind new couples to turn them on.`);
-    const lvT={};S.forEach(x=>Object.entries((x.lv&&x.lv.r)||{}).forEach(([r,v])=>lvT[r]=(lvT[r]||0)+(+v||0)));const topL=Object.entries(lvT).sort((a2,b2)=>b2[1]-a2[1])[0];
-    if(topL)tips.push(`The top reason people leave is “${(LEAVE_REASONS.find(x=>x[0]===topL[0])||[0,topL[0]])[1]}”. See the Feedback tab.`);
-    if(M.a&&M.cipc<(R===7?3:10))tips.push("Check-ins are low. Morning reminders help: ask couples to set them in About me.");
-    if(!tips.length)tips.push("Things look healthy. Keep inviting couples and watch the trend each week.");
-    const ul=el("ul","tips");tips.slice(0,5).forEach(t=>ul.append(el("li",null,t)));ns.append(ul);box.append(ns);
-    box.append(statsBars("Check-ins per day",`All couples · last ${chartKeys.length} days`,chartKeys,chartKeys.map(kk=>S.reduce((n,x)=>n+(+(x.d&&x.d[kk])||0),0)),v=>String(v)," check-ins"));
+    // chart + attention
+    const row=el("div","od-row");
+    const ch=card("od-grow");const chH=el("div","od-ch");const t1=el("div","stack");t1.style.gap="2px";t1.append(el("b",null,R===90?"Active couples per week":"Active couples per day"),el("span","small muted","Tap a bar for details."));
+    const lg=el("div","od-legend");lg.append(el("span","l1","Both partners"),el("span","l2","One partner"));chH.append(t1,lg);ch.append(chH);
+    const buckets=R===90?Array.from({length:13},(_,i)=>keysFor((12-i)*7,7)):cur.map(kk=>[kk]);
+    const data=buckets.map(ks=>({ks,any:S.filter(x=>actAny(x,ks)).length,both:S.filter(x=>ks.some(kk=>both(x,kk))).length,ci:S.reduce((n,x)=>n+sumK(x,"d",ks),0),sec:S.reduce((n,x)=>n+sumK(x,"t",ks),0),cd:S.reduce((n,x)=>n+ks.filter(kk=>x.t&&+x.t[kk]>0).length,0)}));
+    const mx=Math.max(1,...data.map(d=>d.any)),selI=statsSel<0||statsSel>=data.length?data.length-1:statsSel;
+    const bars=el("div","od-bars"+(data.length>14?" dense":""));
+    data.forEach((d,i)=>{const b=el("button",i===selI?"on":"");b.type="button";const d0=fromKey(d.ks[0]);const lab=R===90?"Week of "+d0.toLocaleDateString(undefined,{month:"short",day:"numeric"}):d0.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+      b.setAttribute("aria-label",`${lab}: ${d.any} active couples`);const one=el("i","one"),bo=el("i","both");one.style.height=((d.any-d.both)/mx*100)+"%";bo.style.height=(d.both/mx*100)+"%";b.append(one,bo);
+      const showLab=data.length<=14||i%5===0||i===data.length-1;b.append(el("span","od-x",showLab?(R===90?(d0.getMonth()+1)+"/"+d0.getDate():data.length<=7?d0.toLocaleDateString(undefined,{weekday:"short"}):(d0.getMonth()+1)+"/"+d0.getDate()):""));
+      b.onclick=()=>{statsSel=i;renderStats()};bars.append(b)});
+    ch.append(bars);
+    const sd=data[selI],s0=fromKey(sd.ks[0]);const det=el("div","od-det");det.append(el("b",null,R===90?"Week of "+s0.toLocaleDateString(undefined,{month:"short",day:"numeric"}):s0.toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"})),el("span",null,`${sd.any} active`),el("span",null,`${sd.both} both partners`),el("span",null,`${sd.ci} check-ins`),el("span",null,`${fmtTime(sd.cd?sd.sec/sd.cd:0)} avg time`));ch.append(det);
+    if(!S.some(x=>x.ap))ch.append(el("span","small muted","“Both partners” is counted from Oct 22, 2026."));
+    row.append(ch);
+    const at=card("od-side");at.append(el("b",null,"Needs attention"));
+    const alert=(n,title,body,cta,fn,tone)=>{const r=el("div","od-al");const nb=el("span","od-n "+tone,String(n));nb.setAttribute("aria-hidden","true");const t=el("div","stack");t.style.gap="4px";t.append(el("b",null,title),el("span","small muted",body));if(cta){const b=el("button","od-btn soft",cta);b.type="button";b.onclick=fn;t.append(b)}r.append(nb,t);at.append(r)};
+    if(qn)alert(qn,"Quiet for 3+ days","They haven't opened Noudé lately. A personal text works best at this size.","Open in Couples",()=>{statsFilter="quiet";statsCouple="";go("couples")},"risk");
+    if(waiting)alert(waiting,"Partner hasn't joined","One person is using Noudé alone. Make sure the partner got the invite link.","Open in Couples",()=>{statsFilter="waiting";statsCouple="";go("couples")},"wait");
+    if(notifOff)alert(notifOff,"Notifications off","These couples miss reminders and partner alerts.","Spotlight: turn on notifications",()=>{$("statsSheet").hidden=true;spotPick="notif";openSpotAdmin()},"blue");
+    if(unusedCodes)alert(unusedCodes,"Unused invite codes","Codes older than 5 days nobody has used yet.","Open Beta invites",()=>{$("statsSheet").hidden=true;$("codesOpen").click()},"gray");
+    if(!qn&&!waiting&&!notifOff&&!unusedCodes)at.append(el("p","small muted","Nothing needs attention right now."));
+    row.append(at);box.append(row);
+    // features
+    const fc=card();const fh=el("div","od-ch");const ft=el("div","stack");ft.style.gap="2px";ft.append(el("b",null,"What couples use"),el("span","small muted",hasF?`Share of active couples who used each feature ${rangeLong}`:"Share of couples who have ever tried each feature (per-day counts start now)"));
+    const fb=el("button","od-chip","All features");fb.type="button";fb.onclick=()=>go("features");fh.append(ft,fb);fc.append(fh);
+    const fg=el("div","od-fgrid");const base=Math.max(1,hasF?M.a:S.length);
+    OD_FEATS.map(([t,fk])=>({t,n:hasF||fk==="checkin"?S.filter(x=>featIn(x,fk,cur)>0).length:S.filter(x=>x.n&&x.n[fk]>0).length})).sort((a,b)=>b.n-a.n).slice(0,8).forEach(f=>{const pct=Math.min(100,Math.round(f.n/base*100));const r=el("div","od-fr");r.append(el("span",null,f.t));const tr=el("div","od-tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr,el("b",null,pct+"%"));fg.append(r)});
+    fc.append(fg);box.append(fc);
   }
   if(statsTab==="couples"){
-    const list=el("div","chartc");list.append(el("b",null,"Every couple"),el("span","small muted","Anonymous, newest first. No names or content, just activity."));
-    const rows=S.slice().sort((x,y)=>(+y.createdAt||0)-(+x.createdAt||0));
-    const order=rows.map((x,i)=>({x,i:rows.length-i}));
-    order.sort((p,q)=>(atRisk(q.x)-atRisk(p.x))||((+q.x.createdAt||0)-(+p.x.createdAt||0)));
-    order.forEach(({x,i})=>{const e=el("div","crow");const dA=daysAgo(lastSeen(x));
-      const st=!x.partnerJoined?["Waiting on partner","wait"]:atRisk(x)?["At risk",'risk']:dA===0?["Active today","ok"]:dA===1?["Active yesterday","ok"]:["Active "+dA+" days ago","ok"];
-      const top=el("div","row between");top.append(el("b",null,`Couple ${i}`),el("span","cst "+st[1],st[0]));e.append(top);
-      const lv=w=>+((x.ql||{})[w])||0;const ci=sumK(x,"d",cur),sec=sumK(x,"t",cur),actD=cur.filter(kk=>x.a&&x.a[kk]).length;
-      e.append(el("span","small muted",[x.createdAt?`Joined ${new Date(+x.createdAt).toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:"",dA==null?"Never opened":dA===0?"Last open today":`Last open ${dA} day${dA===1?"":"s"} ago`].filter(Boolean).join(" · ")));
-      e.append(el("span","small",`${actD} of ${R} days active · ${ci} check-in${ci===1?"":"s"} · ${fmtTime(sec)} in app`));
-      e.append(el("span","small muted",`Quest: L${lv(A)}${x.partnerJoined?` & L${lv(B)}`:""} · Notifications ${x.notifOn>0?"on":"off"}${x.aiOn>=2?" · AI on":""}`));
-      list.append(e)});
-    box.append(list);
+    const wrap=el("div","od-row");const lc=card("od-grow");
+    const lh=el("div","od-ch");const lt=el("div","stack");lt.style.gap="2px";lt.append(el("b",null,"Couples"),el("span","small muted","Each space is a code, never a name. Tap one for its activity."));lh.append(lt);
+    const fl=el("div","od-chips");fl.setAttribute("role","group");fl.setAttribute("aria-label","Filter couples");
+    const cnt=k=>k==="all"?S.length:S.filter(x=>statusOf(x)[2]===k).length;
+    [["all","All"],["active","Active"],["quiet","Quiet"],["waiting","Partner not joined"],["new","New"]].forEach(([k2,t])=>{const n=cnt(k2);if(k2!=="all"&&!n)return;const b=el("button","od-chip",`${t} · ${n}`);b.type="button";b.setAttribute("aria-pressed",String(statsFilter===k2));b.onclick=()=>{statsFilter=k2;statsCouple="";renderStats()};fl.append(b)});
+    lh.append(fl);lc.append(lh);
+    const list=S.filter(x=>statsFilter==="all"||statsFilter===statusOf(x)[2]).sort((a,b)=>{const qa=quiet(a)||!a.partnerJoined,qb=quiet(b)||!b.partnerJoined;return(qb-qa)||((+b.createdAt||0)-(+a.createdAt||0))});
+    if(!list.length)lc.append(el("p","small muted","No couples in this group."));
+    if(!statsCouple||!list.some(x=>x.id===statsCouple))statsCouple=list[0]?.id||"";
+    const tb=el("div","od-table");const th=el("div","od-tr2 od-th");["Space","Joined","Last active","Check-ins","Streak","Status"].forEach(t=>th.append(el("span",null,t)));tb.append(th);
+    list.forEach(x=>{const st=statusOf(x),dA=daysAgo(lastSeen(x));const b=el("button","od-tr2"+(x.id===statsCouple?" on":""));b.type="button";b.setAttribute("aria-pressed",String(x.id===statsCouple));
+      b.append(el("span","mono",cname(x)),el("span",null,x.createdAt?new Date(+x.createdAt).toLocaleDateString(undefined,{month:"short",day:"numeric"}):"—"),el("span",null,dA==null?"Never":dA===0?"Today":dA===1?"Yesterday":dA+" days ago"),el("span",null,String(sumK(x,"d",cur))),el("span",null,(()=>{const s2=streak(x);return s2?s2+" day"+(s2===1?"":"s"):"—"})()));
+      const sp=el("span");sp.append(el("span","od-pill "+st[1],st[0]));b.append(sp);b.onclick=()=>{statsCouple=x.id;renderStats()};tb.append(b)});
+    const scroller=el("div","od-scroll");scroller.append(tb);lc.append(scroller);wrap.append(lc);
+    const x=S.find(y=>y.id===statsCouple);
+    if(x){const dc=card("od-side");const st=statusOf(x);dc.append(el("span","od-eye2","Space "+cname(x)));
+      const l14=keysFor(0,14),a14=l14.filter(kk=>act(x,kk)).length;
+      dc.append(el("h3",null,!x.partnerJoined?"Waiting on the partner to join":quiet(x)?"Went quiet":a14>=10?"Thriving: opens Noudé most days":a14>=5?"Steady":"Getting started"));
+      const g=el("div","od-mini");const mini=(t,v)=>{const c=el("div");c.append(el("span","small muted",t),el("b",null,v));g.append(c)};
+      mini(`Check-ins (${R}d)`,String(sumK(x,"d",cur)));mini("Time in app / day",(()=>{const cd=cur.filter(kk=>x.t&&+x.t[kk]>0).length;return fmtTime(cd?sumK(x,"t",cur)/cd:0)})());mini("Quest level",`L${+((x.ql||{})[A])||0}${x.partnerJoined?" & L"+(+((x.ql||{})[B])||0):""}`);mini("Notifications",x.notifOn>=2?"On for both":x.notifOn===1?"One partner":"Off");dc.append(g);
+      dc.append(el("b","small","Last 14 days"));const sw=el("div","od-spark tall");sw.setAttribute("aria-label",`Active ${a14} of the last 14 days`);sw.setAttribute("role","img");l14.forEach(kk=>{const i=el("i",both(x,kk)?"":act(x,kk)?"lite":"off");i.style.height=(act(x,kk)?Math.max(35,Math.min(100,20+(+(x.d&&x.d[kk])||0)*40)):8)+"%";sw.append(i)});dc.append(sw);
+      const used=OD_FEATS.filter(([,fk])=>fk==="checkin"?x.d&&Object.keys(x.d).length:x.n&&x.n[fk]>0).map(f=>f[0]);dc.append(el("b","small","Features used"));const fu=el("div","od-chips");(used.length?used:["None yet"]).forEach(t=>fu.append(el("span","od-tag",t)));dc.append(fu);
+      const br=el("div","row");const s1=el("button","od-btn pinkfill","Send a Spotlight");s1.type="button";s1.onclick=()=>{$("statsSheet").hidden=true;openSpotAdmin()};const s2=el("button","od-btn soft","Text a nudge");s2.type="button";s2.onclick=()=>{$("statsSheet").hidden=true;$("codesOpen").click()};br.append(s1,s2);dc.append(br);
+      dc.append(el("span","small muted","Usage never shows names. Nudges go to the numbers you saved in Beta invites."));wrap.append(dc)}
+    box.append(wrap);
   }
   if(statsTab==="features"){
-    const n=Math.max(1,S.length),used=k2=>S.filter(x=>x.n&&x.n[k2]>0).length,tot=k2=>S.reduce((a2,x)=>a2+(+(x.n&&x.n[k2])||0),0);
-    const fa=el("div","chartc");fa.append(el("b",null,"What couples use"),el("span","small muted","All time: share of couples who have tried each feature, and total uses. Most used first."));
-    [["Daily check-in",S.filter(x=>x.d&&Object.keys(x.d).length).length,tot("checkin")],["Chat",used("chat"),tot("chat")],["Hugs, kisses and emojis",used("touch"),tot("touch")],["Photos",used("photo"),tot("photo")],["Videos",used("video"),tot("video")],["GIFs",used("gif"),tot("gif")],["Stories",used("story"),tot("story")],["Songs and links",used("song"),tot("song")],["Date invites",used("invite"),tot("invite")],["Challenges",used("challenge"),tot("challenge")],["Goals",used("goal"),tot("goal")],["Daily wins",used("win"),tot("win")],["Today's question",used("question"),tot("question")]]
-      .sort((p,q)=>q[1]-p[1]).forEach(([t,c,tt])=>{const pct=Math.round(c/n*100),r=el("div","hb");r.append(el("span",null,t),el("span","v",`${pct}% · ${tt} use${tt===1?"":"s"}`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);fa.append(r)});
-    box.append(fa);
-    const st=el("div","chartc");st.append(el("b",null,"Settings couples turned on"));[["Notifications (either partner)",S.filter(x=>x.notifOn>0).length],["AI ideas (both partners)",S.filter(x=>x.aiOn>=2).length],["Both partners joined",S.filter(x=>x.partnerJoined).length]].forEach(([t,c])=>{const pct=Math.round(c/n*100),r=el("div","hb");r.append(el("span",null,t),el("span","v",`${c} of ${S.length}`));const tr=el("div","tr"),fi=el("i");fi.style.width=pct+"%";tr.append(fi);r.append(tr);st.append(r)});box.append(st);
-    const secK=chartKeys.map(kk=>S.reduce((nn,x)=>nn+(+(x.t&&x.t[kk])||0),0)),visK=chartKeys.map(kk=>S.reduce((nn,x)=>nn+(+(x.sn&&x.sn[kk])||0),0));
-    const vis=visK.slice(-7).reduce((p,q)=>p+q,0),secs=secK.slice(-7).reduce((p,q)=>p+q,0);
-    const tc=statsBars("Time in the app per day",`All couples · ${vis} visits this week, average visit ${fmtTime(vis?secs/vis:0)} · tracking started Oct 18, 2026`,chartKeys,secK,v=>fmtTime(v),"");box.append(tc);
+    const g=el("div","od-cards");const base=k2=>Math.max(1,hasF?S.filter(x=>actAny(x,k2)).length:S.length);
+    OD_FEATS.map(([t,fk,sk])=>{const nc=hasF||fk==="checkin"?S.filter(x=>featIn(x,fk,cur)>0).length:S.filter(x=>x.n&&x.n[fk]>0).length,np=hasF||fk==="checkin"?S.filter(x=>featIn(x,fk,prev)>0).length:0,uses=hasF||fk==="checkin"?S.reduce((n,x)=>n+featIn(x,fk,cur),0):S.reduce((n,x)=>n+(+(x.n&&x.n[fk])||0),0);return{t,fk,sk,pct:Math.min(100,Math.round(nc/base(cur)*100)),pp:Math.min(100,Math.round(np/base(prev)*100)),uses}}).sort((a,b)=>b.pct-a.pct).forEach(f=>{
+      const c=card();const top=el("div","od-ch");top.append(el("b",null,f.t),hasF||f.fk==="checkin"?dl(f.pct,f.pp,v=>Math.round(v)+" pts"):el("span","od-pill flat","All time"));c.append(top);
+      const v=el("div","od-kv");v.append(el("b",null,f.pct+"%"),el("span","small muted",hasF?"of active couples":"of couples"));c.append(v);
+      const tr=el("div","od-tr"),fi=el("i");fi.style.width=f.pct+"%";tr.append(fi);c.append(tr,el("span","small muted",`${f.uses} use${f.uses===1?"":"s"} ${hasF||f.fk==="checkin"?rangeLong:"all time"}`));
+      if(f.sk&&spotFeat(f.sk)){const b=el("button","od-btn soft","Spotlight to couples who haven't tried it");b.type="button";b.onclick=()=>{$("statsSheet").hidden=true;spotPick=f.sk;openSpotAdmin()};c.append(b)}
+      g.append(c)});
+    box.append(g);
+    if(!hasF)box.append(el("p","small muted","Per-day feature counts start with this update, so changes over time show up after a few days."));
+    const st=card();st.append(el("b",null,"Settings couples turned on"));[["Notifications (either partner)",S.filter(x=>x.notifOn>0).length],["AI ideas (both partners)",S.filter(x=>x.aiOn>=2).length],["Both partners joined",S.filter(x=>x.partnerJoined).length]].forEach(([t,c])=>{const r=el("div","od-fr");r.append(el("span",null,t));const tr=el("div","od-tr"),fi=el("i");fi.style.width=Math.round(c/S.length*100)+"%";tr.append(fi);r.append(tr,el("b",null,`${c}/${S.length}`));st.append(r)});box.append(st);
+  }
+  if(statsTab==="growth"){
+    const row=el("div","od-row");const fc=card("od-grow");fc.append(el("b",null,"Invite funnel"),el("span","small muted","From invite code to a couple still active a month later"));
+    const codes=statsCodes.filter(c=>!c.manual),wk2=S.filter(x=>ageDays(x)>=14),wk2a=wk2.filter(x=>{const c0=new Date(+x.createdAt);const ks=[];for(let i=7;i<14;i++){const d=new Date(c0);d.setDate(c0.getDate()+i);ks.push(key(d))}return actAny(x,ks)}).length;
+    const d30=S.filter(x=>ageDays(x)>=30),d30a=d30.filter(x=>actAny(x,keysFor(0,7))).length;
+    const steps=[["Invite codes created",codes.length,""],["Codes used",codes.filter(c=>c.used).length,""],["Couples in Noudé",S.length,codes.filter(c=>c.used).length<S.length?"Includes couples who joined before invite codes":""],["Both partners joined",S.filter(x=>x.partnerJoined).length,""],["Active in week 2",wk2a,wk2.length?`of ${wk2.length} couples 2+ weeks in`:"Shows once couples are 2 weeks in"],["Active after 30 days",d30a,d30.length?`of ${d30.length} couples 30+ days in`:"Shows once couples are 30 days in"]];
+    const top=Math.max(1,...steps.map(s=>s[1]));
+    steps.forEach(([t,n,note],i)=>{const r=el("div","stack");r.style.gap="6px";const h=el("div","od-ch");const prevN=i?steps[i-1][1]:0;h.append(el("b",null,t),el("span",null,`${n}${i&&prevN&&n<=prevN?` · ${Math.round(n/prevN*100)}% of previous`:""}`));const tr=el("div","od-tr big"),fi=el("i");fi.style.width=(n/top*100)+"%";tr.append(fi);r.append(h,tr);if(note)r.append(el("span","small muted",note));else if(i&&prevN>n)r.append(el("span","small muted",`${prevN-n} dropped here`));fc.append(r)});
+    row.append(fc);
+    const nc=card("od-side");nc.append(el("b",null,"New couples per week"));const wks=Array.from({length:8},(_,i)=>{const end=new Date(now0);end.setDate(end.getDate()-(7-i)*7+7);const start=new Date(end);start.setDate(start.getDate()-7);return{start,n:S.filter(x=>+x.createdAt>=start.getTime()&&+x.createdAt<end.getTime()).length}});
+    const mxw=Math.max(1,...wks.map(w=>w.n));const wb=el("div","od-wbars");wks.forEach((w,i)=>{const c=el("div");c.append(el("b",null,String(w.n)));const i2=el("i");i2.style.height=Math.max(3,w.n/mxw*100)+"%";c.append(i2,el("span",null,i===7?"This wk":(w.start.getMonth()+1)+"/"+w.start.getDate()));wb.append(c)});nc.append(wb);
+    const lvT={};S.forEach(x=>Object.entries((x.lv&&x.lv.r)||{}).forEach(([r,v])=>lvT[r]=(lvT[r]||0)+(+v||0)));const tl=Object.entries(lvT).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    nc.append(el("p","small",tl.length?"Why couples left: "+tl.map(([r,v])=>`${(LEAVE_REASONS.find(x=>x[0]===r)||[0,r])[1]} (${v})`).join(", "):"No one has left yet."));row.append(nc);box.append(row);
   }
   if(statsTab==="setup")renderQuestStats(box,S);
   if(statsTab==="feedback"){renderLeaveStats(box,S);renderHelpStats(box,S)}
-  box.append(el("p","small muted","Counts and time only. No messages, check-ins, photos or names are collected. Counting started Oct 17, 2026."));
+  box.append(el("p","small muted","Anonymous counts and time only. No messages, check-ins, photos or names. Your own space is left out unless you include it."));
 }
 function renderQuestStats(box,S){
   const card=(t,sub)=>{const c=el("div","chartc");c.append(el("b",null,t));if(sub)c.append(el("span","small muted",sub));return c};
@@ -5626,7 +5710,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-21.4";
+const APP_VERSION="2026-10-22.1";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
