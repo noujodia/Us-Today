@@ -272,6 +272,34 @@ async function ownerCodeUsed(env, d) {
 // GIF search through GIPHY. Needs a GIPHY_KEY secret in Cloudflare (Settings → Variables and secrets).
 // Date ideas near you: Ticketmaster Discovery events within a radius of a ZIP code, for the next 3 weeks.
 // Only the ZIP and the chosen interests are sent; results are cached for 6 hours.
+// ZIP -> map point (Ticketmaster's radius only applies to a geoPoint; postalCode alone matches that exact ZIP).
+function geohash(lat, lon, prec = 9) {
+  const b32 = "0123456789bcdefghjkmnpqrstuvwxyz", la = [-90, 90], lo = [-180, 180];
+  let h = "", bit = 0, ch = 0, even = true;
+  while (h.length < prec) {
+    const r = even ? lo : la, v = even ? lon : lat, mid = (r[0] + r[1]) / 2;
+    if (v >= mid) { ch = (ch << 1) | 1; r[0] = mid; } else { ch = ch << 1; r[1] = mid; }
+    even = !even;
+    if (++bit === 5) { h += b32[ch]; bit = 0; ch = 0; }
+  }
+  return h;
+}
+async function zipPoint(zip) {
+  const cache = caches.default, key = new Request("https://zip.cache/us/" + zip);
+  try {
+    let r = await cache.match(key);
+    if (!r) {
+      const live = await fetch("https://api.zippopotam.us/us/" + zip);
+      if (!live.ok) return "";
+      const d = await live.json(), pl = d && d.places && d.places[0];
+      const lat = pl && parseFloat(pl.latitude), lon = pl && parseFloat(pl.longitude);
+      if (!isFinite(lat) || !isFinite(lon)) return "";
+      r = new Response(geohash(lat, lon), { headers: { "Cache-Control": "public, max-age=2592000" } });
+      await cache.put(key, r.clone());
+    }
+    return await r.text();
+  } catch (_) { return ""; }
+}
 const EVENT_CATS = { music: "Music", comedy: "Comedy", theater: "Theatre", sports: "Sports", family: "Family", film: "Film", arts: "Fine Art" };
 async function nearbyEvents(env, sp) {
   const zip = (sp.get("zip") || "").trim();
@@ -281,19 +309,22 @@ async function nearbyEvents(env, sp) {
   const kws = (sp.get("kw") || "").split("|").map((s) => s.trim().replace(/[^\p{L}\p{N} &'-]/gu, "").slice(0, 40)).filter(Boolean).slice(0, 3);
   const start = new Date(), end = new Date(Date.now() + 21 * 864e5);
   const iso = (d) => d.toISOString().replace(/\.\d{3}Z$/, "Z");
-  const base = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${encodeURIComponent(env.TM_KEY)}&postalCode=${zip}&radius=${radius}&unit=miles&countryCode=US&startDateTime=${iso(start)}&endDateTime=${iso(end)}&sort=date,asc&size=40`;
+  const gp = await zipPoint(zip);
+  const where = gp ? `geoPoint=${gp}` : `postalCode=${zip}`;
+  const base = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${encodeURIComponent(env.TM_KEY)}&${where}&radius=${radius}&unit=miles&countryCode=US&startDateTime=${iso(start)}&endDateTime=${iso(end)}&sort=date,asc&size=40`;
   const urls = [];
   if (cats.length) urls.push(base + "&classificationName=" + encodeURIComponent(cats.map((c) => EVENT_CATS[c]).join(",")));
   else if (!kws.length) urls.push(base);
   kws.forEach((k) => urls.push(base + "&keyword=" + encodeURIComponent(k)));
   const cache = caches.default, seen = new Set(), events = [];
+  let ok = 0, lastStatus = 0;
   for (const u of urls) {
     let data = null;
     try {
       const key = new Request(u.replace(/apikey=[^&]+/, "apikey=x"));
       let r = await cache.match(key);
-      if (!r) { const live = await fetch(u); if (!live.ok) continue; r = new Response(await live.text(), { headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=21600" } }); await cache.put(key, r.clone()); }
-      data = await r.json();
+      if (!r) { const live = await fetch(u); if (!live.ok) { lastStatus = live.status; continue; } r = new Response(await live.text(), { headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=21600" } }); await cache.put(key, r.clone()); }
+      data = await r.json(); ok++;
     } catch (_) { continue; }
     for (const e of (data && data._embedded && data._embedded.events) || []) {
       const v = (e._embedded && e._embedded.venues && e._embedded.venues[0]) || {};
@@ -308,6 +339,7 @@ async function nearbyEvents(env, sp) {
     }
   }
   events.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  if (!ok && urls.length) return { events: [], err: "tm", status: lastStatus };
   return { events: events.slice(0, 24) };
 }
 // Follow a TikTok share link to the full video address (up to 3 hops).
@@ -384,7 +416,7 @@ export default {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
       if (!env.TM_KEY) return reply({ events: [], off: true }, 200, origin);
       const out = await nearbyEvents(env, new URL(req.url).searchParams);
-      return new Response(JSON.stringify(out), { status: out.error ? 400 : 200, headers: { "Content-Type": "application/json", "Cache-Control": out.error ? "no-store" : "public, max-age=21600", ...cors(origin) } });
+      return new Response(JSON.stringify(out), { status: out.error ? 400 : 200, headers: { "Content-Type": "application/json", "Cache-Control": out.error || out.err ? "no-store" : out.events.length ? "public, max-age=21600" : "public, max-age=900", ...cors(origin) } });
     }
     if (req.method === "GET" && path === "/oembed") {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);

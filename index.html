@@ -2510,9 +2510,9 @@ function ideaWhen(e){if(!e.date)return"";const d=new Date(e.date+"T"+(e.time||"1
 async function loadIdeas(force){
   const c=ideasCfg();if(!c.zip||!WORKER_URL)return;const cats=(c.all?IDEA_CATS.map(x=>x[0]):c.likes).filter(k=>IDEA_TM.has(k)),kw=c.own.slice(0,3);
   const k=c.zip+"|"+cats.join(",")+"|"+kw.join("|");if(!force&&ideasKey===k&&ideasData)return;
-  try{const cached=JSON.parse(localStorage.getItem("ut_ideas_"+spaceKey)||"null");if(!force&&cached&&cached.k===k&&Date.now()-cached.at<6*3600e3){ideasData=cached.d;ideasKey=k;renderIdeas();return}}catch(e){}
+  try{const cached=JSON.parse(localStorage.getItem("ut_ideas_"+spaceKey)||"null");if(!force&&cached&&cached.k===k&&!cached.d?.err&&Date.now()-cached.at<(cached.d?.events?.length?6*3600e3:15*60e3)){ideasData=cached.d;ideasKey=k;renderIdeas();return}}catch(e){}
   if(ideasBusy)return;ideasBusy=true;renderIdeas();
-  try{const r=await fetch(`${WORKER_URL}events?zip=${c.zip}&r=${IDEA_RADIUS}&cats=${encodeURIComponent(cats.join(","))}&kw=${encodeURIComponent(kw.join("|"))}`);const d=await r.json();ideasData=d&&Array.isArray(d.events)?d:{events:[]};ideasKey=k;try{localStorage.setItem("ut_ideas_"+spaceKey,JSON.stringify({k,at:Date.now(),d:ideasData}))}catch(e){}}
+  try{const r=await fetch(`${WORKER_URL}events?zip=${c.zip}&r=${IDEA_RADIUS}&cats=${encodeURIComponent(cats.join(","))}&kw=${encodeURIComponent(kw.join("|"))}`);const d=await r.json();ideasData=d&&Array.isArray(d.events)?d:{events:[],err:true};ideasKey=k;if(!ideasData.err)try{localStorage.setItem("ut_ideas_"+spaceKey,JSON.stringify({k,at:Date.now(),d:ideasData}))}catch(e){}}
   catch(e){ideasData={events:[],err:true}}finally{ideasBusy=false;renderIdeas()}
 }
 async function inviteToIdea(e){
@@ -2552,7 +2552,8 @@ function renderIdeas(){
   setSum("sumIdeas",ideasBusy?"Finding ideas…":evs.length?`${evs.length} idea${evs.length===1?"":"s"} within ${IDEA_RADIUS} mi · next: ${evs[0].name.slice(0,40)}`:`Near ${c.zip} · ideas for ${c.all?"everything":likes.length+" interests"}`);
   const hd=el("div","row between");hd.append(el("span","small muted",`Within ${IDEA_RADIUS} miles of ${c.zip} · ${c.all?"everything":likes.map(k=>IDEA_CATS.find(x=>x[0]===k)[2].toLowerCase()).slice(0,3).join(", ")+(likes.length>3?"…":"")}${c.own.length?" · "+c.own.slice(0,2).join(", "):""}`));const ed=el("button","link small","Change");ed.type="button";ed.id="ideaEdit";ed.onclick=()=>{ideasEdit=true;renderIdeas()};hd.append(ed);box.append(hd);
   if(ideasBusy&&!ideasData)box.append(el("p","small muted","Finding ideas near you…"));
-  else if(!ideasData)loadIdeas();
+  else if(!ideasData){box.append(el("p","small muted","Finding ideas near you…"));setTimeout(()=>loadIdeas(),0)}
+  else if(ideasData.err){const p2=el("p","small muted","Couldn't load events right now. ");const rt=el("button","link small","Try again");rt.type="button";rt.onclick=()=>{ideasData=null;ideasKey="";loadIdeas(true)};p2.append(rt);box.append(p2)}
   else if(ideasData.off)box.append(el("p","small muted","Event listings are being switched on. Meanwhile, try these near you:"));
   else if(!evs.length)box.append(el("p","small muted",`No listed events in the next 3 weeks for these picks. Try these near you, or add more interests.`));
   evs.slice(0,5).forEach(e=>{const r=el("div","idea");r.id="idea-"+e.id;
@@ -5805,7 +5806,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-23.2";
+const APP_VERSION="2026-10-23.3";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
