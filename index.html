@@ -2512,7 +2512,7 @@ async function loadIdeas(force){
   const k=c.zip+"|"+cats.join(",")+"|"+kw.join("|");if(!force&&ideasKey===k&&ideasData)return;
   try{const cached=JSON.parse(localStorage.getItem("ut_ideas_"+spaceKey)||"null");if(!force&&cached&&cached.k===k&&!cached.d?.err&&Date.now()-cached.at<(cached.d?.events?.length?6*3600e3:15*60e3)){ideasData=cached.d;ideasKey=k;renderIdeas();return}}catch(e){}
   if(ideasBusy)return;ideasBusy=true;renderIdeas();
-  try{const r=await fetch(`${WORKER_URL}events?zip=${c.zip}&r=${IDEA_RADIUS}&cats=${encodeURIComponent(cats.join(","))}&kw=${encodeURIComponent(kw.join("|"))}`);const d=await r.json();ideasData=d&&Array.isArray(d.events)?d:{events:[],err:true};ideasKey=k;if(!ideasData.err)try{localStorage.setItem("ut_ideas_"+spaceKey,JSON.stringify({k,at:Date.now(),d:ideasData}))}catch(e){}}
+  try{const r=await fetch(`${WORKER_URL}events?v=2&zip=${c.zip}&r=${IDEA_RADIUS}&cats=${encodeURIComponent(cats.join(","))}&kw=${encodeURIComponent(kw.join("|"))}`);const d=await r.json();ideasData=d&&Array.isArray(d.events)?d:{events:[],err:true};ideasKey=k;if(!ideasData.err)try{localStorage.setItem("ut_ideas_"+spaceKey,JSON.stringify({k,at:Date.now(),d:ideasData}))}catch(e){}}
   catch(e){ideasData={events:[],err:true}}finally{ideasBusy=false;renderIdeas()}
 }
 async function inviteToIdea(e){
