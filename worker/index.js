@@ -270,6 +270,46 @@ async function ownerCodeUsed(env, d) {
 }
 
 // GIF search through GIPHY. Needs a GIPHY_KEY secret in Cloudflare (Settings → Variables and secrets).
+// Date ideas near you: Ticketmaster Discovery events within a radius of a ZIP code, for the next 3 weeks.
+// Only the ZIP and the chosen interests are sent; results are cached for 6 hours.
+const EVENT_CATS = { music: "Music", comedy: "Comedy", theater: "Theatre", sports: "Sports", family: "Family", film: "Film", arts: "Fine Art" };
+async function nearbyEvents(env, sp) {
+  const zip = (sp.get("zip") || "").trim();
+  if (!/^\d{5}$/.test(zip)) return { error: "zip" };
+  const radius = Math.min(50, Math.max(1, parseInt(sp.get("r") || "15", 10) || 15));
+  const cats = (sp.get("cats") || "").split(",").map((s) => s.trim()).filter((c) => EVENT_CATS[c]).slice(0, 7);
+  const kws = (sp.get("kw") || "").split("|").map((s) => s.trim().replace(/[^\p{L}\p{N} &'-]/gu, "").slice(0, 40)).filter(Boolean).slice(0, 3);
+  const start = new Date(), end = new Date(Date.now() + 21 * 864e5);
+  const iso = (d) => d.toISOString().replace(/\.\d{3}Z$/, "Z");
+  const base = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${encodeURIComponent(env.TM_KEY)}&postalCode=${zip}&radius=${radius}&unit=miles&countryCode=US&startDateTime=${iso(start)}&endDateTime=${iso(end)}&sort=date,asc&size=40`;
+  const urls = [];
+  if (cats.length) urls.push(base + "&classificationName=" + encodeURIComponent(cats.map((c) => EVENT_CATS[c]).join(",")));
+  else if (!kws.length) urls.push(base);
+  kws.forEach((k) => urls.push(base + "&keyword=" + encodeURIComponent(k)));
+  const cache = caches.default, seen = new Set(), events = [];
+  for (const u of urls) {
+    let data = null;
+    try {
+      const key = new Request(u.replace(/apikey=[^&]+/, "apikey=x"));
+      let r = await cache.match(key);
+      if (!r) { const live = await fetch(u); if (!live.ok) continue; r = new Response(await live.text(), { headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=21600" } }); await cache.put(key, r.clone()); }
+      data = await r.json();
+    } catch (_) { continue; }
+    for (const e of (data && data._embedded && data._embedded.events) || []) {
+      const v = (e._embedded && e._embedded.venues && e._embedded.venues[0]) || {};
+      const k = (e.name || "") + "|" + (e.dates && e.dates.start && e.dates.start.localDate) + "|" + (v.name || "");
+      if (!e.id || seen.has(k)) continue; seen.add(k);
+      const c = (e.classifications && e.classifications[0]) || {};
+      const img = (e.images || []).filter((i) => i.url && /^https:\/\//.test(i.url) && i.width >= 300 && i.width <= 1100).sort((a, b) => a.width - b.width)[0];
+      const url = typeof e.url === "string" && /^https:\/\/([a-z0-9-]+\.)*(ticketmaster|livenation|universe|frontgatetickets)\.com\//i.test(e.url) ? e.url : "";
+      events.push({ id: String(e.id).slice(0, 40), name: String(e.name || "").slice(0, 120), url, date: (e.dates && e.dates.start && e.dates.start.localDate) || "", time: (e.dates && e.dates.start && e.dates.start.localTime) || "",
+        venue: String(v.name || "").slice(0, 80), city: String((v.city && v.city.name) || "").slice(0, 40), dist: typeof e.distance === "number" ? Math.round(e.distance * 10) / 10 : null,
+        cat: String((c.genre && c.genre.name !== "Undefined" && c.genre.name) || (c.segment && c.segment.name) || "").slice(0, 30), seg: String((c.segment && c.segment.name) || "").slice(0, 30), img: img ? img.url : "" });
+    }
+  }
+  events.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  return { events: events.slice(0, 24) };
+}
 // Follow a TikTok share link to the full video address (up to 3 hops).
 async function resolveTikTok(u) {
   let cur = u;
@@ -339,6 +379,12 @@ export default {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
       const results = await searchSongs(new URL(req.url).searchParams.get("term") || "");
       return new Response(JSON.stringify({ results }), { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600", ...cors(origin) } });
+    }
+    if (req.method === "GET" && path === "/events") {
+      if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
+      if (!env.TM_KEY) return reply({ events: [], off: true }, 200, origin);
+      const out = await nearbyEvents(env, new URL(req.url).searchParams);
+      return new Response(JSON.stringify(out), { status: out.error ? 400 : 200, headers: { "Content-Type": "application/json", "Cache-Control": out.error ? "no-store" : "public, max-age=21600", ...cors(origin) } });
     }
     if (req.method === "GET" && path === "/oembed") {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply({ error: "origin" }, 403, origin);
