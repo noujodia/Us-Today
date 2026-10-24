@@ -4420,6 +4420,16 @@ const NUDGES=[
   ["partner","Partner hasn't joined",n=>`Hey! It's ${n} from Noudé 💞 Did your partner get their invite? In the app, go to About me → Invite your partner and send them the link. https://noudeapp.com/`]
 ];
 const fmtPhone=p=>{const d=phoneDigits(p);return d.length===11&&d[0]==="1"?`(${d.slice(1,4)}) ${d.slice(4,7)}-${d.slice(7)}`:p};
+// Follow-ups for invites that haven't been used yet (number saved when you texted the code)
+const FOLLOWUPS=[
+  ["remind","Friendly reminder",(n,c)=>`Hey! It's ${n} from Noudé 💞 Don't forget to create your space so you can connect with your partner on Noudé. It takes about a minute.\n\nYour code: ${c.id}\n1. Open https://noudeapp.com/ on your phone\n2. Enter the code and tap Start our space\n\nTry it now!`],
+  ["spot","Your spot is waiting",(n,c)=>`Your Noudé beta spot is still waiting for you two ⏳ Beta spots are limited, so claim yours this week before we open more invites.\n\nCode: ${c.id}\nStart here: https://noudeapp.com/`],
+  ["help","Need help?",(n,c)=>`Hi! It's ${n} from Noudé. Need a hand getting started? Open https://noudeapp.com/, enter your code ${c.id} and tap Start our space. Then send your partner the link from About me. Reply here if anything gets stuck 🙂`]
+];
+function followBox(c,phone){const w=el("div","textit");w.style.opacity="1";w.append(el("label",null,"Follow up by text · "+fmtPhone(phone)));
+  w.append(el("span","small muted",`Invited ${timeAgo(c.createdAt||Date.now())} · hasn't started their space yet`));const o=el("div","opts");
+  FOLLOWUPS.forEach(([k,t,fn])=>{const b=el("button","opt",t);b.type="button";b.onclick=()=>{track({["n.follow."+k]:1});location.href=smsLink(phone,fn(nm(me),c))};o.append(b)});w.append(o);
+  const rm=el("button","link small","Remove saved number");rm.type="button";rm.style.alignSelf="flex-start";rm.onclick=()=>forgetContact(c.id);w.append(rm);return w}
 function nudgeBox(code,phone){const w=el("div","textit");w.style.opacity="1";w.append(el("label",null,"Nudge by text · "+fmtPhone(phone)));const o=el("div","opts");
   NUDGES.forEach(([k,t,fn])=>{const b=el("button","opt",t);b.type="button";b.onclick=()=>{track({["n.nudge."+k]:1});location.href=smsLink(phone,fn(nm(me)))};o.append(b)});w.append(o);
   const rm=el("button","link small","Remove saved number");rm.type="button";rm.style.alignSelf="flex-start";rm.onclick=()=>forgetContact(code);w.append(rm);return w}
@@ -5498,6 +5508,7 @@ function renderCodes(){
         go.onclick=async()=>{const n=smsNumber(inp.value);if(!n){msg.textContent="Enter a full phone number, like (617) 555-0142.";return}track({"n.codeText":1});if(svc.checked)await saveContact(c.id,n,c.note);location.href=smsLink(n,codeMsg(c)+"\n\n"+appLink())};
         inp.onkeydown=e=>{if(e.key==="Enter"&&!go.disabled)go.click()};
         row.append(inp,go);tb.append(lab,row,sv,el("span","small hint","Opens Messages with the invite filled in."),msg);if(contacts[c.id]?.phone){inp.value=contacts[c.id].phone;upd()}r.append(tb)}
+      if(contacts[c.id]?.phone)r.append(followBox(c,contacts[c.id].phone));
       const a=el("div","acts");const sh=el("button","link small","📤 Share instead");sh.onclick=()=>shareCode(c);a.append(sh);const cp=el("button","link small","Copy");cp.onclick=async()=>{try{await navigator.clipboard.writeText(codeMsg(c));toast("Invite copied. Paste it in a text.")}catch(x){toast("Couldn't copy")}};
       const del=el("button","link small","Delete");del.style.color="var(--warn)";del.onclick=async()=>{if(await sure("This unused invite code will stop working."))db.top.doc("betaCodes/"+c.id).delete().then(()=>toast("Deleted")).catch(()=>toast("Couldn't delete"))};a.append(cp,del);r.append(a)}
     box.append(r)})};
@@ -5806,7 +5817,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-23.3";
+const APP_VERSION="2026-10-24.1";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
