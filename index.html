@@ -4414,24 +4414,26 @@ function watchContacts(){if(contactsUnsub||!isOwner)return;try{contactsUnsub=db.
 async function saveContact(code,phone,note){try{await db.top.doc("contacts/"+code).set({phone,note:String(note||"").slice(0,60),at:Date.now()});contacts[code]={phone,note,at:Date.now()};return true}catch(e){toast(isDenied(e)?"To save numbers, publish the latest Firebase rules first.":"Couldn't save the number");return false}}
 async function forgetContact(code){if(!(await sure("This number will be removed from your nudge list.","Remove number")))return;try{await db.top.doc("contacts/"+code).delete();delete contacts[code];renderCodes()}catch(e){toast("Couldn't remove")}}
 const NUDGES=[
-  ["back","Come back",n=>`Hey! It's ${n} from Noudé 💞 Haven't seen you two in a bit. Open the app and send each other a quick check-in today: https://noudeapp.com/`],
-  ["notif","Turn on notifications",n=>`Quick tip from ${n} at Noudé: turn on notifications so you know when your partner checks in or sends something 🔔 Open Noudé from your Home Screen icon, then About me → Notifications. https://noudeapp.com/`],
-  ["new","Try what's new",n=>`New in Noudé ✨ You can now send GIFs and log daily wins, and your partner can cheer you on. Open the app to try it: https://noudeapp.com/`],
-  ["partner","Partner hasn't joined",n=>`Hey! It's ${n} from Noudé 💞 Did your partner get their invite? In the app, go to About me → Invite your partner and send them the link. https://noudeapp.com/`]
+  ["back","Come back",n=>`Hey! It's ${n} from Noudé 💞 Haven't seen you two in a bit. Open the app and send each other a quick check-in today.`],
+  ["notif","Turn on notifications",n=>`Quick tip from ${n} at Noudé: turn on notifications so you know when your partner checks in or sends something 🔔 Open Noudé from your Home Screen icon, then About me → Notifications.`],
+  ["new","Try what's new",n=>`New in Noudé ✨ You can now send GIFs and log daily wins, and your partner can cheer you on. Open the app to try it.`],
+  ["partner","Partner hasn't joined",n=>`Hey! It's ${n} from Noudé 💞 Did your partner get their invite? In the app, go to About me → Invite your partner and send them the link.`]
 ];
+// The link goes last, on its own line, so Messages shows the Noudé logo preview card.
+const withLogo=t=>t+"\n\nhttps://noudeapp.com/";
 const fmtPhone=p=>{const d=phoneDigits(p);return d.length===11&&d[0]==="1"?`(${d.slice(1,4)}) ${d.slice(4,7)}-${d.slice(7)}`:p};
 // Follow-ups for invites that haven't been used yet (number saved when you texted the code)
 const FOLLOWUPS=[
-  ["remind","Friendly reminder",(n,c)=>`Hey! It's ${n} from Noudé 💞 Don't forget to create your space so you can connect with your partner on Noudé. It takes about a minute.\n\nYour code: ${c.id}\n1. Open https://noudeapp.com/ on your phone\n2. Enter the code and tap Start our space\n\nTry it now!`],
-  ["spot","Your spot is waiting",(n,c)=>`Your Noudé beta spot is still waiting for you two ⏳ Beta spots are limited, so claim yours this week before we open more invites.\n\nCode: ${c.id}\nStart here: https://noudeapp.com/`],
-  ["help","Need help?",(n,c)=>`Hi! It's ${n} from Noudé. Need a hand getting started? Open https://noudeapp.com/, enter your code ${c.id} and tap Start our space. Then send your partner the link from About me. Reply here if anything gets stuck 🙂`]
+  ["remind","Friendly reminder",(n,c)=>`Hey! It's ${n} from Noudé 💞 Don't forget to create your space so you can connect with your partner on Noudé. It takes about a minute.\n\nYour code: ${c.id}\n1. Open the link below on your phone\n2. Enter the code and tap Start our space\n\nTry it now!`],
+  ["spot","Your spot is waiting",(n,c)=>`Your Noudé beta spot is still waiting for you two ⏳ Beta spots are limited, so claim yours this week before we open more invites.\n\nYour code: ${c.id}\nStart here 👇`],
+  ["help","Need help?",(n,c)=>`Hi! It's ${n} from Noudé. Need a hand getting started? Open the link below, enter your code ${c.id} and tap Start our space. Then send your partner the link from About me. Reply here if anything gets stuck 🙂`]
 ];
 function followBox(c,phone){const w=el("div","textit");w.style.opacity="1";w.append(el("label",null,"Follow up by text · "+fmtPhone(phone)));
   w.append(el("span","small muted",`Invited ${timeAgo(c.createdAt||Date.now())} · hasn't started their space yet`));const o=el("div","opts");
-  FOLLOWUPS.forEach(([k,t,fn])=>{const b=el("button","opt",t);b.type="button";b.onclick=()=>{track({["n.follow."+k]:1});location.href=smsLink(phone,fn(nm(me),c))};o.append(b)});w.append(o);
+  FOLLOWUPS.forEach(([k,t,fn])=>{const b=el("button","opt",t);b.type="button";b.onclick=()=>{track({["n.follow."+k]:1});location.href=smsLink(phone,withLogo(fn(nm(me),c)))};o.append(b)});w.append(o);
   const rm=el("button","link small","Remove saved number");rm.type="button";rm.style.alignSelf="flex-start";rm.onclick=()=>forgetContact(c.id);w.append(rm);return w}
 function nudgeBox(code,phone){const w=el("div","textit");w.style.opacity="1";w.append(el("label",null,"Nudge by text · "+fmtPhone(phone)));const o=el("div","opts");
-  NUDGES.forEach(([k,t,fn])=>{const b=el("button","opt",t);b.type="button";b.onclick=()=>{track({["n.nudge."+k]:1});location.href=smsLink(phone,fn(nm(me)))};o.append(b)});w.append(o);
+  NUDGES.forEach(([k,t,fn])=>{const b=el("button","opt",t);b.type="button";b.onclick=()=>{track({["n.nudge."+k]:1});location.href=smsLink(phone,withLogo(fn(nm(me))))};o.append(b)});w.append(o);
   const rm=el("button","link small","Remove saved number");rm.type="button";rm.style.alignSelf="flex-start";rm.onclick=()=>forgetContact(code);w.append(rm);return w}
 
 /* ================= Daily wins ================= */
@@ -5817,7 +5819,7 @@ const START_ITEM=(location.hash.match(/#item=([\w-]{4,40})/)||[])[1]||"";
 const START_CODES=/#codes\b/.test(location.hash);
 const START_CHAT=/#chat\b/.test(location.hash),START_MIDDAY=/#midday\b/.test(location.hash),START_STORY=/#story\b/.test(location.hash);let pendingStory=START_STORY;
 /* ---- Update check: shows a banner when a newer version is live ---- */
-const APP_VERSION="2026-10-24.1";
+const APP_VERSION="2026-10-24.2";
 let updLast=0;
 async function checkUpdate(){
   if(Date.now()-updLast<60000)return;updLast=Date.now();
